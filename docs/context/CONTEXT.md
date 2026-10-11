@@ -56,6 +56,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-11 — Rewrote `README.md`: architecture diagram (mermaid), request path, auth summary, layout, Docker and no-Docker setup, env and endpoint tables. `scripts/start-dopple.command` still prints an unauthenticated `/students` example (now 401) and kills whatever is on :3000/:3100.
 - 2026-10-11 — Added per-IP sign-in rate limit (`@nestjs/throttler`, in-memory). Guards run before validation, so every POST to `/auth/sign-in` counts. e2e config raises the limit to 1000; `test/sign-in-rate-limit.e2e-spec.ts` sets its own.
 - 2026-10-11 — "Pay small small" (fee instalments) is noted as coming soon in `docs/roadmap.md`, and the site's fees card + FAQ.
 - 2026-10-11 — Tightened UI PR evidence: `apps/site` included; Before/After must be screenshots of the running UI on the branch (not AI/mock images); "New screen" only valid under Before.
