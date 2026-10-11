@@ -10,6 +10,11 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['test/**/*.e2e-spec.ts'],
-    env: { LOG_LEVEL: 'warn', OTEL_SDK_DISABLED: 'true' },
+    // Suites sign in many times from one IP; the rate-limit spec sets its own low limit.
+    env: {
+      LOG_LEVEL: 'warn',
+      OTEL_SDK_DISABLED: 'true',
+      LOGIN_RATE_LIMIT_PER_MINUTE: '1000',
+    },
   },
 });
