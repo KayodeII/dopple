@@ -21,4 +21,5 @@ Every school is a tenant with its own address. Users (staff, students, parents) 
 - Disabling a user takes effect within one access-token lifetime (15 minutes), not instantly.
 - Production must set `JWT_PRIVATE_KEY`; locally a throwaway key is generated, so tokens die when the API restarts.
 - Key rotation needs a second key in the JWKS (the `kid` is already set); not built yet.
-- Not yet done: sign-in rate limiting (needs Redis), Google/Microsoft sign-in (needs OAuth apps per environment), password reset and invites, cleanup of expired refresh-token rows.
+- Sign-in is limited per client IP (`LOGIN_RATE_LIMIT_PER_MINUTE`, default 10; refresh gets 3x) with `@nestjs/throttler`. Counters are in memory, which is only correct for one API instance: move them to Redis before running more than one.
+- Not yet done: shared (Redis) rate-limit counters, Google/Microsoft sign-in (needs OAuth apps per environment), password reset and invites, cleanup of expired refresh-token rows.

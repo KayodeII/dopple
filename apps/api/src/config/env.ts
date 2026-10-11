@@ -29,6 +29,11 @@ const envSchema = z
     JWT_PRIVATE_KEY: z.string().optional(),
     ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+    /**
+     * Sign-in attempts allowed per client IP per minute (refresh gets 3x this).
+     * Counters are in memory: correct for one API instance; move to Redis before scaling out.
+     */
+    LOGIN_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(10),
   })
   .refine((env) => env.NODE_ENV !== 'production' || !!env.JWT_PRIVATE_KEY, {
     path: ['JWT_PRIVATE_KEY'],
