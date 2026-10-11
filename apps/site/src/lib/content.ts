@@ -298,7 +298,7 @@ export const faqs = [
   },
   {
     q: 'How do school fees reach our account?',
-    a: "Parents pay by card or bank transfer through a licensed payment provider. Money settles directly into the school's own bank account; Dopple never holds it. Every payment is matched to the right student automatically.",
+    a: "Parents pay by card or bank transfer through a licensed payment provider. Money settles directly into the school's own bank account; Dopple never holds it. Every payment is matched to the right student automatically. Coming soon: Pay small small, so parents can spread a term's fees into smaller payments.",
   },
   {
     q: 'Can students take exams from home?',

@@ -336,6 +336,15 @@ function FeesModule() {
         bank account, and you know who has paid without opening a single bank
         statement.
       </p>
+      <p className="flex flex-wrap items-center gap-2 rounded-2xl border border-ink/15 bg-ink/5 px-3.5 py-2.5 text-sm">
+        <span className="rounded-full bg-ink px-2 py-0.5 text-[11px] font-semibold tracking-wide text-mint uppercase">
+          Coming soon
+        </span>
+        <span>
+          <strong>Pay small small:</strong> let parents spread a term&apos;s
+          fees into smaller payments.
+        </span>
+      </p>
     </Card>
   );
 }
