@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: dopple
+          POSTGRES_PASSWORD: dopple
+          POSTGRES_DB: dopple
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U dopple" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://dopple_app:dopple_app@localhost:5432/dopple
+      MIGRATION_DATABASE_URL: postgres://dopple:dopple@localhost:5432/dopple
+      PLATFORM_DOMAIN: dopple.localhost
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Prepare database
+        run: |
+          PGPASSWORD=dopple psql -h localhost -U dopple -d dopple -f infra/postgres/init.sql
+          pnpm db:migrate
+      - name: Install Chromium for site smoke tests
+        run: pnpm --filter @dopple/site exec playwright install --with-deps chromium
+      - name: Start API for the site's partner wall
+        run: (cd apps/api && nohup node dist/main.js > /tmp/api.log 2>&1 &) && sleep 3
+        env:
+          OTEL_SDK_DISABLED: 'true'
+      - run: pnpm test:e2e
+
+  ui-evidence:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require Before/After images for UI changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: .github/scripts/check-ui-evidence.sh
+
+  commit-hygiene:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reject co-author trailers
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git log --format=%B "$BASE_SHA..$HEAD_SHA" | grep -qiE '^(co-authored-by|claude-session|generated-with):'; then
+            echo "::error::A commit in this PR has a Co-authored-by or attribution trailer. Reword it (git rebase -i) and force-push."
+            exit 1
+          fi

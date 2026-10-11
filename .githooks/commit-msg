@@ -1,0 +1,6 @@
+#!/bin/sh
+# Rejects commits that carry co-author or AI-attribution trailers. See AGENTS.md > Commits.
+if grep -qiE '^(co-authored-by|claude-session|generated-with):' "$1"; then
+  echo "commit-msg: remove 'Co-authored-by' / attribution trailers. Dopple commits have a single author." >&2
+  exit 1
+fi

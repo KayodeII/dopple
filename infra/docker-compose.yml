@@ -1,0 +1,36 @@
+# Local development dependencies. Start: pnpm infra:up   Stop: pnpm infra:down
+name: dopple
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: dopple        # owner role, used by migrations
+      POSTGRES_PASSWORD: dopple
+      POSTGRES_DB: dopple
+    ports: ['5432:5432']
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dopple']
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports: ['6379:6379']
+
+  nats:
+    image: nats:2
+    command: ['-js']   # JetStream on
+    ports: ['4222:4222', '8222:8222']
+
+  # Grafana + OpenTelemetry collector + Tempo (traces) + Prometheus/Mimir (metrics) + Loki (logs), one container.
+  # Grafana UI: http://localhost:3001 (admin / admin). OTLP: 4317 (gRPC), 4318 (HTTP).
+  observability:
+    image: grafana/otel-lgtm:latest
+    ports: ['3001:3000', '4317:4317', '4318:4318']
+
+volumes:
+  postgres-data:
