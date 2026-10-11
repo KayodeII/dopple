@@ -29,6 +29,50 @@ const schools = [
   { slug: 'riverside', name: 'Riverside Academy', city: 'Port Harcourt', showcase: true, students: [['RA-001', 'Musa', 'Bello']] },
 ];
 
+// A school year with three terms, a few subjects and two JSS 1 classes.
+async function seedStructure(tenantId, slug) {
+  const session = await client.query(
+    `insert into academic_sessions (tenant_id, name, starts_on, ends_on)
+     values ($1, '2026/2027', '2026-09-07', '2027-07-23')
+     on conflict on constraint academic_sessions_name_per_tenant do update set name = excluded.name
+     returning id`,
+    [tenantId],
+  );
+  const sessionId = session.rows[0].id;
+  const terms = [
+    [1, 'First term', '2026-09-07', '2026-12-11'],
+    [2, 'Second term', '2027-01-11', '2027-04-02'],
+    [3, 'Third term', '2027-04-26', '2027-07-23'],
+  ];
+  for (const [number, name, startsOn, endsOn] of terms) {
+    await client.query(
+      `insert into terms (tenant_id, session_id, number, name, starts_on, ends_on)
+       values ($1, $2, $3, $4, $5, $6)
+       on conflict on constraint terms_number_per_session do nothing`,
+      [tenantId, sessionId, number, name, startsOn, endsOn],
+    );
+  }
+  for (const [code, name] of [['MTH', 'Mathematics'], ['ENG', 'English Language'], ['BSC', 'Basic Science']]) {
+    await client.query(
+      `insert into subjects (tenant_id, code, name) values ($1, $2, $3)
+       on conflict on constraint subjects_code_per_tenant do nothing`,
+      [tenantId, code, name],
+    );
+  }
+  const teacher = await client.query(
+    'select id from users where tenant_id = $1 and email = $2',
+    [tenantId, `teacher@${slug}.test`],
+  );
+  for (const name of ['JSS 1A', 'JSS 1B']) {
+    await client.query(
+      `insert into classes (tenant_id, session_id, name, level, form_teacher_id)
+       values ($1, $2, $3, 'JSS 1', $4)
+       on conflict on constraint classes_name_per_session do nothing`,
+      [tenantId, sessionId, name, name === 'JSS 1A' ? teacher.rows[0].id : null],
+    );
+  }
+}
+
 try {
   await client.query('begin');
   for (const school of schools) {
@@ -56,6 +100,7 @@ try {
         [tenantId, `${role}@${school.slug}.test`, name, role, hashPassword(DEMO_PASSWORD)],
       );
     }
+    await seedStructure(tenantId, school.slug);
   }
   await client.query('commit');
   console.log(`Seeded ${schools.length} schools. Staff sign-in: admin@<slug>.test / teacher@<slug>.test, password "${DEMO_PASSWORD}".`);

@@ -124,7 +124,7 @@ dopple/
 │   │   │   ├── config/       zod-validated environment (env.ts)
 │   │   │   ├── tenancy/      host → school resolution, TenantMiddleware
 │   │   │   ├── database/     Drizzle schema, RLS policies, TenantDb
-│   │   │   ├── modules/      one folder per feature (auth, students, showcase)
+│   │   │   ├── modules/      one folder per feature (auth, classes, students, …)
 │   │   │   ├── observability/ OpenTelemetry setup, logger, business metrics
 │   │   │   └── health/       /health/live, /health/ready
 │   │   ├── drizzle/          SQL migrations (never edit an applied one)
@@ -170,7 +170,7 @@ Double-click `scripts/start-dopple.command`, or run it from a terminal. It insta
 
 ### Try it
 
-`*.localhost` resolves to `127.0.0.1`, so each demo school has its own local address. The seed creates staff accounts `admin@<slug>.test` and `teacher@<slug>.test`, all with the password `dopple-demo`.
+`*.localhost` resolves to `127.0.0.1`, so each demo school has its own local address. The seed creates a 2026/2027 session with three terms, a few subjects, two JSS 1 classes, and staff accounts `admin@<slug>.test` and `teacher@<slug>.test`, all with the password `dopple-demo`.
 
 ```bash
 # Sign in at Greenfield
@@ -228,6 +228,10 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `POST` | `/auth/sign-out` | public, school | `{ refreshToken }` → ends that session |
 | `GET` | `/auth/me` | signed in | The current user |
 | `GET` | `/students` | admin, teacher | The school's students (reference module) |
+| `GET` / `POST` | `/sessions` | read: signed in · write: admin | School years with their terms |
+| `GET` / `POST` | `/subjects` | read: signed in · write: admin | Subjects and their codes |
+| `GET` / `POST` | `/classes` | read: signed in · write: admin | Class groups; filter with `?sessionId=` |
+| `GET` / `PATCH` | `/classes/:id` | read: signed in · write: admin | One class, including its form teacher |
 
 ## Testing
 
@@ -265,7 +269,7 @@ The full rules are in [`AGENTS.md`](AGENTS.md). The non-negotiable ones:
 | [`AGENTS.md`](AGENTS.md) | Rules and commands for anyone changing the code |
 | [`docs/context/CONTEXT.md`](docs/context/CONTEXT.md) | Current state, next up, open questions, session log |
 | [`docs/architecture.md`](docs/architecture.md) | One-page architecture and how `apps/api` maps to it |
-| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication |
+| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure |
 | [`docs/roadmap.md`](docs/roadmap.md) | Features announced as coming soon |
 | [Architecture overview](https://claude.ai/code/artifact/bd7488b4-c632-49d5-aae1-6a5e88965ff9) | Full design with diagrams |
 | [Website and portal designs](https://claude.ai/code/artifact/f45b09ad-3e6b-44ca-8bb6-033d7ca1bcd3) | Design canvas |

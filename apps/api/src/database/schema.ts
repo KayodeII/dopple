@@ -1,11 +1,14 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
+  date,
   foreignKey,
   pgPolicy,
   pgRole,
   pgTable,
   primaryKey,
+  smallint,
   text,
   timestamp,
   unique,
@@ -122,6 +125,106 @@ export const refreshTokens = pgTable(
       foreignColumns: [users.tenantId, users.id],
     }).onDelete('cascade'),
     tenantIsolation('refresh_tokens'),
+  ],
+).enableRLS();
+
+/*
+ * School structure. References between tenant-owned tables are composite
+ * (tenant_id, id) foreign keys: Postgres checks foreign keys without row-level
+ * security, so including tenant_id is what stops a row pointing at another school's row.
+ */
+
+/** A school year, e.g. "2026/2027". */
+export const academicSessions = pgTable(
+  'academic_sessions',
+  {
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id),
+    id: uuid('id').notNull().defaultRandom(),
+    name: text('name').notNull(),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    unique('academic_sessions_name_per_tenant').on(t.tenantId, t.name),
+    check('academic_sessions_dates', sql`${t.endsOn} > ${t.startsOn}`),
+    tenantIsolation('academic_sessions'),
+  ],
+).enableRLS();
+
+export const terms = pgTable(
+  'terms',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    sessionId: uuid('session_id').notNull(),
+    /** 1 for first term. Ordering within the session. */
+    number: smallint('number').notNull(),
+    name: text('name').notNull(),
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    unique('terms_number_per_session').on(t.tenantId, t.sessionId, t.number),
+    foreignKey({
+      columns: [t.tenantId, t.sessionId],
+      foreignColumns: [academicSessions.tenantId, academicSessions.id],
+    }).onDelete('cascade'),
+    check('terms_number_positive', sql`${t.number} > 0`),
+    check('terms_dates', sql`${t.endsOn} > ${t.startsOn}`),
+    tenantIsolation('terms'),
+  ],
+).enableRLS();
+
+export const subjects = pgTable(
+  'subjects',
+  {
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id),
+    id: uuid('id').notNull().defaultRandom(),
+    name: text('name').notNull(),
+    /** Short code shown on timetables and report cards, e.g. "MTH". Stored upper-case. */
+    code: text('code').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    unique('subjects_code_per_tenant').on(t.tenantId, t.code),
+    tenantIsolation('subjects'),
+  ],
+).enableRLS();
+
+/** A class group within one session, e.g. "JSS 1A" in 2026/2027. */
+export const classes = pgTable(
+  'classes',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    sessionId: uuid('session_id').notNull(),
+    name: text('name').notNull(),
+    /** The year group, e.g. "JSS 1". Classes at one level share a curriculum. */
+    level: text('level').notNull(),
+    formTeacherId: uuid('form_teacher_id'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    unique('classes_name_per_session').on(t.tenantId, t.sessionId, t.name),
+    foreignKey({
+      columns: [t.tenantId, t.sessionId],
+      foreignColumns: [academicSessions.tenantId, academicSessions.id],
+    }),
+    foreignKey({
+      columns: [t.tenantId, t.formTeacherId],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    tenantIsolation('classes'),
   ],
 ).enableRLS();
 
