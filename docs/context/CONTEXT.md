@@ -32,6 +32,10 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 4. `services/realtime`: Go WebSocket gateway skeleton with NATS.
 5. Fees: payment provider subaccounts, webhook ledger (see architecture doc, "Fee payments").
 
+## Coming soon (announced on the website)
+
+- **Pay small small:** parents spread a term's fees into smaller instalments. Not built yet; see `docs/roadmap.md` for scope and open questions (plan vs. financed credit).
+
 ## Open questions
 
 - Admin UI for a school to opt in to the partner wall and upload its logo (where are logos stored: S3/R2 under the tenant prefix?).
@@ -53,6 +57,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 Newest first. One or two lines each.
 
 - 2026-10-11 — Added per-IP sign-in rate limit (`@nestjs/throttler`, in-memory). Guards run before validation, so every POST to `/auth/sign-in` counts. e2e config raises the limit to 1000; `test/sign-in-rate-limit.e2e-spec.ts` sets its own.
+- 2026-10-11 — "Pay small small" (fee instalments) is noted as coming soon in `docs/roadmap.md`, and the site's fees card + FAQ.
 - 2026-10-11 — Tightened UI PR evidence: `apps/site` included; Before/After must be screenshots of the running UI on the branch (not AI/mock images); "New screen" only valid under Before.
 - 2026-10-11 — Added email/password auth (ADR 0004, migration 0003). Verified `pnpm check` + all e2e. Every route now needs a bearer token unless `@Public()`: new modules must decide. Docker was not installed here, so the API ran on Homebrew Postgres, on port 3002 (3000 was taken), with OTel exporters off.
 - 2026-10-11 — Built `apps/site` (marketing site) from the design canvas; verified lint, types, build, desktop + mobile screenshots and Playwright smoke tests. Partner wall hidden until 6 schools opt in.
