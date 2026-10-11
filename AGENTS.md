@@ -53,6 +53,7 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 ### Tenant isolation
 
 1. Every tenant-owned table has `tenant_id` as the first column of its primary key, row-level security enabled, and the `tenantIsolation` policy. Copy the `students` table in `apps/api/src/database/schema.ts`.
+   References between tenant-owned tables are composite foreign keys, `(tenant_id, x_id) → (tenant_id, id)` (see `classes` and ADR 0005).
 2. Read and write tenant-owned tables **only** through `TenantDb.run()`. Never query them with the raw `DB` client.
 3. Never accept a tenant id from request input (body, query, headers other than the host). The tenant comes from `TenantMiddleware`.
 4. The API connects as `dopple_app`, which is not a superuser and not the table owner. Do not change that; superusers bypass row-level security.

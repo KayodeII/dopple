@@ -56,7 +56,16 @@ describe('Tenant isolation (e2e)', () => {
 
   afterAll(async () => {
     await app?.close();
-    for (const table of ['refresh_tokens', 'users', 'students']) {
+    // Children before parents: these tables reference each other.
+    for (const table of [
+      'classes',
+      'terms',
+      'academic_sessions',
+      'subjects',
+      'refresh_tokens',
+      'users',
+      'students',
+    ]) {
       await owner.query(
         `delete from ${table} where tenant_id in (select id from tenants where slug = any($1))`,
         [[schoolA, schoolB]],
@@ -127,12 +136,92 @@ describe('Tenant isolation (e2e)', () => {
       .expect(200);
   });
 
+  it('does not show or link another school’s classes, sessions or staff', async () => {
+    const as = async (slug: string) => {
+      const token = await tokenFor(slug);
+      const http = () => request(app.getHttpServer());
+      return {
+        get: (path: string) =>
+          http()
+            .get(path)
+            .set('Host', host(slug))
+            .auth(token, { type: 'bearer' }),
+        post: (path: string, body: object) =>
+          http()
+            .post(path)
+            .set('Host', host(slug))
+            .auth(token, { type: 'bearer' })
+            .send(body),
+      };
+    };
+    const a = await as(schoolA);
+    const b = await as(schoolB);
+
+    const sessionB = (
+      await b
+        .post('/sessions', {
+          name: '2026/2027',
+          startsOn: '2026-09-07',
+          endsOn: '2027-07-23',
+        })
+        .expect(201)
+    ).body;
+    const teacherB = (await b.get('/auth/me').expect(200)).body;
+    const classB = (
+      await b
+        .post('/classes', {
+          sessionId: sessionB.id,
+          name: 'JSS 1A',
+          level: 'JSS 1',
+        })
+        .expect(201)
+    ).body;
+
+    expect((await a.get('/sessions').expect(200)).body).toEqual([]);
+    expect((await a.get('/classes').expect(200)).body).toEqual([]);
+    await a.get(`/classes/${classB.id}`).expect(404);
+
+    // References are checked within the school: another school's ids look missing.
+    await a
+      .post('/classes', {
+        sessionId: sessionB.id,
+        name: 'JSS 1A',
+        level: 'JSS 1',
+      })
+      .expect(422);
+    const sessionA = (
+      await a
+        .post('/sessions', {
+          name: '2026/2027',
+          startsOn: '2026-09-07',
+          endsOn: '2027-07-23',
+        })
+        .expect(201)
+    ).body;
+    await a
+      .post('/classes', {
+        sessionId: sessionA.id,
+        name: 'JSS 1A',
+        level: 'JSS 1',
+        formTeacherId: teacherB.id,
+      })
+      .expect(422);
+  });
+
   it('returns nothing when no tenant is set on the connection', async () => {
     const appRole = new pg.Client({
       connectionString: process.env.DATABASE_URL,
     });
     await appRole.connect();
-    for (const table of ['students', 'users', 'refresh_tokens']) {
+    for (const table of [
+      'students',
+      'users',
+      'refresh_tokens',
+      'academic_sessions',
+      'terms',
+      'subjects',
+      'classes',
+    ]) {
       const { rows } = await appRole.query(`select * from ${table}`);
       expect(rows, table).toEqual([]);
     }

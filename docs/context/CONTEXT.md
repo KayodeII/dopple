@@ -20,13 +20,14 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - Showcase: `GET /showcase/schools` (platform host, no tenant) lists schools with `tenants.showcase = true` (name, slug, city, logoUrl) for the marketing site's partner logo wall. Opt-in only; cached 5 min.
 - Marketing site `apps/site`: Next.js 16 (Cache Components), Tailwind 4, self-hosted fonts, 18 section components matching the design canvas; Playwright smoke tests (desktop + mobile: renders, no console errors, no sideways scroll, FAQ works).
 - Auth (ADR 0004): `users` + `refresh_tokens` (RLS, migration 0003), scrypt passwords, Ed25519 JWT access tokens (15 min, `tid` must match host), rotating refresh tokens with reuse detection, `/auth/sign-in|refresh|sign-out|me`, `/.well-known/jwks.json`. Global guard: private unless `@Public()`; `@Roles()` for roles. `/students` is admin/teacher only. Sign-in rate limit per IP (`LOGIN_RATE_LIMIT_PER_MINUTE`, in-memory). Seed adds `admin@<slug>.test` / `teacher@<slug>.test`, password `dopple-demo`.
+- School structure (ADR 0005, migration 0004): `academic_sessions` + `terms`, `subjects`, `classes` (per session, optional form teacher), composite `(tenant_id, id)` foreign keys. `/sessions`, `/subjects`, `/classes` (read: signed in, write: admin). Global `DatabaseErrorFilter`: unique → 409, FK/check → 422. Seed adds a demo year, subjects and classes.
 - Local infra: `infra/docker-compose.yml` (Postgres 17, Redis 7, NATS JetStream, Grafana LGTM).
 - Repo rules: PR template with Before/After from the running UI (`apps/site` included), CI (checks, UI evidence, no co-author trailers), commit-msg hook.
 
 ## Next up
 
 1. Auth follow-ups: move rate-limit counters to Redis before scaling out, invites + password reset (needs email provider), Google/Microsoft sign-in, expired refresh-token cleanup.
-2. Core school records: classes, subjects, timetable, enrolments, staff (link staff/students to `users`).
+2. Core school records, continued: enrolments (student ↔ class per session), subject teachers per class, link students to `users`, then the timetable.
 3. `apps/web`: React portal shell (student home from the design canvas).
    - Site follow-ups: real pricing, demo-booking form backend (currently `action="#demo"`), legal pages, analytics.
 4. `services/realtime`: Go WebSocket gateway skeleton with NATS.
@@ -56,6 +57,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-11 — Added school structure: sessions/terms, subjects, classes (ADR 0005, migration 0004) and `DatabaseErrorFilter`. New rule in AGENTS.md: composite foreign keys between tenant tables. Tenant-isolation test covers the new tables.
 - 2026-10-11 — Rewrote `README.md`: architecture diagram (mermaid), request path, auth summary, layout, Docker and no-Docker setup, env and endpoint tables. `scripts/start-dopple.command` still prints an unauthenticated `/students` example (now 401) and kills whatever is on :3000/:3100.
 - 2026-10-11 — Added per-IP sign-in rate limit (`@nestjs/throttler`, in-memory). Guards run before validation, so every POST to `/auth/sign-in` counts. e2e config raises the limit to 1000; `test/sign-in-rate-limit.e2e-spec.ts` sets its own.
 - 2026-10-11 — "Pay small small" (fee instalments) is noted as coming soon in `docs/roadmap.md`, and the site's fees card + FAQ.
