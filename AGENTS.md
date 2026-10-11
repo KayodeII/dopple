@@ -25,6 +25,7 @@ Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisio
 | `infra` | Local dependencies (Postgres, Redis, NATS, Grafana LGTM) | Ready |
 | `docs/context` | Living project state for agents. **Update it every session.** | Ready |
 | `docs/decisions` | Architecture decision records (ADRs) | Ready |
+| `docs/roadmap.md` | Features announced as "coming soon"; keep in step with the website copy | Ready |
 
 ## Commands
 
