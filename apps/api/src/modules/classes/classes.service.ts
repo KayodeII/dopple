@@ -1,14 +1,14 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
-import { and, asc, eq, inArray, type SQL } from 'drizzle-orm';
-import { classes, users } from '../../database/schema.js';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { asc, eq, inArray, type SQL } from 'drizzle-orm';
+import { classes, users, type UserRole } from '../../database/schema.js';
 import {
   TenantDb,
   type Transaction,
 } from '../../database/tenant-db.service.js';
+import { assertActiveUser } from '../../common/assert-active-user.js';
+
+/** Who can be a form teacher or teach a subject. */
+export const STAFF: UserRole[] = ['teacher', 'admin'];
 
 export interface ClassInput {
   sessionId: string;
@@ -49,7 +49,12 @@ export class ClassesService {
 
   async create(input: ClassInput) {
     const id = await this.tenantDb.run(async (tx, tenant) => {
-      await this.assertCanBeFormTeacher(tx, input.formTeacherId);
+      await assertActiveUser(
+        tx,
+        input.formTeacherId,
+        STAFF,
+        'The form teacher',
+      );
       const [row] = await tx
         .insert(classes)
         .values({ ...input, tenantId: tenant.id })
@@ -61,7 +66,12 @@ export class ClassesService {
 
   async update(id: string, patch: Partial<Omit<ClassInput, 'sessionId'>>) {
     const updated = await this.tenantDb.run(async (tx) => {
-      await this.assertCanBeFormTeacher(tx, patch.formTeacherId);
+      await assertActiveUser(
+        tx,
+        patch.formTeacherId,
+        STAFF,
+        'The form teacher',
+      );
       return tx
         .update(classes)
         .set(patch)
@@ -93,21 +103,5 @@ export class ClassesService {
       ...row,
       formTeacher: teachers.find((t) => t.id === formTeacherId) ?? null,
     }));
-  }
-
-  private async assertCanBeFormTeacher(
-    tx: Transaction,
-    userId: string | null | undefined,
-  ) {
-    if (!userId) return;
-    const [user] = await tx
-      .select({ role: users.role })
-      .from(users)
-      .where(and(eq(users.id, userId), eq(users.status, 'active')));
-    if (user?.role !== 'teacher' && user?.role !== 'admin') {
-      throw new UnprocessableEntityException(
-        'The form teacher must be an active teacher or admin',
-      );
-    }
   }
 }

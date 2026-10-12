@@ -19,4 +19,6 @@ Nearly every feature (timetables, attendance, grades, exams, fees) hangs off whe
 
 - New tenant-owned tables that reference others must use composite foreign keys (now a rule in AGENTS.md).
 - Rules that need a lookup (the form teacher must be an active teacher or admin) stay in services, inside the same `TenantDb.run()` transaction.
-- Not yet: enrolments, subject teachers per class, timetable, and archiving or deleting sessions.
+- **Enrolments** (added later): one row per student per session, keyed `(tenant_id, session_id, student_id)`, so a student is in one class per year; enrolling again moves them. The foreign key to `classes(tenant_id, id, session_id)` makes it impossible for an enrolment's session to disagree with its class's.
+- **Subjects per class** (`class_subjects`) carry an optional teacher, who must be an active teacher or admin. Students link to their own sign-in account through `students.user_id` (one student per account).
+- Not yet: timetable, and archiving or deleting sessions.

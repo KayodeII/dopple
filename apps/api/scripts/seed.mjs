@@ -1,7 +1,7 @@
 // Seeds two demo schools so tenant isolation can be seen locally:
 //   curl -H "Host: greenfield.dopple.localhost" localhost:3000/students
 //   curl -H "Host: riverside.dopple.localhost"  localhost:3000/students
-// Each school gets demo staff accounts (password below) for trying sign-in:
+// Each school gets demo admin, teacher and student accounts (password below) for trying sign-in:
 //   curl -H "Host: greenfield.dopple.localhost" -H 'content-type: application/json' \
 //     -d '{"email":"admin@greenfield.test","password":"dopple-demo"}' localhost:3000/auth/sign-in
 // Runs as the database owner (MIGRATION_DATABASE_URL) because the app role cannot write tenants.
@@ -29,7 +29,9 @@ const schools = [
   { slug: 'riverside', name: 'Riverside Academy', city: 'Port Harcourt', showcase: true, students: [['RA-001', 'Musa', 'Bello']] },
 ];
 
-// A school year with three terms, a few subjects and two JSS 1 classes.
+// A school year with three terms, a few subjects and two JSS 1 classes. Every demo
+// student is in JSS 1A, which takes all subjects with the demo teacher; the first
+// student is linked to the demo student account.
 async function seedStructure(tenantId, slug) {
   const session = await client.query(
     `insert into academic_sessions (tenant_id, name, starts_on, ends_on)
@@ -71,6 +73,30 @@ async function seedStructure(tenantId, slug) {
       [tenantId, sessionId, name, name === 'JSS 1A' ? teacher.rows[0].id : null],
     );
   }
+  const jss1a = await client.query(
+    `select id from classes where tenant_id = $1 and session_id = $2 and name = 'JSS 1A'`,
+    [tenantId, sessionId],
+  );
+  const classId = jss1a.rows[0].id;
+  await client.query(
+    `insert into enrolments (tenant_id, session_id, student_id, class_id)
+     select tenant_id, $2, id, $3 from students where tenant_id = $1
+     on conflict do nothing`,
+    [tenantId, sessionId, classId],
+  );
+  await client.query(
+    `insert into class_subjects (tenant_id, class_id, subject_id, teacher_id)
+     select tenant_id, $2, id, $3 from subjects where tenant_id = $1
+     on conflict do nothing`,
+    [tenantId, classId, teacher.rows[0].id],
+  );
+  await client.query(
+    `update students set user_id = (select id from users where tenant_id = $1 and email = $2)
+     where tenant_id = $1 and user_id is null
+       and admission_no = (select min(admission_no) from students where tenant_id = $1)
+       and not exists (select 1 from students where tenant_id = $1 and user_id is not null)`,
+    [tenantId, `student@${slug}.test`],
+  );
 }
 
 try {
@@ -92,7 +118,7 @@ try {
         [tenantId, admissionNo, firstName, lastName],
       );
     }
-    for (const [role, name] of [['admin', 'Demo Admin'], ['teacher', 'Demo Teacher']]) {
+    for (const [role, name] of [['admin', 'Demo Admin'], ['teacher', 'Demo Teacher'], ['student', 'Demo Student']]) {
       await client.query(
         `insert into users (tenant_id, email, name, role, password_hash)
          values ($1, $2, $3, $4, $5)
@@ -103,7 +129,7 @@ try {
     await seedStructure(tenantId, school.slug);
   }
   await client.query('commit');
-  console.log(`Seeded ${schools.length} schools. Staff sign-in: admin@<slug>.test / teacher@<slug>.test, password "${DEMO_PASSWORD}".`);
+  console.log(`Seeded ${schools.length} schools. Sign-in: admin@, teacher@ or student@<slug>.test, password "${DEMO_PASSWORD}".`);
 } catch (error) {
   await client.query('rollback');
   throw error;

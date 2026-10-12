@@ -58,6 +58,8 @@ describe('Tenant isolation (e2e)', () => {
     await app?.close();
     // Children before parents: these tables reference each other.
     for (const table of [
+      'enrolments',
+      'class_subjects',
       'classes',
       'terms',
       'academic_sessions',
@@ -152,6 +154,18 @@ describe('Tenant isolation (e2e)', () => {
             .set('Host', host(slug))
             .auth(token, { type: 'bearer' })
             .send(body),
+        put: (path: string, body: object = {}) =>
+          http()
+            .put(path)
+            .set('Host', host(slug))
+            .auth(token, { type: 'bearer' })
+            .send(body),
+        patch: (path: string, body: object) =>
+          http()
+            .patch(path)
+            .set('Host', host(slug))
+            .auth(token, { type: 'bearer' })
+            .send(body),
       };
     };
     const a = await as(schoolA);
@@ -206,6 +220,41 @@ describe('Tenant isolation (e2e)', () => {
         formTeacherId: teacherB.id,
       })
       .expect(422);
+
+    // Enrolments, subject teachers and account links stay within the school too.
+    const classA = (
+      await a
+        .post('/classes', {
+          sessionId: sessionA.id,
+          name: 'JSS 1A',
+          level: 'JSS 1',
+        })
+        .expect(201)
+    ).body;
+    const studentId = async (slug: string, admissionNo: string) =>
+      (
+        await owner.query<{ id: string }>(
+          `select s.id from students s join tenants t on t.id = s.tenant_id
+           where t.slug = $1 and s.admission_no = $2`,
+          [slug, admissionNo],
+        )
+      ).rows[0].id;
+    const studentA = await studentId(schoolA, 'A-1');
+    const studentB = await studentId(schoolB, 'B-1');
+    const subjectB = (
+      await b
+        .post('/subjects', { name: 'Mathematics', code: 'MTH' })
+        .expect(201)
+    ).body;
+    await b.put(`/classes/${classB.id}/students/${studentB}`).expect(204);
+    await b.put(`/classes/${classB.id}/subjects/${subjectB.id}`).expect(204);
+
+    await a.put(`/classes/${classA.id}/students/${studentB}`).expect(422);
+    await b.put(`/classes/${classA.id}/students/${studentB}`).expect(404);
+    await a.get(`/classes/${classB.id}/students`).expect(404);
+    await a.get(`/classes/${classB.id}/subjects`).expect(404);
+    await a.put(`/classes/${classA.id}/subjects/${subjectB.id}`).expect(422);
+    await a.patch(`/students/${studentA}`, { userId: teacherB.id }).expect(422);
   });
 
   it('returns nothing when no tenant is set on the connection', async () => {
@@ -221,6 +270,8 @@ describe('Tenant isolation (e2e)', () => {
       'terms',
       'subjects',
       'classes',
+      'enrolments',
+      'class_subjects',
     ]) {
       const { rows } = await appRole.query(`select * from ${table}`);
       expect(rows, table).toEqual([]);
