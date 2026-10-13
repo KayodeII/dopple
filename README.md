@@ -4,8 +4,7 @@ A multi-tenant school management platform. Every school gets its own address, it
 
 Each school (a **tenant**) gets:
 
-- a **web portal** at `<slug>.dopple.school` (or its own domain) for students and parents,
-- a **desktop app** for admins and teachers,
+- a **web app** at `<slug>.dopple.school` (or its own domain) for admins, teachers, students and parents, each seeing their own screens,
 - live video classes, a shared whiteboard, a recorded lesson library, computer-based exams, ID cards, bus tracking, events, attendance, grades and fee payments that settle straight to the school.
 
 > **New here, person or AI agent?** Read [`AGENTS.md`](AGENTS.md) (rules) and then [`docs/context/CONTEXT.md`](docs/context/CONTEXT.md) (where the work stands).
@@ -29,8 +28,7 @@ Each school (a **tenant**) gets:
 | --- | --- | --- |
 | Core API | `apps/api` | Running: tenancy, row-level security, auth, observability, sample `students` module |
 | Marketing site | `apps/site` | Built (v1) |
-| School web portal | `apps/web` | Planned |
-| Staff desktop app | `apps/desktop` | Planned (Electron or Tauri, undecided) |
+| School web app (staff, students, parents) | `apps/web` | Planned. No desktop app for now ([ADR 0007](docs/decisions/0007-web-only.md)) |
 | Realtime gateway | `services/realtime` | Planned |
 | Local infrastructure | `infra` | Ready |
 
@@ -41,8 +39,7 @@ What's next is tracked in [`docs/context/CONTEXT.md`](docs/context/CONTEXT.md#ne
 ```mermaid
 flowchart LR
   subgraph Clients
-    portal["Web portal<br/>(students, parents)"]
-    desktop["Desktop app<br/>(admins, teachers)"]
+    portal["School web app<br/>(staff, students, parents)"]
     site["Marketing site<br/>apps/site"]
   end
 
@@ -58,7 +55,6 @@ flowchart LR
   end
 
   portal --> edge
-  desktop --> edge
   site -- "GET /showcase/schools" --> api
   edge --> api
   edge --> rt
@@ -108,6 +104,7 @@ Accounts belong to one school; the same email at two schools is two separate acc
 | Realtime | Go WebSocket gateway, NATS JetStream (planned) |
 | Video | LiveKit (planned) |
 | Cache | Redis |
+| School web app | React, one app for every role, no desktop app (planned) |
 | Marketing site | Next.js 16 (Cache Components), Tailwind CSS 4 |
 | Observability | OpenTelemetry → Grafana LGTM (Tempo, Prometheus, Loki) |
 | Tooling | pnpm workspaces, Vitest, Playwright, oxlint, Prettier |
@@ -267,7 +264,7 @@ The full rules are in [`AGENTS.md`](AGENTS.md). The non-negotiable ones:
 - **Schema changes:** edit `schema.ts`, then run `pnpm --filter @dopple/api db:generate`. Never edit an applied migration.
 - **No personal data in logs**, and never `console.log`.
 - **Commits:** imperative summary under 72 characters, then why. **No `Co-authored-by` trailers**: a git hook and CI reject them.
-- **Pull requests:** one logical change each. Fill in the template, and `pnpm check` must pass. Any PR touching `apps/site`, `apps/web`, `apps/desktop` or `packages/ui` needs **Before and After screenshots of the running UI** from that branch. CI enforces this; mock-ups or AI-generated images don't count.
+- **Pull requests:** one logical change each. Fill in the template, and `pnpm check` must pass. Any PR touching `apps/site`, `apps/web` or `packages/ui` needs **Before and After screenshots of the running UI** from that branch. CI enforces this; mock-ups or AI-generated images don't count.
 - **At the end of every session**, update `docs/context/CONTEXT.md`. Record architectural choices as an ADR in `docs/decisions/`.
 
 ## Documentation
@@ -277,7 +274,7 @@ The full rules are in [`AGENTS.md`](AGENTS.md). The non-negotiable ones:
 | [`AGENTS.md`](AGENTS.md) | Rules and commands for anyone changing the code |
 | [`docs/context/CONTEXT.md`](docs/context/CONTEXT.md) | Current state, next up, open questions, session log |
 | [`docs/architecture.md`](docs/architecture.md) | One-page architecture and how `apps/api` maps to it |
-| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure |
+| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only |
 | [`docs/roadmap.md`](docs/roadmap.md) | Features announced as coming soon |
 | [Architecture overview](https://claude.ai/code/artifact/bd7488b4-c632-49d5-aae1-6a5e88965ff9) | Full design with diagrams |
 | [Website and portal designs](https://claude.ai/code/artifact/f45b09ad-3e6b-44ca-8bb6-033d7ca1bcd3) | Design canvas |

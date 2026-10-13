@@ -3,7 +3,7 @@
 # running UI (built from this branch), not AI-generated or mock placeholders.
 set -euo pipefail
 
-UI_PATHS='^(apps/site|apps/web|apps/desktop|packages/ui)/'
+UI_PATHS='^(apps/site|apps/web|packages/ui)/'
 BASE="${BASE_SHA:?}"; HEAD="${HEAD_SHA:?}"
 
 if ! git diff --name-only "$BASE" "$HEAD" | grep -qE "$UI_PATHS"; then
