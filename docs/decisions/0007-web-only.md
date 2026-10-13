@@ -16,6 +16,6 @@ The plan had two clients: a desktop app for admins and teachers (Electron or Tau
 ## Consequences
 
 - Staff sign in at their school's own address, so the desktop plan's "enter a school code" step is gone.
-- Browser sessions need care. The API returns the refresh token in the JSON body; before `apps/web` ships sign-in, it should move to an httpOnly, Secure, SameSite cookie for the school's host, which also needs CSRF protection.
+- Browser sessions need care: the refresh token must not be readable by page scripts. Done in ADR 0008 (HttpOnly `__Host-` cookie, custom-header CSRF defence).
 - Browser exams cannot lock down the device. CBT will rely on full-screen mode and on noticing when the tab loses focus, unless the triggers above force a desktop app.
 - CI's UI evidence check covers `apps/site`, `apps/web` and `packages/ui`.
