@@ -92,6 +92,7 @@ Accounts belong to one school; the same email at two schools is two separate acc
 | Access tokens | JWT, Ed25519 (`jose`), 15 minutes, claims `sub`, `tid`, `role` |
 | Verification by other services | Public key at `/.well-known/jwks.json` |
 | Refresh tokens | Opaque, stored as SHA-256, 30 days, single use. Reusing one ends all of that user's sessions |
+| Browser sessions | With `X-Dopple-Session: cookie`, the refresh token is an HttpOnly `__Host-` cookie, never in the body ([ADR 0008](docs/decisions/0008-browser-sessions.md)) |
 | Brute-force protection | Per-IP limit on sign-in (10/min) and refresh (30/min), in memory for now |
 
 ### Tech stack
@@ -220,9 +221,9 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `GET` | `/health/ready` | public, platform | The database is reachable |
 | `GET` | `/showcase/schools` | public, platform | Schools that opted in to the website's partner wall |
 | `GET` | `/.well-known/jwks.json` | public, platform | Public key for verifying access tokens |
-| `POST` | `/auth/sign-in` | public, school | `{ email, password }` → access and refresh tokens (rate-limited) |
-| `POST` | `/auth/refresh` | public, school | `{ refreshToken }` → new token pair (rate-limited) |
-| `POST` | `/auth/sign-out` | public, school | `{ refreshToken }` → ends that session |
+| `POST` | `/auth/sign-in` | public, school | `{ email, password }` → access and refresh tokens (rate-limited). With `X-Dopple-Session: cookie` the refresh token is set as a cookie instead |
+| `POST` | `/auth/refresh` | public, school | `{ refreshToken }`, or the cookie with `X-Dopple-Session: cookie` → new token pair (rate-limited) |
+| `POST` | `/auth/sign-out` | public, school | `{ refreshToken }` or the cookie → ends that session and clears the cookie |
 | `GET` | `/auth/me` | signed in | The current user |
 | `GET` | `/students` | admin, teacher | The school's students (reference module) |
 | `GET` / `POST` | `/sessions` | read: signed in · write: admin | School years with their terms |
@@ -274,7 +275,7 @@ The full rules are in [`AGENTS.md`](AGENTS.md). The non-negotiable ones:
 | [`AGENTS.md`](AGENTS.md) | Rules and commands for anyone changing the code |
 | [`docs/context/CONTEXT.md`](docs/context/CONTEXT.md) | Current state, next up, open questions, session log |
 | [`docs/architecture.md`](docs/architecture.md) | One-page architecture and how `apps/api` maps to it |
-| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only |
+| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only, browser sessions |
 | [`docs/roadmap.md`](docs/roadmap.md) | Features announced as coming soon |
 | [Architecture overview](https://claude.ai/code/artifact/bd7488b4-c632-49d5-aae1-6a5e88965ff9) | Full design with diagrams |
 | [Website and portal designs](https://claude.ai/code/artifact/f45b09ad-3e6b-44ca-8bb6-033d7ca1bcd3) | Design canvas |

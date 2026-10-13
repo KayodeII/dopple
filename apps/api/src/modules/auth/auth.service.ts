@@ -40,7 +40,7 @@ let dummyHash: Promise<string> | undefined;
 
 @Injectable()
 export class AuthService {
-  private readonly refreshTtlMs: number;
+  readonly refreshTtlMs: number;
 
   constructor(
     private readonly tenantDb: TenantDb,
