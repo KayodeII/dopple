@@ -1,10 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
-import { classSubjects, subjects, users } from '../../database/schema.js';
+import {
+  classSubjects,
+  subjects,
+  timetableSlots,
+  users,
+} from '../../database/schema.js';
 import { TenantDb } from '../../database/tenant-db.service.js';
 import { STAFF } from './classes.service.js';
 import { assertActiveUser } from '../../common/assert-active-user.js';
 import { findClassSession } from './lookups.js';
+import { assertTeacherFree } from '../timetable/lessons.js';
 
 /** The subjects a class takes, and who teaches each one. */
 @Injectable()
@@ -46,11 +52,34 @@ export class ClassSubjectsService {
     });
   }
 
-  /** Adds the subject to the class, or changes its teacher if it is already there. */
+  /**
+   * Adds the subject to the class, or changes its teacher if it is already there.
+   * 409 if the new teacher has another class during any of this subject's periods.
+   */
   assign(classId: string, subjectId: string, teacherId: string | null) {
     return this.tenantDb.run(async (tx, tenant) => {
       await findClassSession(tx, classId);
       await assertActiveUser(tx, teacherId, STAFF, 'The subject teacher');
+      if (teacherId) {
+        // The class may already have periods for this subject; the new teacher must be free for all of them.
+        const periods = await tx
+          .select({
+            termId: timetableSlots.termId,
+            weekday: timetableSlots.weekday,
+            startsAt: timetableSlots.startsAt,
+            endsAt: timetableSlots.endsAt,
+          })
+          .from(timetableSlots)
+          .where(
+            and(
+              eq(timetableSlots.classId, classId),
+              eq(timetableSlots.subjectId, subjectId),
+            ),
+          );
+        for (const period of periods) {
+          await assertTeacherFree(tx, teacherId, classId, period);
+        }
+      }
       await tx
         .insert(classSubjects)
         .values({ tenantId: tenant.id, classId, subjectId, teacherId })

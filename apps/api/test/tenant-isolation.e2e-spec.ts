@@ -261,6 +261,12 @@ describe('Tenant isolation (e2e)', () => {
     await a.get(`/classes/${classB.id}/subjects`).expect(404);
     await a.put(`/classes/${classA.id}/subjects/${subjectB.id}`).expect(422);
     await a.patch(`/students/${studentA}`, { userId: teacherB.id }).expect(422);
+    await a.get(`/students/${studentB}`).expect(404);
+    await a.patch(`/students/${studentB}`, { firstName: 'X' }).expect(404);
+    // Admission numbers are unique per school, not across schools.
+    await a
+      .post('/students', { admissionNo: 'B-1', firstName: 'X', lastName: 'Y' })
+      .expect(201);
 
     // Timetables: another school's class, term or lessons cannot be read or used.
     const sessionWithTerm = (name: string) => ({
