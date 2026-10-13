@@ -58,6 +58,9 @@ describe('Tenant isolation (e2e)', () => {
     await app?.close();
     // Children before parents: these tables reference each other.
     for (const table of [
+      'timetable_slots',
+      'enrolments',
+      'class_subjects',
       'classes',
       'terms',
       'academic_sessions',
@@ -152,6 +155,23 @@ describe('Tenant isolation (e2e)', () => {
             .set('Host', host(slug))
             .auth(token, { type: 'bearer' })
             .send(body),
+        put: (path: string, body: object = {}) =>
+          http()
+            .put(path)
+            .set('Host', host(slug))
+            .auth(token, { type: 'bearer' })
+            .send(body),
+        patch: (path: string, body: object) =>
+          http()
+            .patch(path)
+            .set('Host', host(slug))
+            .auth(token, { type: 'bearer' })
+            .send(body),
+        delete: (path: string) =>
+          http()
+            .delete(path)
+            .set('Host', host(slug))
+            .auth(token, { type: 'bearer' }),
       };
     };
     const a = await as(schoolA);
@@ -206,6 +226,127 @@ describe('Tenant isolation (e2e)', () => {
         formTeacherId: teacherB.id,
       })
       .expect(422);
+
+    // Enrolments, subject teachers and account links stay within the school too.
+    const classA = (
+      await a
+        .post('/classes', {
+          sessionId: sessionA.id,
+          name: 'JSS 1A',
+          level: 'JSS 1',
+        })
+        .expect(201)
+    ).body;
+    const studentId = async (slug: string, admissionNo: string) =>
+      (
+        await owner.query<{ id: string }>(
+          `select s.id from students s join tenants t on t.id = s.tenant_id
+           where t.slug = $1 and s.admission_no = $2`,
+          [slug, admissionNo],
+        )
+      ).rows[0].id;
+    const studentA = await studentId(schoolA, 'A-1');
+    const studentB = await studentId(schoolB, 'B-1');
+    const subjectB = (
+      await b
+        .post('/subjects', { name: 'Mathematics', code: 'MTH' })
+        .expect(201)
+    ).body;
+    await b.put(`/classes/${classB.id}/students/${studentB}`).expect(204);
+    await b.put(`/classes/${classB.id}/subjects/${subjectB.id}`).expect(204);
+
+    await a.put(`/classes/${classA.id}/students/${studentB}`).expect(422);
+    await b.put(`/classes/${classA.id}/students/${studentB}`).expect(404);
+    await a.get(`/classes/${classB.id}/students`).expect(404);
+    await a.get(`/classes/${classB.id}/subjects`).expect(404);
+    await a.put(`/classes/${classA.id}/subjects/${subjectB.id}`).expect(422);
+    await a.patch(`/students/${studentA}`, { userId: teacherB.id }).expect(422);
+
+    // Timetables: another school's class, term or lessons cannot be read or used.
+    const sessionWithTerm = (name: string) => ({
+      name,
+      startsOn: '2027-09-06',
+      endsOn: '2028-07-21',
+      terms: [
+        {
+          number: 1,
+          name: 'First',
+          startsOn: '2027-09-06',
+          endsOn: '2027-12-10',
+        },
+      ],
+    });
+    const yearB = (
+      await b.post('/sessions', sessionWithTerm('2027/2028')).expect(201)
+    ).body;
+    const yearA = (
+      await a.post('/sessions', sessionWithTerm('2027/2028')).expect(201)
+    ).body;
+    const classInYear = async (
+      client: typeof a,
+      sessionId: string,
+      subjectId: string,
+    ) => {
+      const created = (
+        await client
+          .post('/classes', { sessionId, name: 'JSS 2A', level: 'JSS 2' })
+          .expect(201)
+      ).body;
+      await client
+        .put(`/classes/${created.id}/subjects/${subjectId}`)
+        .expect(204);
+      return created.id as string;
+    };
+    const subjectA = (
+      await a
+        .post('/subjects', { name: 'Mathematics', code: 'MTH' })
+        .expect(201)
+    ).body;
+    const timetableB = await classInYear(b, yearB.id, subjectB.id);
+    const timetableA = await classInYear(a, yearA.id, subjectA.id);
+    const lesson = (termId: string, subjectId: string) => ({
+      termId,
+      subjectId,
+      weekday: 1,
+      startsAt: '08:00',
+      endsAt: '08:40',
+    });
+    const lessonB = (
+      await b
+        .post(
+          `/classes/${timetableB}/timetable`,
+          lesson(yearB.terms[0].id, subjectB.id),
+        )
+        .expect(201)
+    ).body;
+    await a
+      .get(`/classes/${timetableB}/timetable?termId=${yearB.terms[0].id}`)
+      .expect(404);
+    expect(
+      (await a.get(`/timetable/me?termId=${yearB.terms[0].id}`).expect(200))
+        .body,
+    ).toEqual([]);
+    await a
+      .post(
+        `/classes/${timetableA}/timetable`,
+        lesson(yearB.terms[0].id, subjectA.id),
+      )
+      .expect(422);
+    await a
+      .post(
+        `/classes/${timetableA}/timetable`,
+        lesson(yearA.terms[0].id, subjectB.id),
+      )
+      .expect(422);
+    await a
+      .post(
+        `/classes/${timetableB}/timetable`,
+        lesson(yearA.terms[0].id, subjectA.id),
+      )
+      .expect(404);
+    await a
+      .delete(`/classes/${timetableB}/timetable/${lessonB.id}`)
+      .expect(404);
   });
 
   it('returns nothing when no tenant is set on the connection', async () => {
@@ -221,6 +362,9 @@ describe('Tenant isolation (e2e)', () => {
       'terms',
       'subjects',
       'classes',
+      'enrolments',
+      'class_subjects',
+      'timetable_slots',
     ]) {
       const { rows } = await appRole.query(`select * from ${table}`);
       expect(rows, table).toEqual([]);

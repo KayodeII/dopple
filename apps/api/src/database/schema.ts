@@ -10,6 +10,7 @@ import {
   primaryKey,
   smallint,
   text,
+  time,
   timestamp,
   unique,
   uuid,
@@ -65,11 +66,18 @@ export const students = pgTable(
     admissionNo: text('admission_no').notNull(),
     firstName: text('first_name').notNull(),
     lastName: text('last_name').notNull(),
+    /** The student's own sign-in account, if they have one. */
+    userId: uuid('user_id'),
     createdAt: createdAt(),
   },
   (t) => [
     primaryKey({ columns: [t.tenantId, t.id] }),
     unique('students_admission_no_per_tenant').on(t.tenantId, t.admissionNo),
+    unique('students_user_per_tenant').on(t.tenantId, t.userId),
+    foreignKey({
+      columns: [t.tenantId, t.userId],
+      foreignColumns: [users.tenantId, users.id],
+    }),
     tenantIsolation('students'),
   ],
 ).enableRLS();
@@ -171,6 +179,8 @@ export const terms = pgTable(
   (t) => [
     primaryKey({ columns: [t.tenantId, t.id] }),
     unique('terms_number_per_session').on(t.tenantId, t.sessionId, t.number),
+    // Lets timetable slots reference (term, session) together, like classes_id_session.
+    unique('terms_id_session').on(t.tenantId, t.id, t.sessionId),
     foreignKey({
       columns: [t.tenantId, t.sessionId],
       foreignColumns: [academicSessions.tenantId, academicSessions.id],
@@ -216,6 +226,8 @@ export const classes = pgTable(
   (t) => [
     primaryKey({ columns: [t.tenantId, t.id] }),
     unique('classes_name_per_session').on(t.tenantId, t.sessionId, t.name),
+    // Lets enrolments reference (class, session) together, so the two cannot disagree.
+    unique('classes_id_session').on(t.tenantId, t.id, t.sessionId),
     foreignKey({
       columns: [t.tenantId, t.sessionId],
       foreignColumns: [academicSessions.tenantId, academicSessions.id],
@@ -225,6 +237,105 @@ export const classes = pgTable(
       foreignColumns: [users.tenantId, users.id],
     }),
     tenantIsolation('classes'),
+  ],
+).enableRLS();
+
+/** Which class a student is in for a session. One class per student per session. */
+export const enrolments = pgTable(
+  'enrolments',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    sessionId: uuid('session_id').notNull(),
+    studentId: uuid('student_id').notNull(),
+    classId: uuid('class_id').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.sessionId, t.studentId] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }),
+    foreignKey({
+      columns: [t.tenantId, t.classId, t.sessionId],
+      foreignColumns: [classes.tenantId, classes.id, classes.sessionId],
+    }).onDelete('cascade'),
+    tenantIsolation('enrolments'),
+  ],
+).enableRLS();
+
+/** The subjects a class takes, and who teaches each one. */
+export const classSubjects = pgTable(
+  'class_subjects',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    classId: uuid('class_id').notNull(),
+    subjectId: uuid('subject_id').notNull(),
+    teacherId: uuid('teacher_id'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.classId, t.subjectId] }),
+    foreignKey({
+      columns: [t.tenantId, t.classId],
+      foreignColumns: [classes.tenantId, classes.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.subjectId],
+      foreignColumns: [subjects.tenantId, subjects.id],
+    }),
+    foreignKey({
+      columns: [t.tenantId, t.teacherId],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    tenantIsolation('class_subjects'),
+  ],
+).enableRLS();
+
+/**
+ * One lesson in a class's weekly timetable for a term. The term and class must be
+ * in the same session, and the class must take the subject (both are foreign keys).
+ * Migration 0006 also adds an exclusion constraint, which drizzle-kit cannot
+ * express: a class's periods in a term may not overlap on the same day.
+ */
+export const timetableSlots = pgTable(
+  'timetable_slots',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    sessionId: uuid('session_id').notNull(),
+    termId: uuid('term_id').notNull(),
+    classId: uuid('class_id').notNull(),
+    subjectId: uuid('subject_id').notNull(),
+    /** ISO weekday: 1 is Monday, 7 is Sunday. */
+    weekday: smallint('weekday').notNull(),
+    /** School-local wall-clock time; the school's timezone applies. */
+    startsAt: time('starts_at').notNull(),
+    endsAt: time('ends_at').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.termId, t.sessionId],
+      foreignColumns: [terms.tenantId, terms.id, terms.sessionId],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.classId, t.sessionId],
+      foreignColumns: [classes.tenantId, classes.id, classes.sessionId],
+    }).onDelete('cascade'),
+    // Removing a subject from a class removes its periods too.
+    foreignKey({
+      columns: [t.tenantId, t.classId, t.subjectId],
+      foreignColumns: [
+        classSubjects.tenantId,
+        classSubjects.classId,
+        classSubjects.subjectId,
+      ],
+    }).onDelete('cascade'),
+    check('timetable_slots_weekday', sql`${t.weekday} between 1 and 7`),
+    check('timetable_slots_times', sql`${t.endsAt} > ${t.startsAt}`),
+    tenantIsolation('timetable_slots'),
   ],
 ).enableRLS();
 

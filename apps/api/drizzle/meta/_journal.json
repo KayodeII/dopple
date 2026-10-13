@@ -36,6 +36,20 @@
       "when": 1791750490888,
       "tag": "0004_school_structure",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791755159149,
+      "tag": "0005_enrolments_class_subjects",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791915946166,
+      "tag": "0006_timetable",
+      "breakpoints": true
     }
   ]
 }
