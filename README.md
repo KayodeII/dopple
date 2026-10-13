@@ -26,7 +26,7 @@ Each school (a **tenant**) gets:
 
 | Part | Path | State |
 | --- | --- | --- |
-| Core API | `apps/api` | Running: tenancy, row-level security, auth, observability, sample `students` module |
+| Core API | `apps/api` | Running: tenancy, row-level security, auth, observability, school records (students, classes, enrolments, timetable) |
 | Marketing site | `apps/site` | Built (v1) |
 | School web app (staff, students, parents) | `apps/web` | Planned. No desktop app for now ([ADR 0007](docs/decisions/0007-web-only.md)) |
 | Realtime gateway | `services/realtime` | Planned |
@@ -225,7 +225,8 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `POST` | `/auth/refresh` | public, school | `{ refreshToken }`, or the cookie with `X-Dopple-Session: cookie` → new token pair (rate-limited) |
 | `POST` | `/auth/sign-out` | public, school | `{ refreshToken }` or the cookie → ends that session and clears the cookie |
 | `GET` | `/auth/me` | signed in | The current user |
-| `GET` | `/students` | admin, teacher | The school's students (reference module) |
+| `GET` / `POST` | `/students` | read: admin, teacher · write: admin | Students; search names and admission numbers with `?q=` |
+| `GET` / `PATCH` | `/students/:id` | read: admin, teacher · write: admin | One student with their class per session; edit any of `admissionNo`, `firstName`, `lastName`, `userId` |
 | `GET` / `POST` | `/sessions` | read: signed in · write: admin | School years with their terms |
 | `GET` / `POST` | `/subjects` | read: signed in · write: admin | Subjects and their codes |
 | `GET` / `POST` | `/classes` | read: signed in · write: admin | Class groups; filter with `?sessionId=` |
@@ -233,11 +234,10 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `GET` | `/classes/:id/students` | admin, teacher | Students enrolled in the class |
 | `PUT` / `DELETE` | `/classes/:id/students/:studentId` | admin | Enrol (moves the student if already in another class that session) or remove |
 | `GET` | `/classes/:id/subjects` | signed in | The class's subjects and their teachers |
-| `PUT` / `DELETE` | `/classes/:id/subjects/:subjectId` | admin | Add a subject, set its teacher (`{ teacherId }`), or remove it |
+| `PUT` / `DELETE` | `/classes/:id/subjects/:subjectId` | admin | Add a subject, set its teacher (`{ teacherId }`; 409 if they're busy during its periods), or remove it |
 | `GET` / `POST` | `/classes/:id/timetable` | read: signed in · write: admin | Weekly periods for `?termId=`; refuses overlaps and teacher double-booking (409) |
 | `DELETE` | `/classes/:id/timetable/:slotId` | admin | Remove a period |
 | `GET` | `/timetable/me` | admin, teacher, student | `?termId=`: the lessons I teach, or my class's timetable |
-| `PATCH` | `/students/:id` | admin | Link a student to their sign-in account (`{ userId }`, or `null` to unlink) |
 
 ## Testing
 

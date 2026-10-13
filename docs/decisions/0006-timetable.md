@@ -18,6 +18,6 @@ Schools need a weekly timetable per class, which changes from term to term. Teac
 
 ## Consequences
 
-- Changing a subject's teacher (`PUT /classes/:id/subjects/:subjectId`) does not re-check clashes yet; a clash report or a check there is a follow-up.
+- Changing a subject's teacher (`PUT /classes/:id/subjects/:subjectId`) re-checks every period of that subject in the class against the new teacher's other lessons (added 2026-10-14).
 - Times have no timezone. The school's timezone (not stored yet) applies when the portal shows "now".
 - Rotating timetables (week A/B) and one-off changes are out of scope.

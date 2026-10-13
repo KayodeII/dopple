@@ -151,6 +151,8 @@ describe('Timetable (e2e)', () => {
         http().get(path).set('Host', host).auth(tokens[who], auth),
       post: (path: string, body: object) =>
         http().post(path).set('Host', host).auth(tokens[who], auth).send(body),
+      put: (path: string, body: object) =>
+        http().put(path).set('Host', host).auth(tokens[who], auth).send(body),
       delete: (path: string) =>
         http().delete(path).set('Host', host).auth(tokens[who], auth),
     };
@@ -226,11 +228,41 @@ describe('Timetable (e2e)', () => {
   it('refuses to double-book a teacher across classes', async () => {
     const res = await add('jss1b', 'maths', 1, '08:20', '09:00').expect(409);
     expect(res.body.message).toBe(
-      'Test teacher already teaches JSS 1A MTH from 08:00 to 08:40',
+      'Test teacher already teaches JSS 1A MTH on Monday from 08:00 to 08:40',
     );
     await add('jss1b', 'maths', 1, '09:20', '10:00').expect(201);
     // An unassigned subject has no teacher to clash.
     await add('jss1b', 'english', 2, '08:00', '08:40').expect(201);
+  });
+
+  it('re-checks clashes when a subject changes teacher', async () => {
+    // JSS 1B English (unassigned) is on Monday 08:00, when Test teacher has JSS 1A Maths.
+    const clash = await admin
+      .put(`/classes/${ids.jss1b}/subjects/${ids.english}`, {
+        teacherId: ids.teacher,
+      })
+      .expect(409);
+    expect(clash.body.message).toBe(
+      'Test teacher already teaches JSS 1A MTH on Monday from 08:00 to 08:40',
+    );
+    const [english] = (
+      await admin.get(`/classes/${ids.jss1b}/subjects`).expect(200)
+    ).body.filter((s: { code: string }) => s.code === 'ENG');
+    expect(english.teacher).toBeNull();
+    // Test teacher2 has JSS 1A English on Tuesday at 08:00, the same time as JSS 1B English.
+    await admin
+      .put(`/classes/${ids.jss1b}/subjects/${ids.english}`, {
+        teacherId: ids.teacher2,
+      })
+      .expect(409);
+    await admin
+      .put(`/classes/${ids.jss1b}/subjects/${ids.english}`, {
+        teacherId: ids.admin,
+      })
+      .expect(204);
+    await admin
+      .put(`/classes/${ids.jss1b}/subjects/${ids.english}`, { teacherId: null })
+      .expect(204);
   });
 
   it('rejects subjects the class does not take, and terms from another year', async () => {
