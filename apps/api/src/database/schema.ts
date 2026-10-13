@@ -10,6 +10,7 @@ import {
   primaryKey,
   smallint,
   text,
+  time,
   timestamp,
   unique,
   uuid,
@@ -178,6 +179,8 @@ export const terms = pgTable(
   (t) => [
     primaryKey({ columns: [t.tenantId, t.id] }),
     unique('terms_number_per_session').on(t.tenantId, t.sessionId, t.number),
+    // Lets timetable slots reference (term, session) together, like classes_id_session.
+    unique('terms_id_session').on(t.tenantId, t.id, t.sessionId),
     foreignKey({
       columns: [t.tenantId, t.sessionId],
       foreignColumns: [academicSessions.tenantId, academicSessions.id],
@@ -286,6 +289,53 @@ export const classSubjects = pgTable(
       foreignColumns: [users.tenantId, users.id],
     }),
     tenantIsolation('class_subjects'),
+  ],
+).enableRLS();
+
+/**
+ * One lesson in a class's weekly timetable for a term. The term and class must be
+ * in the same session, and the class must take the subject (both are foreign keys).
+ * Migration 0006 also adds an exclusion constraint, which drizzle-kit cannot
+ * express: a class's periods in a term may not overlap on the same day.
+ */
+export const timetableSlots = pgTable(
+  'timetable_slots',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    sessionId: uuid('session_id').notNull(),
+    termId: uuid('term_id').notNull(),
+    classId: uuid('class_id').notNull(),
+    subjectId: uuid('subject_id').notNull(),
+    /** ISO weekday: 1 is Monday, 7 is Sunday. */
+    weekday: smallint('weekday').notNull(),
+    /** School-local wall-clock time; the school's timezone applies. */
+    startsAt: time('starts_at').notNull(),
+    endsAt: time('ends_at').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.termId, t.sessionId],
+      foreignColumns: [terms.tenantId, terms.id, terms.sessionId],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.classId, t.sessionId],
+      foreignColumns: [classes.tenantId, classes.id, classes.sessionId],
+    }).onDelete('cascade'),
+    // Removing a subject from a class removes its periods too.
+    foreignKey({
+      columns: [t.tenantId, t.classId, t.subjectId],
+      foreignColumns: [
+        classSubjects.tenantId,
+        classSubjects.classId,
+        classSubjects.subjectId,
+      ],
+    }).onDelete('cascade'),
+    check('timetable_slots_weekday', sql`${t.weekday} between 1 and 7`),
+    check('timetable_slots_times', sql`${t.endsAt} > ${t.startsAt}`),
+    tenantIsolation('timetable_slots'),
   ],
 ).enableRLS();
 

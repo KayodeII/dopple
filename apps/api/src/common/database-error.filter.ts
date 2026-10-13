@@ -22,6 +22,8 @@ const responses: Record<string, () => HttpException> = {
   // Also what a reference to another school's row looks like: same answer as "missing".
   '23503': () =>
     new UnprocessableEntityException('A referenced record does not exist'),
+  // Exclusion constraint, e.g. two timetable periods at the same time.
+  '23P01': () => new ConflictException('This overlaps an existing record'),
   '23514': () =>
     new UnprocessableEntityException('The values break a validation rule'),
 };

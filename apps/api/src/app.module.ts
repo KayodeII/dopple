@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { ClassesModule } from './modules/classes/classes.module.js';
 import { StudentsModule } from './modules/students/students.module.js';
 import { SubjectsModule } from './modules/subjects/subjects.module.js';
+import { TimetableModule } from './modules/timetable/timetable.module.js';
 import { LoggerModule } from './observability/logger.module.js';
 import { TenancyModule } from './tenancy/tenancy.module.js';
 
@@ -30,6 +31,7 @@ import { TenancyModule } from './tenancy/tenancy.module.js';
     AcademicSessionsModule,
     SubjectsModule,
     ClassesModule,
+    TimetableModule,
     ShowcaseModule, // platform-level: excluded from TenantMiddleware
   ],
   providers: [{ provide: APP_FILTER, useClass: DatabaseErrorFilter }],
