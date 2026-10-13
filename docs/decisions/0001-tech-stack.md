@@ -19,8 +19,8 @@ Dopple is mostly CRUD-heavy school business logic (classes, timetables, grades, 
 | Cache | Redis | Sessions, cache, rate limits, presence |
 | Messaging | NATS JetStream now; Kafka/Redpanda in phase 2 | Kafka is an event log, not a cache; add it for CDC and analytics |
 | Video | LiveKit | SFU with simulcast and recording |
-| Web | React | Portal for students and parents |
-| Desktop | Electron or Tauri | Open question |
+| Web | React | One school web app for staff, students and parents (see 0007) |
+| Desktop | None for now | Superseded by 0007: staff use the web app |
 
 ## Consequences
 

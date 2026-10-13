@@ -7,8 +7,7 @@ Read it fully before changing anything, then read `docs/context/CONTEXT.md` for 
 
 A multi-tenant school management platform. Each school is a tenant with:
 
-- a **desktop app** for admins and teachers,
-- a **web portal** on the school's own address (`<slug>.dopple.school` or a custom domain) for students and parents,
+- a **web app** on the school's own address (`<slug>.dopple.school` or a custom domain) for everyone: admins, teachers, students and parents. Each role sees its own screens. There is no desktop app for now (ADR 0007),
 - live video classes, a shared whiteboard, recorded lessons, exams (CBT), ID cards, bus tracking, events, attendance, grades and fee payments that settle to the school's own bank account.
 
 Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisions/`.
@@ -19,8 +18,7 @@ Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisio
 | --- | --- | --- |
 | `apps/api` | NestJS 12 API (TypeScript, ESM): tenancy, school records, exams, fees | Scaffolded |
 | `apps/site` | Marketing website (Next.js 16, Tailwind 4). Copy lives in `src/lib/content.ts` | Built (v1) |
-| `apps/web` | School web portal (React) | Planned |
-| `apps/desktop` | Staff desktop app (Electron or Tauri, undecided) | Planned |
+| `apps/web` | School web app (React) for staff, students and parents | Planned |
 | `services/realtime` | Go WebSocket gateway: whiteboard sync, chat, presence | Planned |
 | `infra` | Local dependencies (Postgres, Redis, NATS, Grafana LGTM) | Ready |
 | `docs/context` | Living project state for agents. **Update it every session.** | Ready |
@@ -83,7 +81,7 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 - **No co-author trailers.** Commit messages must not contain `Co-authored-by:` lines (or any other AI-attribution trailer). A git hook (`.githooks/commit-msg`) and CI both reject them. Do not bypass the hook.
 - Commit messages: imperative summary under 72 characters (`Add fee payment webhooks`), blank line, then why.
 - One logical change per PR. Fill in `.github/pull_request_template.md`.
-- **Any PR that changes UI must include Before and After screenshots (or a short video) of the running UI built from that branch** in the PR description — browser or Playwright captures, not AI-generated images, Figma exports, or mocks. CI fails a PR that touches `apps/site`, `apps/web`, `apps/desktop` or `packages/ui` without media under both headings. For a brand-new screen, write "New screen" under Before (After still needs a real screenshot).
+- **Any PR that changes UI must include Before and After screenshots (or a short video) of the running UI built from that branch** in the PR description — browser or Playwright captures, not AI-generated images, Figma exports, or mocks. CI fails a PR that touches `apps/site`, `apps/web` or `packages/ui` without media under both headings. For a brand-new screen, write "New screen" under Before (After still needs a real screenshot).
 - `pnpm check` must pass before opening a PR.
 
 ## Session protocol for agents

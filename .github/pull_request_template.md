@@ -10,7 +10,7 @@
 
 <!--
 Required when this PR changes anything a user sees
-(apps/site, apps/web, apps/desktop, packages/ui).
+(apps/site, apps/web, packages/ui).
 CI checks both sections below.
 
 Capture screenshots (or a short screen recording) from the running UI built

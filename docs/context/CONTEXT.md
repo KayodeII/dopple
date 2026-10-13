@@ -30,7 +30,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 1. Auth follow-ups: move rate-limit counters to Redis before scaling out, invites + password reset (needs email provider), Google/Microsoft sign-in, expired refresh-token cleanup.
 2. Core school records, continued: guardians (parent ↔ student, then parents' `/timetable/me`), adding/editing students through the API, and re-checking teacher clashes when a subject's teacher changes.
-3. `apps/web`: React portal shell (student home from the design canvas).
+3. `apps/web`: one React web app for every role (ADR 0007). First: refresh token in an httpOnly cookie, sign-in and role-based shell, then staff screens for classes, enrolments and timetable, and the student home from the design canvas.
    - Site follow-ups: real pricing, demo-booking form backend (currently `action="#demo"`), legal pages, analytics.
 4. `services/realtime`: Go WebSocket gateway skeleton with NATS.
 5. Fees: payment provider subaccounts, webhook ledger (see architecture doc, "Fee payments").
@@ -44,7 +44,6 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - Admin UI for a school to opt in to the partner wall and upload its logo (where are logos stored: S3/R2 under the tenant prefix?).
 - Email provider for invites and password resets (Postmark, SES, Resend?).
 - Google/Microsoft sign-in: one platform OAuth app, or schools bring their own Workspace/Entra tenant?
-- Desktop framework: Electron or Tauri?
 - Payment provider: Paystack, Flutterwave or both?
 - Launch region and data-residency promises.
 - Cloud provider (AWS + Cloudflare?).
@@ -59,6 +58,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-13 — Dropped the desktop app for now: everything, staff screens included, goes in `apps/web` (ADR 0007). Removed `apps/desktop` and its CI path. The architecture doc artifact still shows a desktop client.
 - 2026-10-13 — Added the timetable (migration 0006). drizzle-kit again put an FK before its unique constraint, and cannot write exclusion constraints: both fixed by hand in 0006 before applying; verified on a fresh database. Branch is stacked on PR #5.
 - 2026-10-12 — Added enrolments, subject teachers per class and student ↔ account linking (migration 0005). drizzle-kit put a foreign key before the unique constraint it needs; reordered by hand before applying. `assertActiveUser` now lives in `src/common`.
 - 2026-10-11 — Added school structure: sessions/terms, subjects, classes (ADR 0005, migration 0004) and `DatabaseErrorFilter`. New rule in AGENTS.md: composite foreign keys between tenant tables. Tenant-isolation test covers the new tables.
