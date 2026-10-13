@@ -30,8 +30,8 @@ const schools = [
 ];
 
 // A school year with three terms, a few subjects and two JSS 1 classes. Every demo
-// student is in JSS 1A, which takes all subjects with the demo teacher; the first
-// student is linked to the demo student account.
+// student is in JSS 1A, which takes all subjects with the demo teacher and has a
+// first-term timetable; the first student is linked to the demo student account.
 async function seedStructure(tenantId, slug) {
   const session = await client.query(
     `insert into academic_sessions (tenant_id, name, starts_on, ends_on)
@@ -90,6 +90,22 @@ async function seedStructure(tenantId, slug) {
      on conflict do nothing`,
     [tenantId, classId, teacher.rows[0].id],
   );
+  // Three morning periods, Monday to Friday, rotating through the subjects.
+  // ON CONFLICT DO NOTHING also covers the no-overlap exclusion constraint, so re-runs are safe.
+  const periods = [['08:00', '08:40'], ['08:40', '09:20'], ['09:20', '10:00']];
+  const codes = ['MTH', 'ENG', 'BSC'];
+  for (let weekday = 1; weekday <= 5; weekday++) {
+    for (const [i, [startsAt, endsAt]] of periods.entries()) {
+      await client.query(
+        `insert into timetable_slots (tenant_id, session_id, term_id, class_id, subject_id, weekday, starts_at, ends_at)
+         select $1, $2, t.id, $3, s.id, $4, $5, $6
+         from terms t, subjects s
+         where t.tenant_id = $1 and t.session_id = $2 and t.number = 1 and s.tenant_id = $1 and s.code = $7
+         on conflict do nothing`,
+        [tenantId, sessionId, classId, weekday, startsAt, endsAt, codes[(weekday + i) % codes.length]],
+      );
+    }
+  }
   await client.query(
     `update students set user_id = (select id from users where tenant_id = $1 and email = $2)
      where tenant_id = $1 and user_id is null

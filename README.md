@@ -236,6 +236,9 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `PUT` / `DELETE` | `/classes/:id/students/:studentId` | admin | Enrol (moves the student if already in another class that session) or remove |
 | `GET` | `/classes/:id/subjects` | signed in | The class's subjects and their teachers |
 | `PUT` / `DELETE` | `/classes/:id/subjects/:subjectId` | admin | Add a subject, set its teacher (`{ teacherId }`), or remove it |
+| `GET` / `POST` | `/classes/:id/timetable` | read: signed in · write: admin | Weekly periods for `?termId=`; refuses overlaps and teacher double-booking (409) |
+| `DELETE` | `/classes/:id/timetable/:slotId` | admin | Remove a period |
+| `GET` | `/timetable/me` | admin, teacher, student | `?termId=`: the lessons I teach, or my class's timetable |
 | `PATCH` | `/students/:id` | admin | Link a student to their sign-in account (`{ userId }`, or `null` to unlink) |
 
 ## Testing
