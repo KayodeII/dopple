@@ -28,7 +28,7 @@ Each school (a **tenant**) gets:
 | --- | --- | --- |
 | Core API | `apps/api` | Running: tenancy, row-level security, auth, observability, school records (students, classes, enrolments, timetable) |
 | Marketing site | `apps/site` | Built (v1) |
-| School web app (staff, students, parents) | `apps/web` | Planned. No desktop app for now ([ADR 0007](docs/decisions/0007-web-only.md)) |
+| School web app (staff, students, parents) | `apps/web` | Built (v1): sign-in, students, classes, timetables. No desktop app ([ADR 0007](docs/decisions/0007-web-only.md)) |
 | Realtime gateway | `services/realtime` | Planned |
 | Local infrastructure | `infra` | Ready |
 
@@ -105,7 +105,7 @@ Accounts belong to one school; the same email at two schools is two separate acc
 | Realtime | Go WebSocket gateway, NATS JetStream (planned) |
 | Video | LiveKit (planned) |
 | Cache | Redis |
-| School web app | React, one app for every role, no desktop app (planned) |
+| School web app | Vite, React 19, React Router, TanStack Query, Tailwind CSS 4; one app for every role ([ADR 0009](docs/decisions/0009-web-app-stack.md)) |
 | Marketing site | Next.js 16 (Cache Components), Tailwind CSS 4 |
 | Observability | OpenTelemetry → Grafana LGTM (Tempo, Prometheus, Loki) |
 | Tooling | pnpm workspaces, Vitest, Playwright, oxlint, Prettier |
@@ -128,7 +128,8 @@ dopple/
 │   │   ├── drizzle/          SQL migrations (never edit an applied one)
 │   │   ├── scripts/seed.mjs  demo schools and users
 │   │   └── test/             e2e tests, including tenant isolation
-│   └── site/                 marketing website (copy in src/lib/content.ts)
+│   ├── site/                 marketing website (copy in src/lib/content.ts)
+│   └── web/                  school web app: sign-in, records, timetables (src/lib: API client, session, data hooks)
 ├── services/realtime/        Go WebSocket gateway (planned)
 ├── infra/                    docker-compose: Postgres, Redis, NATS, Grafana
 ├── docs/
@@ -144,7 +145,7 @@ dopple/
 
 ### Requirements
 
-- Node.js **22.12+** (see `.nvmrc`)
+- Node.js **22.22+** (see `.nvmrc`)
 - pnpm via corepack: `corepack enable`
 - **Either** Docker (recommended) **or**, on macOS, Homebrew
 
@@ -158,17 +159,24 @@ pnpm db:migrate                        # runs as the owner role
 pnpm db:seed                           # demo schools: greenfield, riverside
 pnpm dev                               # API on http://localhost:3000 (watch mode)
 pnpm dev:site                          # website on http://localhost:3100
+pnpm dev:web                           # school web app on http://greenfield.dopple.localhost:3200
 ```
 
 ### Option B: macOS without Docker
 
 Double-click `scripts/start-dopple.command`, or run it from a terminal. It installs Node 22 and PostgreSQL 17 with Homebrew if needed, creates the database roles, migrates, seeds, and starts the API on `:3000` and the website on `:3100`. Logs are written to `.run/`.
 
-> The script frees ports 3000 and 3100 before starting, which stops anything else listening there. If another project uses those ports, start Dopple by hand instead with `PORT=3002 pnpm dev` and `DOPPLE_API_URL=http://localhost:3002 pnpm dev:site`.
+> The script does not start the school web app yet: run `pnpm dev:web` afterwards.
+
+> The script frees ports 3000 and 3100 before starting, which stops anything else listening there. If another project uses those ports, start Dopple by hand instead with `PORT=3002 pnpm dev` and `DOPPLE_API_URL=http://localhost:3002 pnpm dev:site` (and the same `DOPPLE_API_URL` for `pnpm dev:web`).
 
 ### Try it
 
 `*.localhost` resolves to `127.0.0.1`, so each demo school has its own local address. The seed creates a 2026/2027 session with three terms, a few subjects, two JSS 1 classes (students enrolled in JSS 1A, which takes every subject with the demo teacher), and accounts `admin@<slug>.test`, `teacher@<slug>.test` and `student@<slug>.test`, all with the password `dopple-demo`.
+
+**In the browser:** with `pnpm dev` and `pnpm dev:web` running, open http://greenfield.dopple.localhost:3200 (or `riverside.`) in Chrome and sign in with one of those accounts. Admins and teachers get Students and Classes; students get their own timetable.
+
+**From a terminal:**
 
 ```bash
 # Sign in at Greenfield
@@ -243,10 +251,11 @@ The school is always taken from the `Host` header. Platform routes are served wi
 
 ```bash
 pnpm check        # lint + typecheck + unit tests + build, all workspaces. Run before every PR.
-pnpm test:e2e     # API e2e tests (needs a migrated database) and site smoke tests
+pnpm test:e2e     # API e2e tests, site smoke tests and web app tests (need a migrated, seeded database and a running API)
 ```
 
 - **Tenant isolation** ([`apps/api/test/tenant-isolation.e2e-spec.ts`](apps/api/test/tenant-isolation.e2e-spec.ts)) is the most important test in the repo. It proves that one school never sees another's rows, tokens or sessions. Any change that touches tenancy must extend it.
+- **Web app tests** use Playwright against the running API and the seeded Greenfield school. They sign in as admin, student and teacher; add and edit a student; add a lesson, are refused an overlapping one, and remove it; check that a reload keeps the session through the HttpOnly cookie; and check phone width.
 - **Site smoke tests** use Playwright on desktop and mobile. They check that the page renders, logs no console errors, has no sideways scroll, and that the FAQ works. Set `CHROMIUM_PATH` to reuse an installed Chromium.
 
 ## Observability
@@ -275,7 +284,7 @@ The full rules are in [`AGENTS.md`](AGENTS.md). The non-negotiable ones:
 | [`AGENTS.md`](AGENTS.md) | Rules and commands for anyone changing the code |
 | [`docs/context/CONTEXT.md`](docs/context/CONTEXT.md) | Current state, next up, open questions, session log |
 | [`docs/architecture.md`](docs/architecture.md) | One-page architecture and how `apps/api` maps to it |
-| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only, browser sessions |
+| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only, browser sessions, web app stack |
 | [`docs/roadmap.md`](docs/roadmap.md) | Features announced as coming soon |
 | [Architecture overview](https://claude.ai/code/artifact/bd7488b4-c632-49d5-aae1-6a5e88965ff9) | Full design with diagrams |
 | [Website and portal designs](https://claude.ai/code/artifact/f45b09ad-3e6b-44ca-8bb6-033d7ca1bcd3) | Design canvas |

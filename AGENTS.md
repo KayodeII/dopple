@@ -18,7 +18,7 @@ Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisio
 | --- | --- | --- |
 | `apps/api` | NestJS 12 API (TypeScript, ESM): tenancy, school records, exams, fees | Scaffolded |
 | `apps/site` | Marketing website (Next.js 16, Tailwind 4). Copy lives in `src/lib/content.ts` | Built (v1) |
-| `apps/web` | School web app (React) for staff, students and parents | Planned |
+| `apps/web` | School web app (Vite, React, React Router) for staff, students and parents | Built (v1: sign-in, students, classes, timetables) |
 | `services/realtime` | Go WebSocket gateway: whiteboard sync, chat, presence | Planned |
 | `infra` | Local dependencies (Postgres, Redis, NATS, Grafana LGTM) | Ready |
 | `docs/context` | Living project state for agents. **Update it every session.** | Ready |
@@ -27,7 +27,7 @@ Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisio
 
 ## Commands
 
-Run from the repo root. Requires Node 22.12+ and pnpm (`corepack enable`).
+Run from the repo root. Requires Node 22.22+ and pnpm (`corepack enable`).
 
 ```bash
 pnpm install
@@ -37,6 +37,7 @@ pnpm db:migrate                       # apply migrations as the owner role
 pnpm db:seed                          # two demo schools: greenfield, riverside
 pnpm dev                              # API on http://localhost:3000 with watch
 pnpm dev:site                         # marketing site on http://localhost:3100
+pnpm dev:web                          # school web app on http://greenfield.dopple.localhost:3200
 
 curl -H "Host: greenfield.dopple.localhost" localhost:3000/students
 
@@ -75,6 +76,15 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 - Never invent testimonials, stats or partner logos. The partner wall only shows schools from `GET /showcase/schools` and hides below `SHOWCASE_MIN_SCHOOLS`.
 - Every animation must stop under `prefers-reduced-motion` (handled globally in `globals.css`; keep it that way).
 - Smoke tests: `pnpm --filter @dopple/site build && pnpm --filter @dopple/site test:e2e` (set `CHROMIUM_PATH` to reuse an installed Chromium).
+
+### School web app (`apps/web`)
+
+- Stack and reasons: ADR 0009. React Router in data mode (`createBrowserRouter` in `src/router.tsx`), server data through TanStack Query hooks in `src/lib/queries.ts`.
+- Call the API only through `api()` in `src/lib/api.ts`, at `/api/...` on the same origin. Never store tokens in `localStorage` or `sessionStorage`: the access token stays in memory and the refresh token is an HttpOnly cookie (ADR 0008).
+- Show the API's error message with `<ErrorNote>`; it already says what went wrong ("This overlaps an existing record").
+- Use the design tokens in `src/styles.css` (`bg-card`, `bg-school`, `text-soft`, …), not raw hex values. Every page must work at phone width.
+- Imports are extensionless here (bundler resolution), unlike the API.
+- End-to-end tests in `e2e/` run against the API and the seeded demo school: `pnpm --filter @dopple/web test:e2e` (reuses `pnpm dev:web` if it is running). Each role signs in once per run; keep it that way, the API allows 10 sign-ins a minute by default.
 
 ### Commits and pull requests
 

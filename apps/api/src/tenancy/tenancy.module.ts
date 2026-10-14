@@ -4,10 +4,12 @@ import {
   type MiddlewareConsumer,
   type NestModule,
 } from '@nestjs/common';
+import { SchoolController } from './school.controller.js';
 import { TenantMiddleware } from './tenant.middleware.js';
 import { TenantRegistry } from './tenant-registry.service.js';
 
 @Module({
+  controllers: [SchoolController],
   providers: [TenantRegistry, TenantMiddleware],
   exports: [TenantRegistry],
 })

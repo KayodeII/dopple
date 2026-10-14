@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.28.0",
   "engines": {
-    "node": ">=22.12"
+    "node": ">=22.22"
   },
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
@@ -19,6 +19,7 @@
     "db:seed": "pnpm --filter @dopple/api db:seed",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
     "infra:down": "docker compose -f infra/docker-compose.yml down",
-    "dev:site": "pnpm --filter @dopple/site dev"
+    "dev:site": "pnpm --filter @dopple/site dev",
+    "dev:web": "pnpm --filter @dopple/web dev"
   }
 }

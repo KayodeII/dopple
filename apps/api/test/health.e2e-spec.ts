@@ -31,5 +31,9 @@ describe('API (e2e)', () => {
       .get('/students')
       .set('Host', 'no-such-school.dopple.localhost')
       .expect(404);
+    await request(app.getHttpServer())
+      .get('/school')
+      .set('Host', 'no-such-school.dopple.localhost')
+      .expect(404);
   });
 });
