@@ -25,6 +25,12 @@
   --color-pink: #ff8fb1;
   --color-live: #e5484d;
 
+  /* Form messages on paper: darker than coral and mint so they pass 4.5:1. */
+  --color-danger: #b4321c;
+  --color-ok: #1f6b47;
+  /* A school with no colour of its own, same as the web app's default. */
+  --color-school: #2f7a55;
+
   --font-display:
     'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
