@@ -57,6 +57,8 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 3. Never accept a tenant id from request input (body, query, headers other than the host). The tenant comes from `TenantMiddleware`.
 4. The API connects as `dopple_app`, which is not a superuser and not the table owner. Do not change that; superusers bypass row-level security.
 5. A change that touches tenancy needs a test in `apps/api/test/tenant-isolation.e2e-spec.ts`.
+6. The app role never writes `tenants` directly. New schools go through `create_school()` and name/colour changes through `update_school_profile()` (ADR 0010).
+7. `school_logos` is the one tenant table readable across schools (logos are public). Always filter it by `tenant_id` when reading.
 
 ### Code
 

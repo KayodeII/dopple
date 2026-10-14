@@ -74,7 +74,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const look = {
-    primary: 'bg-school text-white hover:brightness-110',
+    primary: 'bg-school text-on-school hover:brightness-110',
     quiet: 'border border-iron text-paper hover:bg-graphite',
     danger: 'border border-iron text-coral hover:bg-graphite',
   }[variant];

@@ -25,8 +25,8 @@ const client = new pg.Client({ connectionString: url });
 await client.connect();
 
 const schools = [
-  { slug: 'greenfield', name: 'Greenfield College', city: 'Lekki, Lagos', showcase: true, students: [['GF-001', 'Tolu', 'Adebayo'], ['GF-002', 'Amaka', 'Obi']] },
-  { slug: 'riverside', name: 'Riverside Academy', city: 'Port Harcourt', showcase: true, students: [['RA-001', 'Musa', 'Bello']] },
+  { slug: 'greenfield', name: 'Greenfield College', city: 'Lekki, Lagos', showcase: true, brandColor: null, students: [['GF-001', 'Tolu', 'Adebayo'], ['GF-002', 'Amaka', 'Obi']] },
+  { slug: 'riverside', name: 'Riverside Academy', city: 'Port Harcourt', showcase: true, brandColor: '#2b5fd9', students: [['RA-001', 'Musa', 'Bello']] },
 ];
 
 // A school year with three terms, a few subjects and two JSS 1 classes. Every demo
@@ -119,11 +119,12 @@ try {
   await client.query('begin');
   for (const school of schools) {
     const { rows } = await client.query(
-      `insert into tenants (slug, name, city, showcase) values ($1, $2, $3, $4)
+      `insert into tenants (slug, name, city, showcase, brand_color) values ($1, $2, $3, $4, $5)
        on conflict (slug) do update
-         set name = excluded.name, city = excluded.city, showcase = excluded.showcase
+         set name = excluded.name, city = excluded.city, showcase = excluded.showcase,
+             brand_color = excluded.brand_color
        returning id`,
-      [school.slug, school.name, school.city, school.showcase],
+      [school.slug, school.name, school.city, school.showcase, school.brandColor],
     );
     const tenantId = rows[0].id;
     for (const [admissionNo, firstName, lastName] of school.students) {

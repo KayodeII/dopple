@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  customType,
   date,
   foreignKey,
   pgPolicy,
@@ -40,21 +41,29 @@ const createdAt = () =>
   timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 
 /** Tenant registry: one row per school. Not tenant-scoped; read-only for the app role. */
-export const tenants = pgTable('tenants', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  slug: text('slug').notNull().unique(),
-  name: text('name').notNull(),
-  customDomain: text('custom_domain').unique(),
-  status: text('status', { enum: ['active', 'suspended'] })
-    .notNull()
-    .default('active'),
-  /** Public logo for the marketing site's partner wall. */
-  logoUrl: text('logo_url'),
-  city: text('city'),
-  /** The school has agreed to appear on the public partner wall. Off by default. */
-  showcase: boolean('showcase').notNull().default(false),
-  createdAt: createdAt(),
-});
+export const tenants = pgTable(
+  'tenants',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    name: text('name').notNull(),
+    customDomain: text('custom_domain').unique(),
+    status: text('status', { enum: ['active', 'suspended'] })
+      .notNull()
+      .default('active'),
+    /** Public logo for the marketing site's partner wall. */
+    logoUrl: text('logo_url'),
+    city: text('city'),
+    /** The school has agreed to appear on the public partner wall. Off by default. */
+    showcase: boolean('showcase').notNull().default(false),
+    /** The school's colour for its web app, "#rrggbb". Null: Dopple's default. */
+    brandColor: text('brand_color'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check('tenants_brand_color', sql`${t.brandColor} ~ '^#[0-9a-f]{6}$'`),
+  ],
+);
 
 export const students = pgTable(
   'students',
@@ -336,6 +345,48 @@ export const timetableSlots = pgTable(
     check('timetable_slots_weekday', sql`${t.weekday} between 1 and 7`),
     check('timetable_slots_times', sql`${t.endsAt} > ${t.startsAt}`),
     tenantIsolation('timetable_slots'),
+  ],
+).enableRLS();
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => 'bytea',
+});
+
+/**
+ * A school's uploaded logo (ADR 0010). Kept in Postgres while files are small;
+ * served at GET /school/logo on the school's own address. Unlike other tenant
+ * tables, every school's row is READABLE (logos are public), so reads must filter
+ * by tenant_id themselves; writes are still limited to the school's own row.
+ */
+export const schoolLogos = pgTable(
+  'school_logos',
+  {
+    tenantId: uuid('tenant_id')
+      .primaryKey()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    contentType: text('content_type', {
+      enum: ['image/png', 'image/jpeg', 'image/webp'],
+    }).notNull(),
+    content: bytea('content').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check('school_logos_size', sql`octet_length(${t.content}) <= 204800`),
+    check(
+      'school_logos_type',
+      sql`${t.contentType} in ('image/png', 'image/jpeg', 'image/webp')`,
+    ),
+    tenantIsolation('school_logos'),
+    // Logos are public (sign-in pages, the website's school search): anyone may read,
+    // but the isolation policy above still limits writes to the school itself.
+    pgPolicy('school_logos_public_read', {
+      as: 'permissive',
+      for: 'select',
+      to: appRole,
+      using: sql`true`,
+    }),
   ],
 ).enableRLS();
 

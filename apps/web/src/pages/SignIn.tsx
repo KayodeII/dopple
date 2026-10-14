@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useSearchParams } from 'react-router';
+import { SchoolBadge } from '../components/SchoolTheme';
 import { Button, ErrorNote, Field } from '../components/ui';
 import { useSchool } from '../lib/queries';
 import { useSession } from '../lib/session';
@@ -41,12 +42,7 @@ export function SignIn() {
     <main className="flex min-h-screen items-center justify-center bg-ground px-4 py-12">
       <div className="flex w-full max-w-[400px] flex-col gap-8">
         <div className="flex flex-col items-start gap-4">
-          <span
-            aria-hidden="true"
-            className="flex size-12 items-center justify-center rounded-xl bg-school font-display text-2xl font-bold text-white"
-          >
-            {school.data?.name[0] ?? ''}
-          </span>
+          <SchoolBadge size="lg" />
           <div>
             <h1 className="font-display text-[32px] leading-tight font-semibold tracking-[-0.03em]">
               {school.data ? `Sign in to ${school.data.name}` : 'Sign in'}
@@ -56,6 +52,11 @@ export function SignIn() {
             </p>
           </div>
         </div>
+        {params.get('welcome') && (
+          <p className="rounded-xl bg-card px-4 py-3 text-[15px] text-sand">
+            Your school is ready. Sign in with the password you just chose.
+          </p>
+        )}
         {school.isError ? (
           <ErrorNote error={school.error} />
         ) : (
@@ -65,6 +66,7 @@ export function SignIn() {
               name="email"
               type="email"
               autoComplete="username"
+              defaultValue={params.get('email') ?? ''}
               required
             />
             <Field
