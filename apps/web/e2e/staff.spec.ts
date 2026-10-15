@@ -124,6 +124,62 @@ test.describe('as the school admin', () => {
     await expect(saturday).toHaveCount(0);
   });
 
+  test('brands the app in the school’s colour and logo, then goes back to the default', async () => {
+    await page.getByRole('link', { name: 'School settings' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'School settings', level: 1 }),
+    ).toBeVisible();
+    const schoolColor = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--color-school')
+          .trim(),
+      );
+
+    await page.getByLabel('Hex').fill('#f5b400');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByText('Saved.')).toBeVisible();
+    expect(await schoolColor()).toBe('#f5b400');
+    // Light colour: buttons switch to dark text so they stay readable.
+    const onSchool = await page.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-on-school')
+        .trim(),
+    );
+    expect(onSchool).toBe('#0b0b0a');
+
+    // A 1x1 PNG is enough to prove the upload, storage and display path.
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await page
+      .locator('input[type=file]')
+      .setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: png });
+    await expect(
+      page.getByRole('img', { name: 'Greenfield College logo' }).first(),
+    ).toBeVisible();
+    await page
+      .locator('input[type=file]')
+      .setInputFiles({
+        name: 'logo.svg',
+        mimeType: 'image/svg+xml',
+        buffer: Buffer.from('<svg/>'),
+      });
+    await expect(page.getByRole('alert')).toHaveText(
+      'Choose a PNG, JPEG or WebP image.',
+    );
+
+    // Put the demo school back as it was.
+    await page.getByRole('button', { name: 'Remove logo' }).click();
+    await expect(
+      page.getByRole('img', { name: 'Greenfield College logo' }),
+    ).toHaveCount(0);
+    await page.getByRole('button', { name: 'Use Dopple’s colour' }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(schoolColor).toBe('#2f7a55');
+  });
+
   test('signs out, and a reload stays signed out', async () => {
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page).toHaveURL(/\/sign-in/);
@@ -150,4 +206,12 @@ test('shows the API’s message for a wrong password', async ({ page }) => {
   await expect(page.getByRole('alert')).toHaveText(
     'Email or password is incorrect',
   );
+});
+
+test('welcomes a new school’s admin with their email filled in', async ({
+  page,
+}) => {
+  await page.goto('/sign-in?email=ada%40example.test&welcome=1');
+  await expect(page.getByText('Your school is ready.')).toBeVisible();
+  await expect(page.getByLabel('Email')).toHaveValue('ada@example.test');
 });

@@ -26,6 +26,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - Student records: `POST /students`, `GET /students/:id` (with class per session), `PATCH /students/:id` (any field), `?q=` search. Changing a subject's teacher re-checks timetable clashes.
 - Browser sessions (ADR 0008): `X-Dopple-Session: cookie` puts the refresh token in an HttpOnly `__Host-dopple_refresh` cookie (SameSite=Strict) instead of the body; refresh/sign-out read it; the header doubles as the CSRF defence.
 - School web app `apps/web` (ADR 0009): Vite + React Router + TanStack Query SPA at `<slug>.dopple.localhost:3200`, `/api` proxied with the Host header kept. Sign-in with cookie sessions, role-based shell from the design canvas, home with today's lessons, my timetable, students (search, add, edit), classes (timetable add/remove, enrol/remove students, subjects). Public `GET /school` for the sign-in page. Playwright tests against the seeded school; CI seeds the database.
+- Self-serve schools and branding (ADR 0010, migration 0007): `POST /schools` (sign-up via `create_school()`), `GET /schools?q=` (find your school), `/schools/availability`; `tenants.brand_color`, `school_logos` (Postgres, PNG/JPEG/WebP ≤200 KB, public read); `PATCH /school`, `/school/logo`. Web app themes itself per school and has School settings for admins. Seed gives Riverside a blue.
 - Local infra: `infra/docker-compose.yml` (Postgres 17, Redis 7, NATS JetStream, Grafana LGTM).
 - Repo rules: PR template with Before/After from the running UI (`apps/site` included), CI (checks, UI evidence, no co-author trailers), commit-msg hook.
 
@@ -44,7 +45,8 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 ## Open questions
 
-- Admin UI for a school to opt in to the partner wall and upload its logo (where are logos stored: S3/R2 under the tenant prefix?).
+- Admin UI for a school to opt in to the partner wall (logos are now uploaded in School settings and stored in Postgres, ADR 0010; move to S3/R2 when uploads grow).
+- Sign-up abuse: CAPTCHA or review queue for self-serve schools? Email verification needs the email provider.
 - Email provider for invites and password resets (Postmark, SES, Resend?).
 - Google/Microsoft sign-in: one platform OAuth app, or schools bring their own Workspace/Entra tenant?
 - Payment provider: Paystack, Flutterwave or both?
@@ -61,6 +63,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-14 — Self-serve sign-up and branding (ADR 0010). Migration 0007 adds two hand-written SECURITY DEFINER functions after the generated part. New env `SCHOOL_URL_FORMAT` (set `http://{host}:3200` locally) and `SCHOOL_SIGNUPS_PER_HOUR`. Website pages for find-your-school and sign-up come in a separate PR.
 - 2026-10-14 — Built `apps/web` v1 (ADR 0009). Node minimum is now 22.22 (React Router 8). Web e2e tests sign in ~5 times per run (API default limit 10/min): running them twice within a minute locally can hit 429. They add an `E2E-…` student to Greenfield each run.
 - 2026-10-14 — Students can be added, edited, searched and read one at a time; responses no longer include `tenantId`/`createdAt`. Timetable lesson query and teacher-clash check moved to `timetable/lessons.ts` so `ClassSubjectsService` reuses it.
 - 2026-10-14 — Refresh token can live in an HttpOnly cookie for the web app (ADR 0008). Don't enable CORS for `X-Dopple-Session` from other origins: that header is the CSRF defence. `/auth/sign-out` no longer needs a body.

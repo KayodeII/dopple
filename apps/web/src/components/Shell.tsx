@@ -1,7 +1,8 @@
-import { useEffect, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { useSchool } from '../lib/queries';
 import { isStaff, useSession, useUser } from '../lib/session';
+import { SchoolBadge } from './SchoolTheme';
 import { initials } from './ui';
 
 const ROLE_LABEL = {
@@ -16,10 +17,6 @@ export function Shell() {
   const user = useUser();
   const { signOut } = useSession();
   const school = useSchool().data;
-
-  useEffect(() => {
-    if (school) document.title = `${school.name} · Dopple`;
-  }, [school]);
 
   const links = [
     { to: '/', label: 'Home', icon: homeIcon, show: true },
@@ -36,18 +33,19 @@ export function Shell() {
       show: isStaff(user),
     },
     { to: '/classes', label: 'Classes', icon: classIcon, show: isStaff(user) },
+    {
+      to: '/settings',
+      label: 'School settings',
+      icon: settingsIcon,
+      show: user.role === 'admin',
+    },
   ].filter((link) => link.show);
 
   return (
     <div className="flex min-h-screen flex-wrap content-start bg-ground">
       <aside className="flex max-w-full flex-[1_1_240px] flex-col gap-7 border-edge px-4 py-6 md:sticky md:top-0 md:h-screen md:max-w-[280px] md:border-r">
         <div className="flex items-center gap-3 px-2">
-          <span
-            aria-hidden="true"
-            className="flex size-9 items-center justify-center rounded-[10px] bg-school font-display text-lg font-bold text-white"
-          >
-            {school?.name[0] ?? ''}
-          </span>
+          <SchoolBadge size="sm" />
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-[15px] font-semibold">
               {school?.name ?? ' '}
@@ -137,6 +135,12 @@ const peopleIcon = icon(
   <>
     <circle cx="6.5" cy="6" r="2.5" />
     <path d="M2 15c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4M12 3.5a2.5 2.5 0 010 5M13 11c1.8.4 3 1.8 3 4" />
+  </>,
+);
+const settingsIcon = icon(
+  <>
+    <circle cx="9" cy="9" r="2.5" />
+    <path d="M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.5 1.5M12.5 12.5L14 14M4 14l1.5-1.5M12.5 5.5L14 4" />
   </>,
 );
 const classIcon = icon(

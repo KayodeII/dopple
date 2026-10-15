@@ -12,6 +12,7 @@ import { Classes } from './pages/Classes';
 import { Home } from './pages/Home';
 import { MyTimetable } from './pages/MyTimetable';
 import { NotFound, StaffOnly } from './pages/NotFound';
+import { Settings } from './pages/Settings';
 import { SignIn } from './pages/SignIn';
 import { Student } from './pages/Student';
 import { Students } from './pages/Students';
@@ -47,6 +48,10 @@ function RequireStaff() {
   return isStaff(useUser()) ? <Outlet /> : <StaffOnly />;
 }
 
+function RequireAdmin() {
+  return useUser().role === 'admin' ? <Outlet /> : <StaffOnly />;
+}
+
 export const router = createBrowserRouter([
   { path: '/sign-in', Component: SignIn },
   {
@@ -62,6 +67,10 @@ export const router = createBrowserRouter([
           { path: 'classes', Component: Classes },
           { path: 'classes/:id', Component: ClassPage },
         ],
+      },
+      {
+        Component: RequireAdmin,
+        children: [{ path: 'settings', Component: Settings }],
       },
       { path: '*', Component: NotFound },
     ],

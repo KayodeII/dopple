@@ -23,6 +23,8 @@
   --color-edge: #1f201d;
   /* The school's own colour; one default until schools can set theirs. */
   --color-school: #2f7a55;
+  /* Text on the school colour; SchoolTheme picks white or ink for contrast. */
+  --color-on-school: #ffffff;
   /* Avatar fill from the artboard. */
   --color-seafoam: #9fd3c7;
 

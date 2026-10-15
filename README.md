@@ -209,6 +209,8 @@ API variables are validated at startup in [`apps/api/src/config/env.ts`](apps/ap
 | `ACCESS_TOKEN_TTL_SECONDS` | `900` | Access-token lifetime |
 | `REFRESH_TOKEN_TTL_DAYS` | `30` | Refresh-token lifetime |
 | `LOGIN_RATE_LIMIT_PER_MINUTE` | `10` | Sign-in attempts per IP per minute (refresh gets 3×) |
+| `SCHOOL_URL_FORMAT` | `https://{host}` | A school's web app address; `{host}` is `<slug>.<PLATFORM_DOMAIN>` or its custom domain. Locally `http://{host}:3200` |
+| `SCHOOL_SIGNUPS_PER_HOUR` | `5` | New schools per client IP per hour |
 | `LOG_LEVEL` | `info` | pino log level |
 | `OTEL_*` | OTLP → `localhost:4318` | Standard OpenTelemetry variables; set exporters to `none` without Grafana |
 
@@ -229,6 +231,11 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `GET` | `/health/ready` | public, platform | The database is reachable |
 | `GET` | `/showcase/schools` | public, platform | Schools that opted in to the website's partner wall |
 | `GET` | `/.well-known/jwks.json` | public, platform | Public key for verifying access tokens |
+| `GET` | `/schools?q=` | public, platform | Find a school by part of its name or address (2+ characters, at most 8 results), with its sign-in URL |
+| `GET` | `/schools/availability?slug=` | public, platform | Whether an address is free, and why not |
+| `POST` | `/schools` | public, platform | Self-serve sign-up: a new school and its first admin (rate-limited) |
+| `GET` / `PATCH` | `/school` | read: public · write: admin | The school at this address: name, colour, logo URL. Admins change `name` and `brandColor` |
+| `GET` / `PUT` / `DELETE` | `/school/logo` | read: public · write: admin | The school's logo; upload the image itself as the body (PNG, JPEG or WebP, up to 200 KB) |
 | `POST` | `/auth/sign-in` | public, school | `{ email, password }` → access and refresh tokens (rate-limited). With `X-Dopple-Session: cookie` the refresh token is set as a cookie instead |
 | `POST` | `/auth/refresh` | public, school | `{ refreshToken }`, or the cookie with `X-Dopple-Session: cookie` → new token pair (rate-limited) |
 | `POST` | `/auth/sign-out` | public, school | `{ refreshToken }` or the cookie → ends that session and clears the cookie |
@@ -284,7 +291,7 @@ The full rules are in [`AGENTS.md`](AGENTS.md). The non-negotiable ones:
 | [`AGENTS.md`](AGENTS.md) | Rules and commands for anyone changing the code |
 | [`docs/context/CONTEXT.md`](docs/context/CONTEXT.md) | Current state, next up, open questions, session log |
 | [`docs/architecture.md`](docs/architecture.md) | One-page architecture and how `apps/api` maps to it |
-| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only, browser sessions, web app stack |
+| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only, browser sessions, web app stack, self-serve schools and branding |
 | [`docs/roadmap.md`](docs/roadmap.md) | Features announced as coming soon |
 | [Architecture overview](https://claude.ai/code/artifact/bd7488b4-c632-49d5-aae1-6a5e88965ff9) | Full design with diagrams |
 | [Website and portal designs](https://claude.ai/code/artifact/f45b09ad-3e6b-44ca-8bb6-033d7ca1bcd3) | Design canvas |
