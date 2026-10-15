@@ -174,6 +174,8 @@ Double-click `scripts/start-dopple.command`, or run it from a terminal. It insta
 
 `*.localhost` resolves to `127.0.0.1`, so each demo school has its own local address. The seed creates a 2026/2027 session with three terms, a few subjects, two JSS 1 classes (students enrolled in JSS 1A, which takes every subject with the demo teacher), and accounts `admin@<slug>.test`, `teacher@<slug>.test` and `student@<slug>.test`, all with the password `dopple-demo`.
 
+**On the website:** http://localhost:3100/login finds a school and sends you to its sign-in page; http://localhost:3100/start creates a new school.
+
 **In the browser:** with `pnpm dev` and `pnpm dev:web` running, open http://greenfield.dopple.localhost:3200 (or `riverside.`) in Chrome and sign in with one of those accounts. Admins and teachers get Students and Classes; students get their own timetable.
 
 **From a terminal:**
@@ -220,6 +222,7 @@ Website (`apps/site/.env.local`, see `.env.example`):
 | --- | --- | --- |
 | `DOPPLE_API_URL` | `http://localhost:3000` | Where the partner wall reads `/showcase/schools` |
 | `SHOWCASE_MIN_SCHOOLS` | `6` | Hide the partner wall until this many schools opt in |
+| `PLATFORM_DOMAIN` | `dopple.school` | Shown after the address on the sign-up form (`greenfield.<this>`); the real address comes from the API |
 
 ## API
 

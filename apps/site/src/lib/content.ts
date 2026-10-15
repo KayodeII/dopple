@@ -150,7 +150,7 @@ export const onboardingSteps = [
   },
   {
     title: 'Invite your teachers',
-    body: 'Staff sign in with your school code and find their classes already waiting.',
+    body: "Staff sign in at your school's own address and find their classes already waiting.",
   },
   {
     title: 'Ring the first bell',
@@ -383,3 +383,42 @@ export const footerLinks = [
 ] as const;
 
 export const contact = { email: 'hello@dopple.school', city: 'Lagos, Nigeria' };
+
+/** Log in: people find their school, then sign in on its own address (ADR 0010). */
+export const findSchool = {
+  eyebrow: 'Log in',
+  title: 'Find your school',
+  body: "Every school on Dopple has its own address. Search for yours and we'll take you to its sign-in page.",
+  label: 'School name or address',
+  placeholder: 'e.g. Greenfield College',
+  hint: 'Type at least two letters.',
+  noMatch: 'No school matches that.',
+  unavailable: 'School search is unavailable right now. Try again in a minute.',
+  newSchool: 'Setting up a new school?',
+  newSchoolCta: 'Start your school',
+};
+
+/** Start your school: self-serve sign-up. Copy for the form and its fields. */
+export const startSchool = {
+  eyebrow: 'Start your school',
+  title: 'Your school, on its own address',
+  body: "Create your school and its first admin account. You'll sign in straight away and can add classes, staff and students.",
+  schoolHeading: 'Your school',
+  adminHeading: 'Your admin account',
+  fields: {
+    name: 'School name',
+    slug: 'Web address',
+    city: 'City (optional)',
+    brandColor: 'School colour',
+    adminName: 'Your name',
+    adminEmail: 'Your email',
+    password: 'Password',
+  },
+  passwordHint: 'At least 10 characters.',
+  colourHint:
+    'Used across your school’s app. You can change it, and add a logo, later.',
+  submit: 'Create my school',
+  submitting: 'Creating your school…',
+  haveSchool: 'Already on Dopple?',
+  haveSchoolCta: 'Find your school',
+};

@@ -77,6 +77,7 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 - Use the design tokens from `src/app/globals.css` (`bg-paper`, `text-ink`, `bg-sun`, `font-display`, …), not raw hex values.
 - Never invent testimonials, stats or partner logos. The partner wall only shows schools from `GET /showcase/schools` and hides below `SHOWCASE_MIN_SCHOOLS`.
 - Every animation must stop under `prefers-reduced-motion` (handled globally in `globals.css`; keep it that way).
+- **Log in** goes to `/login` (find your school, then that school's own sign-in page); `/start` is self-serve sign-up (ADR 0010). Both reach the API only server-side: route handlers in `src/app/api/schools` and the server action in `src/app/start/actions.ts`, using `DOPPLE_API_URL`.
 - Smoke tests: `pnpm --filter @dopple/site build && pnpm --filter @dopple/site test:e2e` (set `CHROMIUM_PATH` to reuse an installed Chromium).
 
 ### School web app (`apps/web`)
