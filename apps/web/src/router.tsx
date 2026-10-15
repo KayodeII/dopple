@@ -48,10 +48,6 @@ function RequireStaff() {
   return isStaff(useUser()) ? <Outlet /> : <StaffOnly />;
 }
 
-function RequireAdmin() {
-  return useUser().role === 'admin' ? <Outlet /> : <StaffOnly />;
-}
-
 export const router = createBrowserRouter([
   { path: '/sign-in', Component: SignIn },
   {
@@ -68,10 +64,7 @@ export const router = createBrowserRouter([
           { path: 'classes/:id', Component: ClassPage },
         ],
       },
-      {
-        Component: RequireAdmin,
-        children: [{ path: 'settings', Component: Settings }],
-      },
+      { path: 'settings', Component: Settings },
       { path: '*', Component: NotFound },
     ],
   },

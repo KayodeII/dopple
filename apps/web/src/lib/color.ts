@@ -25,8 +25,9 @@ export function contrast(a: string, b: string): number {
 
 export const WHITE = '#ffffff';
 export const INK = '#0b0b0a';
-/** The app's background, for checking a school colour stands out against it. */
-export const GROUND = '#0e0f0d';
+/** The app's backgrounds (light and dark themes), for checking a school colour stands out on both. */
+export const GROUND_LIGHT = '#f5f3ee';
+export const GROUND_DARK = '#0e0f0d';
 export const DEFAULT_SCHOOL_COLOR = '#2f7a55';
 
 /** White or near-black, whichever reads better on `background`. */

@@ -12,6 +12,7 @@ import {
 } from './components/SchoolTheme';
 import { ApiError } from './lib/api';
 import { SessionProvider } from './lib/session';
+import { watchTheme } from './lib/theme';
 import { router } from './router';
 
 const queryClient = new QueryClient({
@@ -25,6 +26,7 @@ const queryClient = new QueryClient({
 });
 
 applyRememberedSchoolColor();
+watchTheme();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

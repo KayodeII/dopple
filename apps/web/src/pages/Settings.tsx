@@ -9,27 +9,119 @@ import {
   Section,
 } from '../components/ui';
 import { api } from '../lib/api';
-import { contrast, DEFAULT_SCHOOL_COLOR, GROUND, textOn } from '../lib/color';
+import {
+  contrast,
+  DEFAULT_SCHOOL_COLOR,
+  GROUND_DARK,
+  GROUND_LIGHT,
+  textOn,
+} from '../lib/color';
 import { useSchool, useWrite } from '../lib/queries';
+import { useUser } from '../lib/session';
+import { useTheme, type Theme } from '../lib/theme';
 import type { School } from '../lib/types';
 
 const LOGO_MAX_BYTES = 200 * 1024;
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
-/** The school's name, colour and logo (admins only). Changes show across the app straight away. */
+/** Everyone picks their theme here; admins also set the school's name, colour and logo. */
 export function Settings() {
+  const isAdmin = useUser().role === 'admin';
   const school = useSchool();
-  if (school.isPending) return <Loading />;
-  if (!school.data) return <ErrorNote error={school.error} />;
   return (
     <>
-      <PageHeader
-        eyebrow={school.data.url.replace(/^https?:\/\//, '')}
-        title="School settings"
-      />
-      <Profile school={school.data} />
-      <Logo school={school.data} />
+      <PageHeader eyebrow={window.location.hostname} title="Settings" />
+      <Appearance />
+      {isAdmin &&
+        (school.isPending ? (
+          <Loading />
+        ) : school.data ? (
+          <>
+            <Profile school={school.data} />
+            <Logo school={school.data} />
+          </>
+        ) : (
+          <ErrorNote error={school.error} />
+        ))}
     </>
+  );
+}
+
+const THEMES: { value: Theme; label: string; hint: string }[] = [
+  { value: 'light', label: 'Light', hint: 'Warm paper, the default' },
+  { value: 'dark', label: 'Dark', hint: 'Easier at night' },
+  {
+    value: 'system',
+    label: 'Match my device',
+    hint: 'Follows your phone or computer',
+  },
+];
+
+/** Only for this browser: each person picks their own. */
+function Appearance() {
+  const [theme, setTheme] = useTheme();
+  return (
+    <Section title="Appearance">
+      <fieldset className="flex flex-col gap-3">
+        <legend className="sr-only">Theme</legend>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {THEMES.map((option) => (
+            <label
+              key={option.value}
+              className="group flex cursor-pointer flex-col gap-3 rounded-2xl border border-edge bg-card p-3 has-checked:border-school has-checked:ring-1 has-checked:ring-school"
+            >
+              <ThemeSwatch theme={option.value} />
+              <span className="flex items-center gap-2.5 px-1">
+                <input
+                  type="radio"
+                  name="theme"
+                  value={option.value}
+                  checked={theme === option.value}
+                  onChange={() => setTheme(option.value)}
+                  className="size-4 accent-school"
+                />
+                <span className="flex flex-col">
+                  <span className="text-[15px] font-semibold">
+                    {option.label}
+                  </span>
+                  <span className="text-[13px] text-fg-3">{option.hint}</span>
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
+        <p className="text-[13px] text-fg-3">Saved on this device only.</p>
+      </fieldset>
+    </Section>
+  );
+}
+
+/** A tiny drawing of the app in each theme, painted with that theme's own colours. */
+function ThemeSwatch({ theme }: { theme: Theme }) {
+  const half = (mode: 'light' | 'dark') => (
+    <span data-theme={mode} className="flex flex-1 gap-1.5 bg-ground p-2">
+      <span className="w-1/4 rounded bg-raised" />
+      <span className="flex flex-1 flex-col gap-1.5">
+        <span className="h-2 w-2/3 rounded-full bg-fg" />
+        <span className="flex-1 rounded bg-card" />
+        <span className="h-2 w-1/3 rounded-full bg-school" />
+      </span>
+    </span>
+  );
+  return (
+    <span
+      aria-hidden="true"
+      className="flex h-20 overflow-hidden rounded-xl border border-edge"
+    >
+      {theme === 'system' ? (
+        <>
+          {half('light')}
+          {half('dark')}
+        </>
+      ) : (
+        half(theme)
+      )}
+    </span>
   );
 }
 
@@ -44,7 +136,12 @@ function Profile({ school }: { school: School }) {
   );
   const valid = /^#[0-9a-f]{6}$/.test(color);
   const preview = valid ? color : DEFAULT_SCHOOL_COLOR;
-  const faint = valid && contrast(color, GROUND) < 1.6;
+  const faintOn =
+    valid && contrast(color, GROUND_LIGHT) < 1.6
+      ? 'light'
+      : valid && contrast(color, GROUND_DARK) < 1.6
+        ? 'dark'
+        : null;
 
   function pick(value: string) {
     setColor(value.trim().toLowerCase());
@@ -73,13 +170,13 @@ function Profile({ school }: { school: School }) {
           />
         </div>
         <div className="flex flex-wrap items-end gap-4">
-          <label className="flex flex-col gap-1.5 text-sm text-sand">
+          <label className="flex flex-col gap-1.5 text-sm text-fg-2">
             Colour
             <input
               type="color"
               value={preview}
               onChange={(e) => pick(e.target.value)}
-              className="h-11 w-16 cursor-pointer rounded-xl border border-iron bg-graphite p-1"
+              className="h-11 w-16 cursor-pointer rounded-xl border border-edge-2 bg-raised p-1"
             />
           </label>
           <div className="w-36">
@@ -101,10 +198,10 @@ function Profile({ school }: { school: School }) {
             Use Dopple’s colour
           </Button>
         </div>
-        {faint && (
-          <p className="text-[13px] text-sun">
-            This colour is very dark and will be hard to see on the dark
-            background.
+        {faintOn && (
+          <p className="text-[13px] text-warn">
+            This colour is very {faintOn === 'dark' ? 'dark' : 'light'} and will
+            be hard to see in the {faintOn} theme.
           </p>
         )}
         <div
@@ -137,7 +234,7 @@ function Profile({ school }: { school: School }) {
             Save
           </Button>
           {save.isSuccess && !save.isPending && (
-            <span className="text-sm text-soft">Saved.</span>
+            <span className="text-sm text-fg-3">Saved.</span>
           )}
         </div>
       </form>
@@ -173,7 +270,7 @@ function Logo({ school }: { school: School }) {
       <div className="flex flex-col gap-4 rounded-2xl bg-card p-5">
         <div className="flex flex-wrap items-center gap-4">
           <SchoolBadge size="lg" />
-          <p className="text-sm text-soft">
+          <p className="text-sm text-fg-3">
             {school.logoUrl
               ? 'Shown on the sign-in page, in the sidebar and in the website’s school search.'
               : 'No logo yet: your school’s first letter is shown instead.'}
@@ -203,7 +300,7 @@ function Logo({ school }: { school: School }) {
             </Button>
           )}
         </div>
-        <p className="text-[13px] text-soft">
+        <p className="text-[13px] text-fg-3">
           PNG, JPEG or WebP, up to 200 KB. A square image looks best.
         </p>
         {problem && (

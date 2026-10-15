@@ -35,9 +35,9 @@ export function Shell() {
     { to: '/classes', label: 'Classes', icon: classIcon, show: isStaff(user) },
     {
       to: '/settings',
-      label: 'School settings',
+      label: 'Settings',
       icon: settingsIcon,
-      show: user.role === 'admin',
+      show: true,
     },
   ].filter((link) => link.show);
 
@@ -50,7 +50,7 @@ export function Shell() {
             <span className="truncate text-[15px] font-semibold">
               {school?.name ?? ' '}
             </span>
-            <span className="truncate font-mono text-[11.5px] text-soft">
+            <span className="truncate font-mono text-[11.5px] text-fg-3">
               {window.location.hostname}
             </span>
           </div>
@@ -68,8 +68,8 @@ export function Shell() {
               className={({ isActive }) =>
                 `flex min-h-11 items-center gap-3 rounded-[10px] px-3 ${
                   isActive
-                    ? 'bg-graphite font-semibold text-paper'
-                    : 'text-sand hover:bg-card'
+                    ? 'bg-raised font-semibold text-fg'
+                    : 'text-fg-2 hover:bg-card'
                 }`
               }
             >
@@ -82,20 +82,20 @@ export function Shell() {
         <div className="flex items-center gap-3 rounded-xl bg-card p-3 md:mt-auto">
           <span
             aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-seafoam font-semibold text-ground"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-seafoam font-semibold text-ink"
           >
             {initials(user.name)}
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-semibold">{user.name}</span>
-            <span className="text-[12.5px] text-soft">
+            <span className="text-[12.5px] text-fg-3">
               {ROLE_LABEL[user.role]}
             </span>
           </div>
           <button
             type="button"
             onClick={signOut}
-            className="min-h-11 rounded-lg px-2 text-[13px] text-sand hover:bg-graphite"
+            className="min-h-11 rounded-lg px-2 text-[13px] text-fg-2 hover:bg-raised"
           >
             Sign out
           </button>
