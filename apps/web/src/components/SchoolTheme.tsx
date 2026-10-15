@@ -2,28 +2,36 @@ import { useEffect } from 'react';
 import { DEFAULT_SCHOOL_COLOR, textOn } from '../lib/color';
 import { useSchool } from '../lib/queries';
 
-const STORAGE_KEY = 'dopple:school-color';
+const STORAGE_KEY = 'dopple:school-colors';
 
-/** Paints the app in the school's colour. Remembered per browser so a reload doesn't flash Dopple green. */
-export function applySchoolColor(color: string | null) {
-  const school = color ?? DEFAULT_SCHOOL_COLOR;
+/**
+ * Paints the app in the school's colours: the main one, and an accent for highlights
+ * (the main one again if the school has none). Remembered per browser so a reload
+ * doesn't flash Dopple green.
+ */
+export function applySchoolColors(main: string | null, accent: string | null) {
+  const school = main ?? DEFAULT_SCHOOL_COLOR;
+  const highlight = accent ?? school;
   const root = document.documentElement.style;
   root.setProperty('--color-school', school);
   root.setProperty('--color-on-school', textOn(school));
+  root.setProperty('--color-accent', highlight);
+  root.setProperty('--color-on-accent', textOn(highlight));
   try {
-    localStorage.setItem(STORAGE_KEY, school);
+    localStorage.setItem(STORAGE_KEY, `${school} ${highlight}`);
   } catch {
-    // Private mode or storage blocked: the colour still applies, it just isn't remembered.
+    // Private mode or storage blocked: the colours still apply, they just aren't remembered.
   }
 }
 
-export function applyRememberedSchoolColor() {
+export function applyRememberedSchoolColors() {
   try {
-    const remembered = localStorage.getItem(STORAGE_KEY);
-    if (remembered && /^#[0-9a-f]{6}$/.test(remembered))
-      applySchoolColor(remembered);
+    const [main, accent] = (localStorage.getItem(STORAGE_KEY) ?? '').split(' ');
+    const hex = /^#[0-9a-f]{6}$/;
+    if (main && accent && hex.test(main) && hex.test(accent))
+      applySchoolColors(main, accent);
   } catch {
-    // Nothing remembered: the default colour stays until the school loads.
+    // Nothing remembered: the default colours stay until the school loads.
   }
 }
 
@@ -31,7 +39,7 @@ export function SchoolTheme() {
   const school = useSchool().data;
   useEffect(() => {
     if (school) {
-      applySchoolColor(school.brandColor);
+      applySchoolColors(school.brandColor, school.accentColor);
       document.title = `${school.name} · Dopple`;
     }
   }, [school]);

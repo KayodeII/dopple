@@ -58,10 +58,13 @@ export const tenants = pgTable(
     showcase: boolean('showcase').notNull().default(false),
     /** The school's colour for its web app, "#rrggbb". Null: Dopple's default. */
     brandColor: text('brand_color'),
+    /** A second school colour for highlights, "#rrggbb". Null: the brand colour again. */
+    accentColor: text('accent_color'),
     createdAt: createdAt(),
   },
   (t) => [
     check('tenants_brand_color', sql`${t.brandColor} ~ '^#[0-9a-f]{6}$'`),
+    check('tenants_accent_color', sql`${t.accentColor} ~ '^#[0-9a-f]{6}$'`),
   ],
 );
 

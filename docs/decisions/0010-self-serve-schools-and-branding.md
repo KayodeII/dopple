@@ -26,3 +26,7 @@ Until now a school could only be created by the seed script or by hand in SQL, a
 - The sign-up limit is per client IP as the API sees it. Behind the website's server or the edge, that is the proxy's IP until the API trusts the forwarded address (`trust proxy`), so in that setup the limit applies to everyone together.
 - The tenant cache can remember "no such school" for an address that is then signed up. The API clears it on sign-up, but only in its own process; with several API instances, the others keep it for up to `TENANT_CACHE_TTL_SECONDS`.
 - Logos in Postgres are fine at this size. Move them to object storage when uploads grow (recordings will force that decision anyway).
+
+## Update 2026-10-15: two school colours
+
+Schools often have two colours (a crest's blue and gold). `tenants.accent_color` (migration 0008) is a second, optional colour for highlights: the selected menu item, the stripe across the top of the web app, and the circles and badge on the sign-in page. Null means the main colour is used again, so a school that sets one colour looks as before. Buttons stay in the main colour. `update_school_profile()` now takes three arguments; sign-up still sets only the main colour.

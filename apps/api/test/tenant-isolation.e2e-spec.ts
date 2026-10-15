@@ -376,7 +376,7 @@ describe('Tenant isolation (e2e)', () => {
       .patch('/school')
       .set('Host', host(schoolA))
       .auth(tokenA, { type: 'bearer' })
-      .send({ brandColor: '#123456' })
+      .send({ brandColor: '#123456', accentColor: '#abcdef' })
       .expect(200);
     await request(app.getHttpServer())
       .put('/school/logo')
@@ -393,6 +393,7 @@ describe('Tenant isolation (e2e)', () => {
     expect(b.body).toMatchObject({
       slug: schoolB,
       brandColor: null,
+      accentColor: null,
       logoUrl: null,
     });
     await request(app.getHttpServer())

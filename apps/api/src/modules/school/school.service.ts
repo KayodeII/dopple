@@ -35,6 +35,7 @@ export class SchoolService {
         name: tenants.name,
         city: tenants.city,
         brandColor: tenants.brandColor,
+        accentColor: tenants.accentColor,
         customDomain: tenants.customDomain,
         logoUpdatedAt: schoolLogos.updatedAt,
       })
@@ -52,14 +53,19 @@ export class SchoolService {
     };
   }
 
-  /** Name and colour live in the registry, which only update_school_profile() may change. */
-  async update(patch: { name?: string; brandColor?: string | null }) {
-    const current = await this.profile();
+  /** Name and colours live in the registry, which only update_school_profile() may change. */
+  async update(patch: {
+    name?: string;
+    brandColor?: string | null;
+    accentColor?: string | null;
+  }) {
+    const { name, brandColor, accentColor } = {
+      ...(await this.profile()),
+      ...patch,
+    };
     await this.tenantDb.run((tx) =>
       tx.execute(
-        sql`select update_school_profile(${patch.name ?? current.name}, ${
-          patch.brandColor === undefined ? current.brandColor : patch.brandColor
-        })`,
+        sql`select update_school_profile(${name}, ${brandColor}, ${accentColor})`,
       ),
     );
     return this.profile();

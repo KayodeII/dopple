@@ -197,17 +197,23 @@ describe('Schools (e2e)', () => {
       ).body.accessToken;
     });
 
-    it('lets the admin rename the school and change or reset its colour', async () => {
+    it('lets the admin rename the school and change or reset its colours', async () => {
       const res = await http()
         .patch('/school')
         .set('Host', host())
         .auth(admin, { type: 'bearer' })
-        .send({ name: 'New Horizons College', brandColor: '#B4432F' })
+        .send({
+          name: 'New Horizons College',
+          brandColor: '#B4432F',
+          accentColor: '#F2B632',
+        })
         .expect(200);
       expect(res.body).toMatchObject({
         name: 'New Horizons College',
         brandColor: '#b4432f',
+        accentColor: '#f2b632',
       });
+      // Changing one colour leaves the other alone.
       const reset = await http()
         .patch('/school')
         .set('Host', host())
@@ -217,7 +223,14 @@ describe('Schools (e2e)', () => {
       expect(reset.body).toMatchObject({
         name: 'New Horizons College',
         brandColor: null,
+        accentColor: '#f2b632',
       });
+      await http()
+        .patch('/school')
+        .set('Host', host())
+        .auth(admin, { type: 'bearer' })
+        .send({ accentColor: 'gold' })
+        .expect(400);
 
       await http()
         .patch('/school')

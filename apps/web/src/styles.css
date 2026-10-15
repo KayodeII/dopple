@@ -19,6 +19,9 @@
   --color-school: #2f7a55;
   /* Text on the school colour; SchoolTheme picks white or ink for contrast. */
   --color-on-school: #ffffff;
+  /* The school's second colour for highlights; the main one again if it has none. */
+  --color-accent: #2f7a55;
+  --color-on-accent: #ffffff;
   --font-display:
     'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;

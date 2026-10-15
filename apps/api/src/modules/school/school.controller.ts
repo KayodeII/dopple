@@ -21,6 +21,7 @@ const updateSchoolBody = z
   .object({
     name: z.string().trim().min(2).max(100),
     brandColor: brandColor.nullable(),
+    accentColor: brandColor.nullable(),
   })
   .partial()
   .refine((patch) => Object.keys(patch).length > 0, 'Nothing to change');
