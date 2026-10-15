@@ -1,0 +1,147 @@
+import { useEffect, type ReactNode } from 'react';
+import { NavLink, Outlet } from 'react-router';
+import { useSchool } from '../lib/queries';
+import { isStaff, useSession, useUser } from '../lib/session';
+import { initials } from './ui';
+
+const ROLE_LABEL = {
+  admin: 'Admin',
+  teacher: 'Teacher',
+  student: 'Student',
+  parent: 'Parent',
+};
+
+/** The signed-in layout from the design canvas: school and navigation on the left, the page on the right. */
+export function Shell() {
+  const user = useUser();
+  const { signOut } = useSession();
+  const school = useSchool().data;
+
+  useEffect(() => {
+    if (school) document.title = `${school.name} · Dopple`;
+  }, [school]);
+
+  const links = [
+    { to: '/', label: 'Home', icon: homeIcon, show: true },
+    {
+      to: '/timetable',
+      label: 'Timetable',
+      icon: clockIcon,
+      show: user.role !== 'parent',
+    },
+    {
+      to: '/students',
+      label: 'Students',
+      icon: peopleIcon,
+      show: isStaff(user),
+    },
+    { to: '/classes', label: 'Classes', icon: classIcon, show: isStaff(user) },
+  ].filter((link) => link.show);
+
+  return (
+    <div className="flex min-h-screen flex-wrap content-start bg-ground">
+      <aside className="flex max-w-full flex-[1_1_240px] flex-col gap-7 border-edge px-4 py-6 md:sticky md:top-0 md:h-screen md:max-w-[280px] md:border-r">
+        <div className="flex items-center gap-3 px-2">
+          <span
+            aria-hidden="true"
+            className="flex size-9 items-center justify-center rounded-[10px] bg-school font-display text-lg font-bold text-white"
+          >
+            {school?.name[0] ?? ''}
+          </span>
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate text-[15px] font-semibold">
+              {school?.name ?? ' '}
+            </span>
+            <span className="truncate font-mono text-[11.5px] text-soft">
+              {window.location.hostname}
+            </span>
+          </div>
+        </div>
+
+        <nav
+          aria-label="Main"
+          className="flex flex-row flex-wrap gap-1 text-[15px] md:flex-col"
+        >
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={link.to === '/'}
+              className={({ isActive }) =>
+                `flex min-h-11 items-center gap-3 rounded-[10px] px-3 ${
+                  isActive
+                    ? 'bg-graphite font-semibold text-paper'
+                    : 'text-sand hover:bg-card'
+                }`
+              }
+            >
+              {link.icon}
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-3 rounded-xl bg-card p-3 md:mt-auto">
+          <span
+            aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-seafoam font-semibold text-ground"
+          >
+            {initials(user.name)}
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-sm font-semibold">{user.name}</span>
+            <span className="text-[12.5px] text-soft">
+              {ROLE_LABEL[user.role]}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={signOut}
+            className="min-h-11 rounded-lg px-2 text-[13px] text-sand hover:bg-graphite"
+          >
+            Sign out
+          </button>
+        </div>
+      </aside>
+
+      <main className="flex min-w-0 flex-[999_1_560px] flex-col gap-10 px-[clamp(16px,3vw,40px)] pt-8 pb-12">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+const icon = (path: ReactNode) => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 18 18"
+    fill="none"
+    aria-hidden="true"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {path}
+  </svg>
+);
+const homeIcon = icon(<path d="M3 8l6-5 6 5v7H3V8z" />);
+const clockIcon = icon(
+  <>
+    <circle cx="9" cy="9" r="6.5" />
+    <path d="M9 5.5V9l2.5 1.5" />
+  </>,
+);
+const peopleIcon = icon(
+  <>
+    <circle cx="6.5" cy="6" r="2.5" />
+    <path d="M2 15c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4M12 3.5a2.5 2.5 0 010 5M13 11c1.8.4 3 1.8 3 4" />
+  </>,
+);
+const classIcon = icon(
+  <>
+    <rect x="2.5" y="2.5" width="5" height="13" rx="1.5" />
+    <rect x="10.5" y="2.5" width="5" height="13" rx="1.5" />
+  </>,
+);

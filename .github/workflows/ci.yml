@@ -39,13 +39,19 @@ jobs:
         run: |
           PGPASSWORD=dopple psql -h localhost -U dopple -d dopple -f infra/postgres/init.sql
           pnpm db:migrate
-      - name: Install Chromium for site smoke tests
+          pnpm db:seed
+      # The site and the web app pin the same Playwright, so one browser install serves both.
+      - name: Install Chromium for Playwright tests
         run: pnpm --filter @dopple/site exec playwright install --with-deps chromium
-      - name: Start API for the site's partner wall
+      - name: Start API for the site's partner wall and the web app's tests
         run: (cd apps/api && nohup node dist/main.js > /tmp/api.log 2>&1 &) && sleep 3
         env:
           OTEL_SDK_DISABLED: 'true'
+          LOGIN_RATE_LIMIT_PER_MINUTE: '100'
       - run: pnpm test:e2e
+      - name: API log
+        if: failure()
+        run: cat /tmp/api.log
 
   ui-evidence:
     if: github.event_name == 'pull_request'

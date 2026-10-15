@@ -107,6 +107,16 @@ describe('Tenant isolation (e2e)', () => {
     expect(await studentsAt(schoolB)).toEqual(['B-1']);
   });
 
+  it('names the school at each host, without signing in', async () => {
+    for (const slug of [schoolA, schoolB]) {
+      const res = await request(app.getHttpServer())
+        .get('/school')
+        .set('Host', host(slug))
+        .expect(200);
+      expect(res.body).toEqual({ slug, name: slug });
+    }
+  });
+
   it('signs in against the school at the host only', async () => {
     await signIn(schoolA, passwords[schoolA]).expect(200);
     await signIn(schoolA, passwords[schoolB]).expect(401);

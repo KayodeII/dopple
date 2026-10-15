@@ -25,6 +25,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - Timetable (ADR 0006, migration 0006): `timetable_slots` per class, term and weekday; overlaps within a class refused by an exclusion constraint (`btree_gist`), teacher double-booking by the service (409). `/classes/:id/timetable`, `/timetable/me`. Seed adds a first-term timetable for JSS 1A.
 - Student records: `POST /students`, `GET /students/:id` (with class per session), `PATCH /students/:id` (any field), `?q=` search. Changing a subject's teacher re-checks timetable clashes.
 - Browser sessions (ADR 0008): `X-Dopple-Session: cookie` puts the refresh token in an HttpOnly `__Host-dopple_refresh` cookie (SameSite=Strict) instead of the body; refresh/sign-out read it; the header doubles as the CSRF defence.
+- School web app `apps/web` (ADR 0009): Vite + React Router + TanStack Query SPA at `<slug>.dopple.localhost:3200`, `/api` proxied with the Host header kept. Sign-in with cookie sessions, role-based shell from the design canvas, home with today's lessons, my timetable, students (search, add, edit), classes (timetable add/remove, enrol/remove students, subjects). Public `GET /school` for the sign-in page. Playwright tests against the seeded school; CI seeds the database.
 - Local infra: `infra/docker-compose.yml` (Postgres 17, Redis 7, NATS JetStream, Grafana LGTM).
 - Repo rules: PR template with Before/After from the running UI (`apps/site` included), CI (checks, UI evidence, no co-author trailers), commit-msg hook.
 
@@ -32,7 +33,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 1. Auth follow-ups: move rate-limit counters to Redis before scaling out, invites + password reset (needs email provider), Google/Microsoft sign-in, expired refresh-token cleanup.
 2. Core school records, continued: guardians (parent ↔ student, then parents' `/timetable/me`). Students leaving (status instead of deleting) and list paging when schools get large.
-3. `apps/web`: one React web app for every role (ADR 0007). First: sign-in (cookie sessions, ADR 0008) and role-based shell, then staff screens for classes, enrolments and timetable, and the student home from the design canvas.
+3. `apps/web` next: assign subject teachers (needs a staff list endpoint), create sessions/classes/subjects from the UI, parent view after guardians, school colour per tenant, a shared `packages/ui` for tokens. `scripts/start-dopple.command` should also start `dev:web`.
    - Site follow-ups: real pricing, demo-booking form backend (currently `action="#demo"`), legal pages, analytics.
 4. `services/realtime`: Go WebSocket gateway skeleton with NATS.
 5. Fees: payment provider subaccounts, webhook ledger (see architecture doc, "Fee payments").
@@ -60,6 +61,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-14 — Built `apps/web` v1 (ADR 0009). Node minimum is now 22.22 (React Router 8). Web e2e tests sign in ~5 times per run (API default limit 10/min): running them twice within a minute locally can hit 429. They add an `E2E-…` student to Greenfield each run.
 - 2026-10-14 — Students can be added, edited, searched and read one at a time; responses no longer include `tenantId`/`createdAt`. Timetable lesson query and teacher-clash check moved to `timetable/lessons.ts` so `ClassSubjectsService` reuses it.
 - 2026-10-14 — Refresh token can live in an HttpOnly cookie for the web app (ADR 0008). Don't enable CORS for `X-Dopple-Session` from other origins: that header is the CSRF defence. `/auth/sign-out` no longer needs a body.
 - 2026-10-13 — Dropped the desktop app for now: everything, staff screens included, goes in `apps/web` (ADR 0007). Removed `apps/desktop` and its CI path. The architecture doc artifact still shows a desktop client.

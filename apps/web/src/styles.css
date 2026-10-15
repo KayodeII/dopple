@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. The shared palette is copied from apps/site (until it moves to
+ * packages/ui); the portal ones come from the "School portal · student home"
+ * artboard in the design canvas. Use these names, not raw hex values.
+ */
+@theme {
+  --color-ink: #0b0b0a;
+  --color-paper: #f5f3ee;
+  --color-graphite: #1c1d1a;
+  --color-line: #262723;
+  --color-iron: #3a3b37;
+  --color-soft: #a3a59c;
+  --color-sand: #c9c5b9;
+  --color-sun: #f5b400;
+  --color-coral: #ff6b4a;
+  --color-live: #e5484d;
+
+  /* Portal surfaces */
+  --color-ground: #0e0f0d;
+  --color-card: #161714;
+  --color-edge: #1f201d;
+  /* The school's own colour; one default until schools can set theirs. */
+  --color-school: #2f7a55;
+  /* Avatar fill from the artboard. */
+  --color-seafoam: #9fd3c7;
+
+  --font-display:
+    'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
+@layer base {
+  body {
+    background: var(--color-ground);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-sun);
+    outline-offset: 2px;
+  }
+  input,
+  select,
+  button {
+    font: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
