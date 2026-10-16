@@ -1,6 +1,6 @@
 # Project context — handover note
 
-Last updated: 2026-10-14
+Last updated: 2026-10-15
 
 Read `AGENTS.md` first. This file says where the work stands. Update it at the end of every session.
 
@@ -28,6 +28,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - School web app `apps/web` (ADR 0009): Vite + React Router + TanStack Query SPA at `<slug>.dopple.localhost:3200`, `/api` proxied with the Host header kept. Sign-in with cookie sessions, role-based shell from the design canvas, home with today's lessons, my timetable, students (search, add, edit), classes (timetable add/remove, enrol/remove students, subjects). Public `GET /school` for the sign-in page. Playwright tests against the seeded school; CI seeds the database.
 - Self-serve schools and branding (ADR 0010, migration 0007): `POST /schools` (sign-up via `create_school()`), `GET /schools?q=` (find your school), `/schools/availability`; `tenants.brand_color`, `school_logos` (Postgres, PNG/JPEG/WebP ≤200 KB, public read); `PATCH /school`, `/school/logo`. Web app themes itself per school and has School settings for admins. Seed gives Riverside a blue.
 - Website log-in and sign-up: header **Log in** → `/login` (find your school, keyboard combobox, then the school's sign-in page); `/start` (self-serve sign-up with live address check, server action → `POST /schools` → redirect to the new school's sign-in). Fixed the hero covering the header links.
+- Web app themes: light is the default, dark or "match my device" per person in Settings (now open to every role; school name/colour/logo stay admin-only). Theme colours are role-named tokens (`fg`, `fg-2`, `fg-3`, `raised`, `edge-2`, `warn`, …) set per `[data-theme]`. Sign-in redesigned: school colour panel with name, logo and the Dopple circles, form on the right, "Powered by dopple" footer.
 - Local infra: `infra/docker-compose.yml` (Postgres 17, Redis 7, NATS JetStream, Grafana LGTM).
 - Repo rules: PR template with Before/After from the running UI (`apps/site` included), CI (checks, UI evidence, no co-author trailers), commit-msg hook.
 
@@ -64,6 +65,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-15 — Light/dark themes and new sign-in page (branch `web-themes`, stacked on PR #12). Token renames in `apps/web`: paper→`fg`, sand→`fg-2`, soft→`fg-3`, graphite→`raised`, iron→`edge-2`; `paper`/`ink`/`sun` are fixed colours. Theme choice is localStorage only (per device); `index.html` paints it before React loads. Settings warns if a school colour vanishes on either background.
 - 2026-10-14 — Website `/login` and `/start`. The hero's content layer (z-20) was covering the header, so no header link could be clicked; the header is now z-30. Site e2e creates one `Playwright Prep …` school per run (local DBs accumulate them; CI's is fresh).
 - 2026-10-14 — Self-serve sign-up and branding (ADR 0010). Migration 0007 adds two hand-written SECURITY DEFINER functions after the generated part. New env `SCHOOL_URL_FORMAT` (set `http://{host}:3200` locally) and `SCHOOL_SIGNUPS_PER_HOUR`. Website pages for find-your-school and sign-up come in a separate PR.
 - 2026-10-14 — Built `apps/web` v1 (ADR 0009). Node minimum is now 22.22 (React Router 8). Web e2e tests sign in ~5 times per run (API default limit 10/min): running them twice within a minute locally can hit 429. They add an `E2E-…` student to Greenfield each run.

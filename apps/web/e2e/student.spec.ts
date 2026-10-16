@@ -20,7 +20,11 @@ test.describe('as a student', () => {
 
   test('sees only their own pages', async () => {
     const nav = page.getByRole('navigation', { name: 'Main' });
-    await expect(nav.getByRole('link')).toHaveText(['Home', 'Timetable']);
+    await expect(nav.getByRole('link')).toHaveText([
+      'Home',
+      'Timetable',
+      'Settings',
+    ]);
     await expect(page.getByRole('region', { name: 'Today' })).toBeVisible();
   });
 
@@ -33,6 +37,28 @@ test.describe('as a student', () => {
     await expect(page.getByRole('region', { name: 'Monday' })).toContainText(
       'Demo Teacher',
     );
+  });
+
+  test('picks their own theme, which survives a reload', async () => {
+    const theme = () =>
+      page.evaluate(() => document.documentElement.dataset.theme);
+    await page.getByRole('link', { name: 'Settings' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Settings', level: 1 }),
+    ).toBeVisible();
+    // School branding is for admins only.
+    await expect(page.getByRole('region', { name: 'Logo' })).toHaveCount(0);
+    await expect(page.getByRole('radio', { name: /^Light/ })).toBeChecked();
+    expect(await theme()).toBe('light');
+
+    await page.getByRole('radio', { name: /^Dark/ }).check();
+    expect(await theme()).toBe('dark');
+    await page.reload();
+    await expect(page.getByRole('radio', { name: /^Dark/ })).toBeChecked();
+    expect(await theme()).toBe('dark');
+
+    await page.getByRole('radio', { name: /^Light/ }).check();
+    expect(await theme()).toBe('light');
   });
 
   test('gets "Staff only" for staff pages', async () => {

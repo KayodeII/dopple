@@ -125,9 +125,9 @@ test.describe('as the school admin', () => {
   });
 
   test('brands the app in the school’s colour and logo, then goes back to the default', async () => {
-    await page.getByRole('link', { name: 'School settings' }).click();
+    await page.getByRole('link', { name: 'Settings' }).click();
     await expect(
-      page.getByRole('heading', { name: 'School settings', level: 1 }),
+      page.getByRole('heading', { name: 'Settings', level: 1 }),
     ).toBeVisible();
     const schoolColor = () =>
       page.evaluate(() =>
@@ -159,13 +159,11 @@ test.describe('as the school admin', () => {
     await expect(
       page.getByRole('img', { name: 'Greenfield College logo' }).first(),
     ).toBeVisible();
-    await page
-      .locator('input[type=file]')
-      .setInputFiles({
-        name: 'logo.svg',
-        mimeType: 'image/svg+xml',
-        buffer: Buffer.from('<svg/>'),
-      });
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'logo.svg',
+      mimeType: 'image/svg+xml',
+      buffer: Buffer.from('<svg/>'),
+    });
     await expect(page.getByRole('alert')).toHaveText(
       'Choose a PNG, JPEG or WebP image.',
     );

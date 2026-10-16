@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { contrast, GROUND, INK, textOn, WHITE } from './color';
+import {
+  contrast,
+  GROUND_DARK,
+  GROUND_LIGHT,
+  INK,
+  textOn,
+  WHITE,
+} from './color';
 
 describe('school colours', () => {
   it('measures contrast like WCAG', () => {
@@ -15,7 +22,12 @@ describe('school colours', () => {
   });
 
   it('can tell when a colour disappears into the dark background', () => {
-    expect(contrast('#111111', GROUND)).toBeLessThan(3);
-    expect(contrast('#2f7a55', GROUND)).toBeGreaterThan(3);
+    expect(contrast('#111111', GROUND_DARK)).toBeLessThan(3);
+    expect(contrast('#2f7a55', GROUND_DARK)).toBeGreaterThan(3);
+  });
+
+  it('can tell when a colour disappears into the light background', () => {
+    expect(contrast('#f0ede6', GROUND_LIGHT)).toBeLessThan(1.6);
+    expect(contrast('#2f7a55', GROUND_LIGHT)).toBeGreaterThan(3);
   });
 });

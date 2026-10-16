@@ -1,48 +1,100 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens. The shared palette is copied from apps/site (until it moves to
- * packages/ui); the portal ones come from the "School portal · student home"
- * artboard in the design canvas. Use these names, not raw hex values.
+ * Design tokens. Use these names, not raw hex values.
+ *
+ * Fixed colours (same in both themes) come from apps/site until they move to
+ * packages/ui. Theme colours are named for their job, not their shade, so they
+ * read right in light and dark: `fg` is text, `ground` the page, `card` a panel,
+ * `raised` an input or the selected nav item. Light is the default; dark (and
+ * "match my device") is a per-person choice in Settings, see src/lib/theme.ts.
  */
 @theme {
+  /* Fixed */
   --color-ink: #0b0b0a;
   --color-paper: #f5f3ee;
-  --color-graphite: #1c1d1a;
-  --color-line: #262723;
-  --color-iron: #3a3b37;
-  --color-soft: #a3a59c;
-  --color-sand: #c9c5b9;
   --color-sun: #f5b400;
-  --color-coral: #ff6b4a;
-  --color-live: #e5484d;
-
-  /* Portal surfaces */
-  --color-ground: #0e0f0d;
-  --color-card: #161714;
-  --color-edge: #1f201d;
-  /* The school's own colour; one default until schools can set theirs. */
+  --color-seafoam: #9fd3c7;
+  /* The school's own colour; SchoolTheme sets it per school. */
   --color-school: #2f7a55;
   /* Text on the school colour; SchoolTheme picks white or ink for contrast. */
   --color-on-school: #ffffff;
-  /* Avatar fill from the artboard. */
-  --color-seafoam: #9fd3c7;
-
   --font-display:
     'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --animate-rise: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+}
+
+/*
+ * Theme colours. "inline" makes utilities read var(--ground) where they are used,
+ * so an element with its own data-theme gets its own colours.
+ */
+@theme inline {
+  --color-ground: var(--ground);
+  --color-card: var(--card);
+  --color-raised: var(--raised);
+  --color-edge: var(--edge);
+  --color-line: var(--line);
+  --color-edge-2: var(--edge-2);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-coral: var(--coral);
+  --color-warn: var(--warn);
+  --color-focus: var(--focus);
+}
+
+/* Any element can switch theme with data-theme, e.g. the previews in Settings. */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --ground: #f5f3ee;
+  --card: #ffffff;
+  --raised: #ece9e1;
+  --edge: #e6e2d8;
+  --line: #d3cec2;
+  --edge-2: #c9c4b6;
+  --fg: #0b0b0a;
+  --fg-2: #3f403a;
+  --fg-3: #5f6158;
+  --coral: #c2410c;
+  --warn: #8a5a00;
+  --focus: #0b0b0a;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ground: #0e0f0d;
+  --card: #161714;
+  --raised: #1c1d1a;
+  --edge: #1f201d;
+  --line: #262723;
+  --edge-2: #3a3b37;
+  --fg: #f5f3ee;
+  --fg-2: #c9c5b9;
+  --fg-3: #a3a59c;
+  --coral: #ff6b4a;
+  --warn: #f5b400;
+  --focus: #f5b400;
 }
 
 @layer base {
   body {
-    background: var(--color-ground);
-    color: var(--color-paper);
+    background: var(--ground);
+    color: var(--fg);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
   :focus-visible {
-    outline: 2px solid var(--color-sun);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
   input,
