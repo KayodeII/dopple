@@ -124,19 +124,24 @@ test.describe('as the school admin', () => {
     await expect(saturday).toHaveCount(0);
   });
 
-  test('brands the app in the school’s colour and logo, then goes back to the default', async () => {
+  test('brands the app in the school’s colours and logo, then goes back to the default', async () => {
     await page.getByRole('link', { name: 'Settings' }).click();
     await expect(
       page.getByRole('heading', { name: 'Settings', level: 1 }),
     ).toBeVisible();
-    const schoolColor = () =>
-      page.evaluate(() =>
-        getComputedStyle(document.documentElement)
-          .getPropertyValue('--color-school')
-          .trim(),
+    const cssColor = (name: string) => () =>
+      page.evaluate(
+        (name) =>
+          getComputedStyle(document.documentElement)
+            .getPropertyValue(name)
+            .trim(),
+        name,
       );
+    const schoolColor = cssColor('--color-school');
+    const accentColor = cssColor('--color-accent');
 
-    await page.getByLabel('Hex').fill('#f5b400');
+    // Without an accent, the main colour does both jobs.
+    await page.getByLabel('Main colour hex').fill('#f5b400');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page.getByText('Saved.')).toBeVisible();
     expect(await schoolColor()).toBe('#f5b400');
@@ -147,6 +152,12 @@ test.describe('as the school admin', () => {
         .trim(),
     );
     expect(onSchool).toBe('#0b0b0a');
+    expect(await accentColor()).toBe('#f5b400');
+
+    await page.getByLabel('Accent colour hex').fill('#2b5fd9');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(accentColor).toBe('#2b5fd9');
+    expect(await schoolColor()).toBe('#f5b400');
 
     // A 1x1 PNG is enough to prove the upload, storage and display path.
     const png = Buffer.from(
@@ -174,8 +185,10 @@ test.describe('as the school admin', () => {
       page.getByRole('img', { name: 'Greenfield College logo' }),
     ).toHaveCount(0);
     await page.getByRole('button', { name: 'Use Dopple’s colour' }).click();
+    await page.getByRole('button', { name: 'Same as main colour' }).click();
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect.poll(schoolColor).toBe('#2f7a55');
+    expect(await accentColor()).toBe('#2f7a55');
   });
 
   test('signs out, and a reload stays signed out', async () => {

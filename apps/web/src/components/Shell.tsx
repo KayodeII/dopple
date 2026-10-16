@@ -43,6 +43,7 @@ export function Shell() {
 
   return (
     <div className="flex min-h-screen flex-wrap content-start bg-ground">
+      <SchoolStripe />
       <aside className="flex max-w-full flex-[1_1_240px] flex-col gap-7 border-edge px-4 py-6 md:sticky md:top-0 md:h-screen md:max-w-[280px] md:border-r">
         <div className="flex items-center gap-3 px-2">
           <SchoolBadge size="sm" />
@@ -66,9 +67,9 @@ export function Shell() {
               to={link.to}
               end={link.to === '/'}
               className={({ isActive }) =>
-                `flex min-h-11 items-center gap-3 rounded-[10px] px-3 ${
+                `relative flex min-h-11 items-center gap-3 rounded-[10px] px-3 ${
                   isActive
-                    ? 'bg-raised font-semibold text-fg'
+                    ? 'bg-raised font-semibold text-fg before:absolute before:top-1/2 before:left-0 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-accent'
                     : 'text-fg-2 hover:bg-card'
                 }`
               }
@@ -105,6 +106,19 @@ export function Shell() {
       <main className="flex min-w-0 flex-[999_1_560px] flex-col gap-10 px-[clamp(16px,3vw,40px)] pt-8 pb-12">
         <Outlet />
       </main>
+    </div>
+  );
+}
+
+/** The school's colours as a thin band across the top: main, then accent. */
+function SchoolStripe() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 flex h-1"
+    >
+      <span className="flex-[2] bg-school" />
+      <span className="flex-1 bg-accent" />
     </div>
   );
 }

@@ -108,12 +108,14 @@ export function SignIn() {
   );
 }
 
-/** The school's side: its colour, logo (or first letter) and name, with the Dopple circles as texture. */
+/** The school's side: its colours, logo (or first letter) and name, with the Dopple circles as texture. */
 function SchoolPanel() {
   const school = useSchool().data;
+  // With an accent, the circles and badge carry it; without, they stay a faint tint.
+  const accented = Boolean(school?.accentColor);
   return (
     <aside className="relative isolate flex flex-col justify-between gap-8 overflow-hidden bg-school px-6 py-7 text-on-school md:px-12 md:py-12">
-      <LinkedCircles />
+      <LinkedCircles accented={accented} />
       {school?.logoUrl ? (
         <img
           src={school.logoUrl}
@@ -123,17 +125,25 @@ function SchoolPanel() {
       ) : (
         <span
           aria-hidden="true"
-          className="flex size-14 items-center justify-center rounded-2xl bg-on-school/15 font-display text-3xl font-bold md:size-16"
+          className={`flex size-14 items-center justify-center rounded-2xl font-display text-3xl font-bold md:size-16 ${
+            accented ? 'bg-accent text-on-accent' : 'bg-on-school/15'
+          }`}
         >
           {school?.name[0] ?? ''}
         </span>
       )}
       <div className="max-w-[16ch]">
         <p className="font-display text-[clamp(30px,5vw,64px)] leading-[0.98] font-bold tracking-[-0.04em] text-balance">
-          {school?.name ?? ' '}
+          {school?.name ?? '\u00a0'}
         </p>
+        <span
+          aria-hidden="true"
+          className={`mt-5 block h-1.5 w-16 rounded-full ${
+            accented ? 'bg-accent' : 'bg-on-school/40'
+          }`}
+        />
         {school?.city && (
-          <p className="mt-3 font-mono text-[13px] text-on-school/75">
+          <p className="mt-4 font-mono text-[13px] text-on-school/75">
             {school.city}
           </p>
         )}
@@ -142,16 +152,22 @@ function SchoolPanel() {
   );
 }
 
-/** The Dopple mark's two circles, blown up and faint, so the school's page still feels like Dopple. */
-function LinkedCircles() {
+/** The Dopple mark's two circles, blown up, so the school's page still feels like Dopple. */
+function LinkedCircles({ accented }: { accented: boolean }) {
   return (
     <svg
       aria-hidden="true"
       viewBox="0 0 160 100"
       fill="none"
-      className="pointer-events-none absolute -right-20 -bottom-16 -z-10 w-[300px] text-on-school md:-right-28 md:-bottom-24 md:w-[640px]"
+      className="pointer-events-none absolute -right-20 -bottom-16 -z-10 w-[300px] text-on-school md:-top-28 md:-right-32 md:bottom-auto md:w-[600px]"
     >
-      <circle cx="52" cy="50" r="36" fill="currentColor" opacity="0.09" />
+      <circle
+        cx="52"
+        cy="50"
+        r="36"
+        className={accented ? 'fill-accent' : 'fill-current'}
+        opacity={accented ? 0.9 : 0.09}
+      />
       <circle
         cx="108"
         cy="50"

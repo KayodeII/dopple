@@ -7,7 +7,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
 import {
-  applyRememberedSchoolColor,
+  applyRememberedSchoolColors,
   SchoolTheme,
 } from './components/SchoolTheme';
 import { ApiError } from './lib/api';
@@ -25,7 +25,7 @@ const queryClient = new QueryClient({
   },
 });
 
-applyRememberedSchoolColor();
+applyRememberedSchoolColors();
 watchTheme();
 
 createRoot(document.getElementById('root')!).render(

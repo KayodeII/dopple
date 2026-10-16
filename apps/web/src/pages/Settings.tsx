@@ -125,39 +125,111 @@ function ThemeSwatch({ theme }: { theme: Theme }) {
   );
 }
 
+const isHex = (value: string) => /^#[0-9a-f]{6}$/.test(value);
+
+/** Which theme, if any, a colour all but disappears into. */
+function faintIn(color: string): 'light' | 'dark' | null {
+  if (!isHex(color)) return null;
+  if (contrast(color, GROUND_LIGHT) < 1.6) return 'light';
+  if (contrast(color, GROUND_DARK) < 1.6) return 'dark';
+  return null;
+}
+
+/** One colour: a swatch picker, its hex, and a way back to the fallback (null). */
+function useColour(saved: string | null, fallback: string) {
+  const [value, setValue] = useState(saved ?? fallback);
+  const [unset, setUnset] = useState(saved === null);
+  return {
+    value: unset ? fallback : value,
+    unset,
+    pick: (next: string) => {
+      setValue(next.trim().toLowerCase());
+      setUnset(false);
+    },
+    reset: () => setUnset(true),
+    saved: () => (unset ? null : value),
+  };
+}
+
+function ColourPicker({
+  label,
+  colour,
+  resetLabel,
+}: {
+  label: string;
+  colour: ReturnType<typeof useColour>;
+  resetLabel: string;
+}) {
+  const faint = faintIn(colour.value);
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-1.5 text-sm font-semibold">{label}</legend>
+      <div className="flex flex-wrap items-end gap-3">
+        <input
+          type="color"
+          aria-label={`${label} swatch`}
+          value={isHex(colour.value) ? colour.value : DEFAULT_SCHOOL_COLOR}
+          onChange={(e) => colour.pick(e.target.value)}
+          className="h-11 w-16 cursor-pointer rounded-xl border border-edge-2 bg-raised p-1"
+        />
+        <div className="w-36">
+          <Field
+            label={`${label} hex`}
+            value={colour.value}
+            onChange={(e) => colour.pick(e.target.value)}
+            pattern="#[0-9a-fA-F]{6}"
+          />
+        </div>
+        <Button
+          type="button"
+          variant="quiet"
+          onClick={colour.reset}
+          disabled={colour.unset}
+        >
+          {resetLabel}
+        </Button>
+      </div>
+      {faint && (
+        <p className="text-[13px] text-warn">
+          This colour is very {faint === 'dark' ? 'dark' : 'light'} and will be
+          hard to see in the {faint} theme.
+        </p>
+      )}
+    </fieldset>
+  );
+}
+
 function Profile({ school }: { school: School }) {
   const [name, setName] = useState(school.name);
-  const [color, setColor] = useState(school.brandColor ?? DEFAULT_SCHOOL_COLOR);
-  const [isDefault, setIsDefault] = useState(school.brandColor === null);
+  const main = useColour(school.brandColor, DEFAULT_SCHOOL_COLOR);
+  // No accent means the main colour does both jobs.
+  const accent = useColour(school.accentColor, main.value);
   const save = useWrite(
-    (patch: { name: string; brandColor: string | null }) =>
-      api<School>('/school', { method: 'PATCH', body: patch }),
+    (patch: {
+      name: string;
+      brandColor: string | null;
+      accentColor: string | null;
+    }) => api<School>('/school', { method: 'PATCH', body: patch }),
     [['school']],
   );
-  const valid = /^#[0-9a-f]{6}$/.test(color);
-  const preview = valid ? color : DEFAULT_SCHOOL_COLOR;
-  const faintOn =
-    valid && contrast(color, GROUND_LIGHT) < 1.6
-      ? 'light'
-      : valid && contrast(color, GROUND_DARK) < 1.6
-        ? 'dark'
-        : null;
-
-  function pick(value: string) {
-    setColor(value.trim().toLowerCase());
-    setIsDefault(false);
-  }
+  const valid = isHex(main.value) && isHex(accent.value);
+  const mainPreview = isHex(main.value) ? main.value : DEFAULT_SCHOOL_COLOR;
+  const accentPreview = isHex(accent.value) ? accent.value : mainPreview;
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    save.mutate({ name, brandColor: isDefault ? null : color });
+    save.mutate({
+      name,
+      brandColor: main.saved(),
+      accentColor: accent.saved(),
+    });
   }
 
   return (
-    <Section title="Name and colour">
+    <Section title="Name and colours">
       <form
         onSubmit={submit}
-        className="flex flex-col gap-5 rounded-2xl bg-card p-5"
+        className="flex flex-col gap-6 rounded-2xl bg-card p-5"
       >
         <div className="max-w-[480px]">
           <Field
@@ -169,63 +241,50 @@ function Profile({ school }: { school: School }) {
             maxLength={100}
           />
         </div>
-        <div className="flex flex-wrap items-end gap-4">
-          <label className="flex flex-col gap-1.5 text-sm text-fg-2">
-            Colour
-            <input
-              type="color"
-              value={preview}
-              onChange={(e) => pick(e.target.value)}
-              className="h-11 w-16 cursor-pointer rounded-xl border border-edge-2 bg-raised p-1"
-            />
-          </label>
-          <div className="w-36">
-            <Field
-              label="Hex"
-              value={color}
-              onChange={(e) => pick(e.target.value)}
-              pattern="#[0-9a-fA-F]{6}"
-            />
-          </div>
-          <Button
-            type="button"
-            variant="quiet"
-            onClick={() => {
-              setColor(DEFAULT_SCHOOL_COLOR);
-              setIsDefault(true);
-            }}
-          >
-            Use Dopple’s colour
-          </Button>
-        </div>
-        {faintOn && (
-          <p className="text-[13px] text-warn">
-            This colour is very {faintOn === 'dark' ? 'dark' : 'light'} and will
-            be hard to see in the {faintOn} theme.
-          </p>
-        )}
+        <ColourPicker
+          label="Main colour"
+          colour={main}
+          resetLabel="Use Dopple’s colour"
+        />
+        <ColourPicker
+          label="Accent colour"
+          colour={accent}
+          resetLabel="Same as main colour"
+        />
+        <p className="-mt-3 text-[13px] text-fg-3">
+          The main colour is for buttons and the sign-in page; the accent picks
+          out highlights, like the menu and the stripe across the top.
+        </p>
         <div
           aria-label="Preview"
           className="flex flex-wrap items-center gap-4 rounded-xl border border-dashed border-line p-4"
         >
           <span
             className="flex size-9 items-center justify-center rounded-[10px] font-display text-lg font-bold"
-            style={{ background: preview, color: textOn(preview) }}
+            style={{ background: mainPreview, color: textOn(mainPreview) }}
             aria-hidden="true"
           >
             {name[0] ?? ''}
           </span>
           <span
             className="inline-flex min-h-11 items-center rounded-full px-5 text-[15px] font-semibold"
-            style={{ background: preview, color: textOn(preview) }}
+            style={{ background: mainPreview, color: textOn(mainPreview) }}
           >
             Sign in
           </span>
           <span
-            className="rounded-2xl bg-ground p-3 text-sm"
-            style={{ boxShadow: `inset 0 0 0 2px ${preview}` }}
+            className="flex min-h-11 items-center gap-2.5 rounded-[10px] bg-raised pr-4 text-[15px] font-semibold"
+            aria-hidden="true"
           >
-            08:40 · now
+            <span
+              className="h-6 w-[3px] rounded-full"
+              style={{ background: accentPreview }}
+            />
+            Timetable
+          </span>
+          <span className="flex h-2 w-28 overflow-hidden rounded-full">
+            <span className="flex-[2]" style={{ background: mainPreview }} />
+            <span className="flex-1" style={{ background: accentPreview }} />
           </span>
         </div>
         <ErrorNote error={save.error} />
