@@ -57,6 +57,8 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 3. Never accept a tenant id from request input (body, query, headers other than the host). The tenant comes from `TenantMiddleware`.
 4. The API connects as `dopple_app`, which is not a superuser and not the table owner. Do not change that; superusers bypass row-level security.
 5. A change that touches tenancy needs a test in `apps/api/test/tenant-isolation.e2e-spec.ts`.
+6. The app role never writes `tenants` directly. New schools go through `create_school()` and name/colour changes through `update_school_profile()` (ADR 0010).
+7. `school_logos` is the one tenant table readable across schools (logos are public). Always filter it by `tenant_id` when reading.
 
 ### Code
 
@@ -75,6 +77,7 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 - Use the design tokens from `src/app/globals.css` (`bg-paper`, `text-ink`, `bg-sun`, `font-display`, …), not raw hex values.
 - Never invent testimonials, stats or partner logos. The partner wall only shows schools from `GET /showcase/schools` and hides below `SHOWCASE_MIN_SCHOOLS`.
 - Every animation must stop under `prefers-reduced-motion` (handled globally in `globals.css`; keep it that way).
+- **Log in** goes to `/login` (find your school, then that school's own sign-in page); `/start` is self-serve sign-up (ADR 0010). Both reach the API only server-side: route handlers in `src/app/api/schools` and the server action in `src/app/start/actions.ts`, using `DOPPLE_API_URL`.
 - Smoke tests: `pnpm --filter @dopple/site build && pnpm --filter @dopple/site test:e2e` (set `CHROMIUM_PATH` to reuse an installed Chromium).
 
 ### School web app (`apps/web`)

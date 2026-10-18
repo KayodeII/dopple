@@ -48,6 +48,7 @@ jobs:
         env:
           OTEL_SDK_DISABLED: 'true'
           LOGIN_RATE_LIMIT_PER_MINUTE: '100'
+          SCHOOL_SIGNUPS_PER_HOUR: '100'
       - run: pnpm test:e2e
       - name: API log
         if: failure()

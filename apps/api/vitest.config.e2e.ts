@@ -15,6 +15,7 @@ export default defineConfig({
       LOG_LEVEL: 'warn',
       OTEL_SDK_DISABLED: 'true',
       LOGIN_RATE_LIMIT_PER_MINUTE: '1000',
+      SCHOOL_SIGNUPS_PER_HOUR: '1000',
     },
   },
 });

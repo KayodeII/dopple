@@ -49,7 +49,7 @@ export function Students() {
         ) : (
           <div className="overflow-x-auto rounded-2xl bg-card">
             <table className="w-full min-w-[480px] text-left text-[15px]">
-              <thead className="text-[13px] text-soft">
+              <thead className="text-[13px] text-fg-3">
                 <tr>
                   <th className="px-4 py-3 font-normal">Admission no.</th>
                   <th className="px-4 py-3 font-normal">Name</th>
@@ -70,7 +70,7 @@ export function Students() {
                         {s.lastName}, {s.firstName}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-soft">
+                    <td className="px-4 py-3 text-fg-3">
                       {s.userId ? 'Linked' : '—'}
                     </td>
                   </tr>
