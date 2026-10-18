@@ -22,7 +22,7 @@ Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisio
 | `apps/site` | Marketing website (Next.js 16, Tailwind 4). Copy lives in `src/lib/content.ts` | Built (v1) |
 | `apps/web` | School web app (Vite, React, React Router) for staff, students and parents | Built (v1: sign-in, students, classes, timetables) |
 | `services/realtime` | Go WebSocket gateway: whiteboard sync, chat, presence | Planned |
-| `content/learn` | Dopple Learn lessons and practice questions (JSON), loaded with `pnpm learn:load` | Started (5 lessons) |
+| `content/learn` | Dopple Learn lessons and practice questions (JSON), loaded with `pnpm learn:load` | Started (32 lessons: English and maths in every class) |
 | `infra` | Local dependencies (Postgres, Redis, NATS, Grafana LGTM) | Ready |
 | `docs/context` | Living project state for agents. **Update it every session.** | Ready |
 | `docs/decisions` | Architecture decision records (ADRs) | Ready |

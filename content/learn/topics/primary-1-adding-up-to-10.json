@@ -1,0 +1,53 @@
+{
+  "slug": "primary-1-adding-up-to-10",
+  "class": "primary-1",
+  "subject": "mathematics",
+  "position": 1,
+  "title": "Adding numbers up to 10",
+  "summary": "Put two groups together and count how many there are altogether.",
+  "minutes": 12,
+  "lesson": [
+    { "type": "p", "text": "Adding means putting things together to find how many there are altogether. We use the sign + (plus) for adding and = (equals) for the answer." },
+    { "type": "example", "title": "2 oranges and 3 oranges", "steps": ["Put 2 oranges on the table.", "Add 3 more oranges.", "Count them all: 1, 2, 3, 4, 5.", "So 2 + 3 = 5."] },
+    { "type": "h", "text": "Counting on" },
+    { "type": "p", "text": "You don't have to count from 1 every time. Start from the bigger number and count on." },
+    { "type": "example", "title": "6 + 3", "steps": ["Start at 6 and keep it in your head.", "Count on 3 more: 7, 8, 9.", "So 6 + 3 = 9."] },
+    { "type": "h", "text": "Order doesn't matter" },
+    { "type": "p", "text": "4 + 1 and 1 + 4 give the same answer, 5. So start with the bigger number: it is quicker." },
+    { "type": "h", "text": "Pairs that make 10" },
+    { "type": "list", "items": ["1 + 9 = 10", "2 + 8 = 10", "3 + 7 = 10", "4 + 6 = 10", "5 + 5 = 10"] },
+    { "type": "tip", "text": "Use your fingers, bottle tops or seeds. Seeing the things helps you understand the sum." }
+  ],
+  "questions": [
+    {
+      "prompt": "What is 3 + 4?",
+      "options": ["6", "7", "8", "1"],
+      "answer": 1,
+      "explanation": "Start at 4 and count on 3: 5, 6, 7. So 3 + 4 = 7. (1 is what you get if you take away, not add.)"
+    },
+    {
+      "prompt": "Emeka has 5 sweets. His sister gives him 2 more. How many sweets does he have now?",
+      "options": ["3", "6", "8", "7"],
+      "answer": 3,
+      "explanation": "Start at 5 and count on 2: 6, 7. Emeka has 7 sweets."
+    },
+    {
+      "prompt": "Which number goes in the gap: 6 + ? = 10",
+      "options": ["4", "3", "5", "6"],
+      "answer": 0,
+      "explanation": "Count on from 6 to 10: 7, 8, 9, 10. That is 4 steps, so 6 + 4 = 10."
+    },
+    {
+      "prompt": "What is 8 + 1?",
+      "options": ["7", "10", "9", "81"],
+      "answer": 2,
+      "explanation": "One more than 8 is 9. So 8 + 1 = 9."
+    },
+    {
+      "prompt": "Which sum does NOT make 10?",
+      "options": ["3 + 7", "5 + 5", "2 + 8", "4 + 5"],
+      "answer": 3,
+      "explanation": "4 + 5 = 9, not 10. The others are all pairs that make 10."
+    }
+  ]
+}

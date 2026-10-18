@@ -1,0 +1,52 @@
+{
+  "slug": "jss-1-simple-equations",
+  "class": "jss-1",
+  "subject": "mathematics",
+  "position": 2,
+  "title": "Solving simple equations",
+  "summary": "Find the unknown number by doing the same thing to both sides.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "p", "text": "An equation says two things are equal, like x + 3 = 10. Solving it means finding the number x stands for." },
+    { "type": "h", "text": "Keep the balance" },
+    { "type": "p", "text": "Think of a weighing scale. Whatever you do to one side, do to the other, and it stays balanced. Use the opposite operation to get x on its own: subtract to undo +, add to undo −, divide to undo ×, multiply to undo ÷." },
+    { "type": "example", "title": "x + 7 = 15", "steps": ["Undo + 7 by subtracting 7 from both sides.", "x = 15 − 7.", "x = 8. Check: 8 + 7 = 15 ✓"] },
+    { "type": "example", "title": "2x + 5 = 17", "steps": ["Subtract 5 from both sides: 2x = 12.", "Divide both sides by 2: x = 6.", "Check: 2 × 6 + 5 = 17 ✓"] },
+    { "type": "example", "title": "x ÷ 4 = 3", "steps": ["Undo ÷ 4 by multiplying both sides by 4.", "x = 12. Check: 12 ÷ 4 = 3 ✓"] },
+    { "type": "h", "text": "From words to an equation" },
+    { "type": "example", "title": "I think of a number, multiply it by 3 and add 4. The answer is 19.", "steps": ["Let the number be n: 3n + 4 = 19.", "Subtract 4: 3n = 15.", "Divide by 3: n = 5."] },
+    { "type": "tip", "text": "Always check by putting your answer back into the equation. It takes ten seconds and catches most mistakes." }
+  ],
+  "questions": [
+    {
+      "prompt": "Solve: x − 6 = 9",
+      "options": ["3", "15", "54", "−3"],
+      "answer": 1,
+      "explanation": "Add 6 to both sides: x = 9 + 6 = 15. Check: 15 − 6 = 9 ✓"
+    },
+    {
+      "prompt": "Solve: 3x = 21",
+      "options": ["7", "18", "24", "63"],
+      "answer": 0,
+      "explanation": "Divide both sides by 3: x = 21 ÷ 3 = 7."
+    },
+    {
+      "prompt": "Solve: 4x + 3 = 23",
+      "options": ["6.5", "4", "5", "20"],
+      "answer": 2,
+      "explanation": "Subtract 3: 4x = 20. Divide by 4: x = 5. Check: 4 × 5 + 3 = 23 ✓"
+    },
+    {
+      "prompt": "Solve: 5x − 4 = 2x + 11",
+      "options": ["7", "3", "15", "5"],
+      "answer": 3,
+      "explanation": "Subtract 2x from both sides: 3x − 4 = 11. Add 4: 3x = 15. Divide by 3: x = 5. Check: 21 = 21 ✓"
+    },
+    {
+      "prompt": "Bayo has some money. After spending ₦250 he has ₦400 left. Which equation shows this?",
+      "options": ["m − 250 = 400", "m + 250 = 400", "250 − m = 400", "m − 400 = 250 + m"],
+      "answer": 0,
+      "explanation": "Start with m, take away ₦250, and ₦400 is left: m − 250 = 400. So m = ₦650."
+    }
+  ]
+}
