@@ -40,6 +40,7 @@ jobs:
           PGPASSWORD=dopple psql -h localhost -U dopple -d dopple -f infra/postgres/init.sql
           pnpm db:migrate
           pnpm db:seed
+          pnpm learn:load
       # The site and the web app pin the same Playwright, so one browser install serves both.
       - name: Install Chromium for Playwright tests
         run: pnpm --filter @dopple/site exec playwright install --with-deps chromium
@@ -48,6 +49,11 @@ jobs:
         env:
           OTEL_SDK_DISABLED: 'true'
           LOGIN_RATE_LIMIT_PER_MINUTE: '100'
+          SCHOOL_SIGNUPS_PER_HOUR: '100'
+      # Rebuild the site now the API is up, as a real deploy would: cached Learn pages are
+      # prerendered from the API, and a build without it bakes in "unavailable" for a while.
+      - name: Rebuild the site against the running API
+        run: pnpm --filter @dopple/site build
       - run: pnpm test:e2e
       - name: API log
         if: failure()

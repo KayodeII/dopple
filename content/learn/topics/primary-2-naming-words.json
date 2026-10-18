@@ -1,0 +1,46 @@
+{
+  "slug": "primary-2-naming-words",
+  "class": "primary-2",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "Naming words (nouns)",
+  "summary": "Find the words that name people, animals, places and things.",
+  "minutes": 12,
+  "lesson": [
+    { "type": "p", "text": "Some words are names. They tell us who or what we are talking about. We call them naming words, or nouns." },
+    { "type": "h", "text": "Four kinds of naming words" },
+    { "type": "list", "items": ["People: mother, teacher, doctor, Amina, Chidi", "Animals: goat, dog, hen, fish", "Places: market, school, Lagos, farm", "Things: book, cup, chair, ball"] },
+    { "type": "h", "text": "Finding the naming word" },
+    { "type": "p", "text": "Ask: is this the name of a person, an animal, a place or a thing? If yes, it is a naming word." },
+    { "type": "example", "title": "The goat ate the yam.", "steps": ["Is \"goat\" a name? Yes, it names an animal.", "Is \"ate\" a name? No, it tells us what the goat did.", "Is \"yam\" a name? Yes, it names a thing.", "So the naming words are \"goat\" and \"yam\"."] },
+    { "type": "h", "text": "Special names start with a capital letter" },
+    { "type": "p", "text": "The name of one particular person or place starts with a capital letter: Tunde, Kano, Nigeria. A general name does not: boy, city, country." },
+    { "type": "tip", "text": "Practise at home: point at things around you and say their names. Every one of them is a naming word." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which word is a naming word?",
+      "options": ["run", "book", "happy", "quickly"],
+      "answer": 1,
+      "explanation": "\"Book\" names a thing. \"Run\" is something you do, \"happy\" describes how you feel and \"quickly\" describes how something is done."
+    },
+    {
+      "prompt": "In \"Ngozi went to the market\", which word names a place?",
+      "options": ["Ngozi", "went", "market", "the"],
+      "answer": 2,
+      "explanation": "\"Market\" is a place. \"Ngozi\" is also a naming word, but it names a person."
+    },
+    {
+      "prompt": "Which naming word should start with a capital letter?",
+      "options": ["dog", "abuja", "chair", "teacher"],
+      "answer": 1,
+      "explanation": "Abuja is the name of one particular city, so it is written with a capital letter: Abuja."
+    },
+    {
+      "prompt": "Which of these names an animal?",
+      "options": ["hen", "farm", "spoon", "nurse"],
+      "answer": 0,
+      "explanation": "A hen is an animal. A farm is a place, a spoon is a thing and a nurse is a person."
+    }
+  ]
+}

@@ -21,7 +21,7 @@ export function PageHeader({
     <header className="flex flex-wrap items-end justify-between gap-4">
       <div>
         {eyebrow && (
-          <p className="font-mono text-[13px] text-soft">{eyebrow}</p>
+          <p className="font-mono text-[13px] text-fg-3">{eyebrow}</p>
         )}
         <h1 className="mt-1.5 font-display text-[clamp(28px,3.4vw,40px)] font-semibold tracking-[-0.03em]">
           {title}
@@ -74,9 +74,9 @@ export function Button({
   ...props
 }: ButtonProps) {
   const look = {
-    primary: 'bg-school text-white hover:brightness-110',
-    quiet: 'border border-iron text-paper hover:bg-graphite',
-    danger: 'border border-iron text-coral hover:bg-graphite',
+    primary: 'bg-school text-on-school hover:brightness-110',
+    quiet: 'border border-edge-2 text-fg hover:bg-raised',
+    danger: 'border border-edge-2 text-coral hover:bg-raised',
   }[variant];
   return (
     <button
@@ -87,14 +87,14 @@ export function Button({
 }
 
 const control =
-  'min-h-11 w-full rounded-xl border border-iron bg-graphite px-3.5 text-[15px] text-paper placeholder:text-soft';
+  'min-h-11 w-full rounded-xl border border-edge-2 bg-raised px-3.5 text-[15px] text-fg placeholder:text-fg-3';
 
 export function Field({
   label,
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm text-sand">
+    <label className="flex flex-col gap-1.5 text-sm text-fg-2">
       {label}
       <input className={control} {...props} />
     </label>
@@ -107,7 +107,7 @@ export function Select({
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm text-sand">
+    <label className="flex flex-col gap-1.5 text-sm text-fg-2">
       {label}
       <select className={control} {...props}>
         {children}
@@ -135,14 +135,14 @@ export function ErrorNote({ error }: { error: unknown }) {
 
 export function Empty({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-2xl border border-dashed border-line p-6 text-soft">
+    <p className="rounded-2xl border border-dashed border-line p-6 text-fg-3">
       {children}
     </p>
   );
 }
 
 export function Loading() {
-  return <p className="text-soft">Loading…</p>;
+  return <p className="text-fg-3">Loading…</p>;
 }
 
 export function initials(name: string): string {

@@ -12,6 +12,14 @@ export interface User {
 export interface School {
   slug: string;
   name: string;
+  city: string | null;
+  /** "#rrggbb", or null for Dopple's default. */
+  brandColor: string | null;
+  /** "#rrggbb" for highlights, or null to reuse the brand colour. */
+  accentColor: string | null;
+  url: string;
+  /** Same-origin path to the logo, or null. */
+  logoUrl: string | null;
 }
 
 export interface Ref {
