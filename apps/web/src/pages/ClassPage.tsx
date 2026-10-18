@@ -41,7 +41,7 @@ export function ClassPage() {
 
   return (
     <>
-      <Link to="/classes" className="text-sm text-soft hover:text-paper">
+      <Link to="/classes" className="text-sm text-fg-3 hover:text-fg">
         ← All classes
       </Link>
       <PageHeader
@@ -227,7 +227,7 @@ function ClassStudents({ classId }: { classId: string }) {
                 <span className="font-semibold">
                   {s.lastName}, {s.firstName}
                 </span>
-                <span className="ml-3 font-mono text-[13px] text-soft">
+                <span className="ml-3 font-mono text-[13px] text-fg-3">
                   {s.admissionNo}
                 </span>
               </Link>
@@ -297,7 +297,7 @@ function EnrolStudent({
           Add to class
         </Button>
       </div>
-      <p className="text-[13px] text-soft">
+      <p className="text-[13px] text-fg-3">
         A student already in another class this school year moves here.
       </p>
       <ErrorNote error={enrol.error} />
@@ -321,11 +321,11 @@ function ClassSubjects({ classId }: { classId: string }) {
               key={s.id}
               className="flex flex-col gap-1 rounded-2xl bg-card p-4"
             >
-              <span className="font-mono text-[12.5px] text-soft">
+              <span className="font-mono text-[12.5px] text-fg-3">
                 {s.code}
               </span>
               <span className="font-semibold">{s.name}</span>
-              <span className="text-[13px] text-soft">
+              <span className="text-[13px] text-fg-3">
                 {s.teacher?.name ?? 'No teacher yet'}
               </span>
             </li>

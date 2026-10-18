@@ -27,7 +27,7 @@ export function Student() {
 
   return (
     <>
-      <Link to="/students" className="text-sm text-soft hover:text-paper">
+      <Link to="/students" className="text-sm text-fg-3 hover:text-fg">
         ← All students
       </Link>
       <PageHeader
@@ -49,7 +49,7 @@ export function Student() {
             {s.enrolments.map((e) => (
               <li key={e.session.id}>
                 <Card className="flex flex-col gap-1">
-                  <span className="font-mono text-[12.5px] text-soft">
+                  <span className="font-mono text-[12.5px] text-fg-3">
                     {e.session.name}
                   </span>
                   <Link
@@ -65,7 +65,7 @@ export function Student() {
         )}
       </Section>
       <Section title="Sign-in account">
-        <p className="text-soft">
+        <p className="text-fg-3">
           {s.userId ? 'Linked to a student account.' : 'No account linked yet.'}
         </p>
       </Section>

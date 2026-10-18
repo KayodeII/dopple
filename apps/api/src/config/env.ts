@@ -34,6 +34,19 @@ const envSchema = z
      * Counters are in memory: correct for one API instance; move to Redis before scaling out.
      */
     LOGIN_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(10),
+    /**
+     * A school's web app address, with {host} replaced by <slug>.<PLATFORM_DOMAIN> or the
+     * school's custom domain. Locally the web app runs on its own port: http://{host}:3200.
+     */
+    SCHOOL_URL_FORMAT: z
+      .string()
+      .regex(
+        /^https?:\/\/\{host\}(:\d+)?$/,
+        'must look like https://{host} or http://{host}:3200',
+      )
+      .default('https://{host}'),
+    /** New schools allowed per client IP per hour (self-serve sign-up, ADR 0010). */
+    SCHOOL_SIGNUPS_PER_HOUR: z.coerce.number().int().positive().default(5),
   })
   .refine((env) => env.NODE_ENV !== 'production' || !!env.JWT_PRIVATE_KEY, {
     path: ['JWT_PRIVATE_KEY'],

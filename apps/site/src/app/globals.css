@@ -25,6 +25,12 @@
   --color-pink: #ff8fb1;
   --color-live: #e5484d;
 
+  /* Form messages on paper: darker than coral and mint so they pass 4.5:1. */
+  --color-danger: #b4321c;
+  --color-ok: #1f6b47;
+  /* A school with no colour of its own, same as the web app's default. */
+  --color-school: #2f7a55;
+
   --font-display:
     'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
@@ -101,6 +107,21 @@
 }
 .fade-up-3 {
   animation: fade-up 1.1s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Practice questions: a quick, small entrance for each new question or explanation. */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pop-in {
+  animation: pop-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @keyframes float {

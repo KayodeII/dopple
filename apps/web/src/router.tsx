@@ -12,6 +12,7 @@ import { Classes } from './pages/Classes';
 import { Home } from './pages/Home';
 import { MyTimetable } from './pages/MyTimetable';
 import { NotFound, StaffOnly } from './pages/NotFound';
+import { Settings } from './pages/Settings';
 import { SignIn } from './pages/SignIn';
 import { Student } from './pages/Student';
 import { Students } from './pages/Students';
@@ -63,6 +64,7 @@ export const router = createBrowserRouter([
           { path: 'classes/:id', Component: ClassPage },
         ],
       },
+      { path: 'settings', Component: Settings },
       { path: '*', Component: NotFound },
     ],
   },

@@ -1,0 +1,507 @@
+[
+  {
+    "slug": "early-numeracy",
+    "name": "Numbers (early numeracy)",
+    "classes": [
+      "nursery-1",
+      "nursery-2"
+    ]
+  },
+  {
+    "slug": "early-literacy",
+    "name": "Letters and sounds (early literacy)",
+    "classes": [
+      "nursery-1",
+      "nursery-2"
+    ]
+  },
+  {
+    "slug": "english-studies",
+    "name": "English Studies",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3"
+    ]
+  },
+  {
+    "slug": "mathematics",
+    "name": "Mathematics",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3"
+    ]
+  },
+  {
+    "slug": "nigerian-languages",
+    "name": "Nigerian Languages",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "basic-science",
+    "name": "Basic Science",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3"
+    ]
+  },
+  {
+    "slug": "basic-science-and-technology",
+    "name": "Basic Science and Technology",
+    "classes": [
+      "primary-4",
+      "primary-5",
+      "primary-6"
+    ]
+  },
+  {
+    "slug": "intermediate-science",
+    "name": "Intermediate Science",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3"
+    ]
+  },
+  {
+    "slug": "physical-and-health-education",
+    "name": "Physical and Health Education",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3"
+    ]
+  },
+  {
+    "slug": "christian-religious-studies",
+    "name": "Christian Religious Studies",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "islamic-studies",
+    "name": "Islamic Studies",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "nigerian-history",
+    "name": "Nigerian History",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "social-and-citizenship-studies",
+    "name": "Social and Citizenship Studies",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3"
+    ]
+  },
+  {
+    "slug": "cultural-and-creative-arts",
+    "name": "Cultural and Creative Arts",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3"
+    ]
+  },
+  {
+    "slug": "basic-digital-literacy",
+    "name": "Basic Digital Literacy",
+    "classes": [
+      "primary-4",
+      "primary-5",
+      "primary-6"
+    ]
+  },
+  {
+    "slug": "pre-vocational-studies",
+    "name": "Pre-vocational Studies",
+    "classes": [
+      "primary-4",
+      "primary-5",
+      "primary-6"
+    ]
+  },
+  {
+    "slug": "digital-technologies",
+    "name": "Digital Technologies",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "business-studies",
+    "name": "Business Studies",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3"
+    ]
+  },
+  {
+    "slug": "french",
+    "name": "French",
+    "classes": [
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "arabic",
+    "name": "Arabic",
+    "classes": [
+      "primary-1",
+      "primary-2",
+      "primary-3",
+      "primary-4",
+      "primary-5",
+      "primary-6",
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "solar-pv-installation",
+    "name": "Solar PV Installation and Maintenance",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "fashion-design-and-garment-making",
+    "name": "Fashion Design and Garment Making",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "livestock-farming",
+    "name": "Livestock Farming",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "beauty-and-cosmetology",
+    "name": "Beauty and Cosmetology",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "computer-hardware-and-gsm-repairs",
+    "name": "Computer Hardware and GSM Repairs",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "horticulture-and-crop-production",
+    "name": "Horticulture and Crop Production",
+    "classes": [
+      "jss-1",
+      "jss-2",
+      "jss-3",
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "english-language",
+    "name": "English Language",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "general-mathematics",
+    "name": "General Mathematics",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "citizenship-and-heritage-studies",
+    "name": "Citizenship and Heritage Studies",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "biology",
+    "name": "Biology",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "chemistry",
+    "name": "Chemistry",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "physics",
+    "name": "Physics",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "further-mathematics",
+    "name": "Further Mathematics",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "agriculture",
+    "name": "Agriculture",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "geography",
+    "name": "Geography",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "technical-drawing",
+    "name": "Technical Drawing",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "foods-and-nutrition",
+    "name": "Foods and Nutrition",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "government",
+    "name": "Government",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "literature-in-english",
+    "name": "Literature in English",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "visual-arts",
+    "name": "Visual Arts",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "music",
+    "name": "Music",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "economics",
+    "name": "Economics",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "accounting",
+    "name": "Accounting",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "commerce",
+    "name": "Commerce",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  },
+  {
+    "slug": "marketing",
+    "name": "Marketing",
+    "classes": [
+      "ss-1",
+      "ss-2",
+      "ss-3"
+    ]
+  }
+]

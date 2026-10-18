@@ -3,7 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Paint the saved theme before first render (see src/lib/theme.ts).
+      try {
+        var t = localStorage.getItem('dopple:theme');
+        if (
+          t === 'dark' ||
+          (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        )
+          document.documentElement.dataset.theme = 'dark';
+      } catch (e) {}
+    </script>
     <title>Dopple</title>
   </head>
   <body>
