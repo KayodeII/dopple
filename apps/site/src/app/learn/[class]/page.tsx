@@ -9,7 +9,7 @@ import { getClassLevel, lessonPath } from '@/lib/learn';
 export async function generateMetadata({
   params,
 }: PageProps<'/learn/[class]'>): Promise<Metadata> {
-  const level = await getClassLevel((await params).class).catch(() => null);
+  const level = await getClassLevel((await params).class);
   return {
     title: level ? `${level.class.name} lessons · Dopple Learn` : 'Dopple Learn',
     description: learn.body,
@@ -34,7 +34,7 @@ async function ClassLessons({
   params,
 }: Pick<PageProps<'/learn/[class]'>, 'params'>) {
   const slug = (await params).class;
-  const level = await getClassLevel(slug).catch(() => undefined);
+  const level = await getClassLevel(slug);
   if (level === null) notFound();
   if (!level) {
     return (

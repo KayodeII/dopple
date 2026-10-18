@@ -57,17 +57,23 @@ export interface Topic {
 /**
  * Lessons change only when content is loaded, so pages are cached. Minutes, not days: if the
  * API was unreachable (say, during a build), the page recovers on its own soon after.
- * `null` means the API had no such page; a thrown error means it couldn't be reached.
+ * `null` means the API had no such page; `undefined` means it couldn't be reached. Errors are
+ * caught in here because one thrown from a cached function fails the prerender, even when
+ * the caller catches it.
  */
-async function get<T>(path: string): Promise<T | null> {
+async function get<T>(path: string): Promise<T | null | undefined> {
   'use cache';
   cacheLife('minutes');
-  const res = await fetch(`${API_URL}${path}`, {
-    signal: AbortSignal.timeout(5000),
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`The API answered ${res.status} for ${path}`);
-  return (await res.json()) as T;
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) return undefined;
+    return (await res.json()) as T;
+  } catch {
+    return undefined;
+  }
 }
 
 export const getCatalogue = () => get<Catalogue>('/learn');

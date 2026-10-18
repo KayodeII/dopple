@@ -68,7 +68,7 @@ export default function LearnPage() {
 }
 
 async function Classes() {
-  const catalogue = await getCatalogue().catch(() => null);
+  const catalogue = await getCatalogue();
   if (!catalogue) return <p className="text-danger">{learn.unavailable}</p>;
   return (
     <div className="flex flex-col gap-8">

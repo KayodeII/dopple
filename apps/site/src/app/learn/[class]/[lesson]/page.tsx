@@ -12,7 +12,7 @@ type Props = PageProps<'/learn/[class]/[lesson]'>;
 
 async function load(params: Props['params']) {
   const { class: classSlug, lesson } = await params;
-  const topic = await getTopic(`${classSlug}-${lesson}`).catch(() => undefined);
+  const topic = await getTopic(`${classSlug}-${lesson}`);
   // The class in the URL must be the lesson's own class.
   return topic && topic.class.slug !== classSlug ? null : topic;
 }
