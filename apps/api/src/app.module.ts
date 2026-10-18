@@ -5,6 +5,8 @@ import { DatabaseErrorFilter } from './common/database-error.filter.js';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
+import { SchoolModule } from './modules/school/school.module.js';
+import { SchoolsModule } from './modules/schools/schools.module.js';
 import { ShowcaseModule } from './modules/showcase/showcase.module.js';
 import { AcademicSessionsModule } from './modules/academic-sessions/academic-sessions.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
@@ -32,6 +34,8 @@ import { TenancyModule } from './tenancy/tenancy.module.js';
     SubjectsModule,
     ClassesModule,
     TimetableModule,
+    SchoolModule,
+    SchoolsModule, // platform-level: find and create schools
     ShowcaseModule, // platform-level: excluded from TenantMiddleware
   ],
   providers: [{ provide: APP_FILTER, useClass: DatabaseErrorFilter }],

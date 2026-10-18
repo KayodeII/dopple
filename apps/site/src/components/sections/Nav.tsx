@@ -9,8 +9,9 @@ const links = [
 ] as const;
 
 export function Nav() {
+  // z-30: above the hero (z-20), whose content layer would otherwise cover these links.
   return (
-    <header className="absolute inset-x-0 top-0 z-20 text-ink">
+    <header className="absolute inset-x-0 top-0 z-30 text-ink">
       <nav
         aria-label="Main"
         className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-4 px-6 py-5"
@@ -28,7 +29,7 @@ export function Nav() {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <a href="#login" className="px-3.5 py-3 text-[15px]">
+          <a href="/login" className="px-3.5 py-3 text-[15px]">
             Log in
           </a>
           <LinkButton

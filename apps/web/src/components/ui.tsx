@@ -4,6 +4,7 @@ import type {
   ReactNode,
   SelectHTMLAttributes,
 } from 'react';
+import { useId, useState } from 'react';
 import { ApiError } from '../lib/api';
 
 /** Small building blocks shared by the pages. */
@@ -21,7 +22,7 @@ export function PageHeader({
     <header className="flex flex-wrap items-end justify-between gap-4">
       <div>
         {eyebrow && (
-          <p className="font-mono text-[13px] text-soft">{eyebrow}</p>
+          <p className="font-mono text-[13px] text-fg-3">{eyebrow}</p>
         )}
         <h1 className="mt-1.5 font-display text-[clamp(28px,3.4vw,40px)] font-semibold tracking-[-0.03em]">
           {title}
@@ -74,9 +75,9 @@ export function Button({
   ...props
 }: ButtonProps) {
   const look = {
-    primary: 'bg-school text-white hover:brightness-110',
-    quiet: 'border border-iron text-paper hover:bg-graphite',
-    danger: 'border border-iron text-coral hover:bg-graphite',
+    primary: 'bg-school text-on-school hover:brightness-110',
+    quiet: 'border border-edge-2 text-fg hover:bg-raised',
+    danger: 'border border-edge-2 text-coral hover:bg-raised',
   }[variant];
   return (
     <button
@@ -87,17 +88,68 @@ export function Button({
 }
 
 const control =
-  'min-h-11 w-full rounded-xl border border-iron bg-graphite px-3.5 text-[15px] text-paper placeholder:text-soft';
+  'min-h-11 w-full rounded-xl border border-edge-2 bg-raised px-3.5 text-[15px] text-fg placeholder:text-fg-3';
 
 export function Field({
   label,
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm text-sand">
+    <label className="flex flex-col gap-1.5 text-sm text-fg-2">
       {label}
       <input className={control} {...props} />
     </label>
+  );
+}
+
+/** A password input with an eye button, so people can check what they typed. */
+export function PasswordField({
+  label,
+  ...props
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & { label: string }) {
+  const id = useId();
+  const [shown, setShown] = useState(false);
+  return (
+    <div className="flex flex-col gap-1.5 text-sm text-fg-2">
+      <label htmlFor={id}>{label}</label>
+      <div className="relative">
+        <input
+          id={id}
+          type={shown ? 'text' : 'password'}
+          className={`${control} pr-12`}
+          {...props}
+        />
+        <button
+          type="button"
+          onClick={() => setShown((s) => !s)}
+          aria-label={shown ? 'Hide password' : 'Show password'}
+          aria-controls={id}
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-fg-3 hover:text-fg"
+        >
+          <EyeIcon crossed={shown} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EyeIcon({ crossed }: { crossed: boolean }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M1.5 10S4.5 4 10 4s8.5 6 8.5 6-3 6-8.5 6-8.5-6-8.5-6Z" />
+      <circle cx="10" cy="10" r="2.5" />
+      {crossed && <path d="M3 17 17 3" />}
+    </svg>
   );
 }
 
@@ -107,7 +159,7 @@ export function Select({
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm text-sand">
+    <label className="flex flex-col gap-1.5 text-sm text-fg-2">
       {label}
       <select className={control} {...props}>
         {children}
@@ -135,14 +187,14 @@ export function ErrorNote({ error }: { error: unknown }) {
 
 export function Empty({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-2xl border border-dashed border-line p-6 text-soft">
+    <p className="rounded-2xl border border-dashed border-line p-6 text-fg-3">
       {children}
     </p>
   );
 }
 
 export function Loading() {
-  return <p className="text-soft">Loading…</p>;
+  return <p className="text-fg-3">Loading…</p>;
 }
 
 export function initials(name: string): string {

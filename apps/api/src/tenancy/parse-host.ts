@@ -9,8 +9,27 @@ export type HostMatch =
   | { kind: 'custom-domain'; domain: string }
   | { kind: 'platform' };
 
-const RESERVED_SUBDOMAINS = new Set(['www', 'api', 'app', 'admin', 'status']);
-const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+/** Never a school: the platform's own hosts, and names that could pass for Dopple. */
+export const RESERVED_SUBDOMAINS = new Set([
+  'www',
+  'api',
+  'app',
+  'admin',
+  'status',
+  'mail',
+  'help',
+  'support',
+  'docs',
+  'blog',
+  'cdn',
+  'static',
+  'assets',
+  'login',
+  'signup',
+  'dopple',
+  'staging',
+]);
+export const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 
 export function parseHost(rawHost: string, platformDomain: string): HostMatch {
   const host = rawHost.trim().toLowerCase().replace(/:\d+$/, '');
