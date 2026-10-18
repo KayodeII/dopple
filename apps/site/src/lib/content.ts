@@ -438,6 +438,30 @@ export const learn = {
     'Lessons could not load just now. Check your connection and try again in a minute.',
   alsoTaught: (className: string) =>
     `Other subjects in ${className}, lessons coming soon`,
+  lesson: {
+    start: 'Start the lesson',
+    toPractice: 'Go to the practice',
+    questions: (n: number) => `${n} questions`,
+    map: 'In this lesson',
+    yourTurn: 'Your turn',
+    nextLesson: 'Next lesson',
+    previousLesson: 'Previous lesson',
+    backTo: 'Back to',
+    allLessons: (className: string) => `All ${className} lessons`,
+    /** Strings only: passed to components that run in the browser. */
+    body: {
+      listen: 'Listen',
+      stop: 'Stop',
+      remember: 'Remember!',
+      example: {
+        label: 'Worked example',
+        count: 'Step {n} of {total}',
+        next: 'Show the next step',
+        all: 'Show all steps',
+        think: 'Try the next step in your head before you tap.',
+      },
+    },
+  },
   /** Strings only: passed to the practice component, which runs in the browser. */
   practice: {
     title: 'Practise',

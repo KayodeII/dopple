@@ -73,6 +73,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-18 — Redesigned the lesson page (branch `lesson-look`, on #16): subject-coloured cover, numbered steps with a lesson map, worked examples revealed step by step, sticky-note tips, and read-aloud (browser speech, no data). Subject colours and glyphs live in `apps/site/src/lib/lesson-look.ts`.
 - 2026-10-18 — Researched Nigeria's school system and exams; built Dopple Learn v1 (branch `learn`, stacked on PR #15, which lands #11–#14 on `main`: those had merged into their parent branches, not `main`). `scripts/learn-load.mjs` imports `src/modules/learn/content.ts` directly via Node type stripping, so keep that file free of relative imports. CI loads Learn content and rebuilds the site after the API starts. The user asked for proctored exams: recorded in ADR 0011 and the roadmap, not built yet.
 
 - 2026-10-15 — Accent colour (branch `school-colours`, stacked on #13). Migration 0008 drops and recreates `update_school_profile()` with a third argument (hand-written after the generated part). Settings' hex fields are now labelled "Main colour hex" / "Accent colour hex".

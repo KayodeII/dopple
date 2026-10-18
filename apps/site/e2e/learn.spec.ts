@@ -23,6 +23,15 @@ test('a learner finds a lesson and practises, without signing up', async ({
   await page.getByRole('link', { name: /Factors, multiples, HCF and LCM/ }).click();
   await expect(page).toHaveURL(/\/learn\/jss-1\/hcf-and-lcm$/);
 
+  // The lesson is numbered steps; worked examples reveal one step at a time.
+  await expect(page.getByRole('heading', { level: 1, name: /HCF and LCM/ })).toBeVisible();
+  const example = page.getByRole('figure').first();
+  await expect(example.getByText(/^Step 1 of \d+$/)).toBeVisible();
+  await example.getByRole('button', { name: /Show the next step/ }).click();
+  await expect(example.getByText(/^Step 2 of \d+$/)).toBeVisible();
+  await example.getByRole('button', { name: 'Show all steps' }).click();
+  await expect(example.getByRole('button', { name: /Show the next step/ })).toHaveCount(0);
+
   // One question at a time, like a computer-based exam.
   const practice = page.getByRole('region', { name: 'Practise' });
   await expect(practice.getByText('Question 1 of 6')).toBeVisible();

@@ -1002,3 +1002,26 @@ details[open] .faq-plus {
     transform: translateX(587px);
   }
 }
+
+/*
+ * Lesson pages: a thin bar across the top that fills as you scroll. Pure CSS, driven by
+ * the scroll position, so it costs nothing; browsers without scroll timelines don't show it.
+ */
+@keyframes reading-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.reading-progress {
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    animation: reading-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
