@@ -44,9 +44,12 @@ describe('Learn (e2e)', () => {
       name: 'Primary 4',
       stage: 'primary',
     });
-    const [first] = res.body.subjects;
-    expect(first.slug).toBe('mathematics');
-    expect(first.topics[0]).toMatchObject({
+    const subjects: { slug: string; topics: unknown[] }[] = res.body.subjects;
+    const hasLessons = subjects.map((s) => s.topics.length > 0);
+    // Once a subject without lessons appears, no later one has any.
+    expect(hasLessons.slice(hasLessons.indexOf(false))).not.toContain(true);
+    const maths = subjects.find((s) => s.slug === 'mathematics');
+    expect(maths?.topics[0]).toMatchObject({
       slug: 'primary-4-equivalent-fractions',
       questionCount: 5,
     });
