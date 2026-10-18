@@ -23,21 +23,29 @@ test('a learner finds a lesson and practises, without signing up', async ({
   await page.getByRole('link', { name: /Factors, multiples, HCF and LCM/ }).click();
   await expect(page).toHaveURL(/\/learn\/jss-1\/hcf-and-lcm$/);
 
-  const first = page.getByRole('group', { name: /NOT a factor of 18/ });
-  await first.getByText('3', { exact: true }).click();
-  await expect(first.getByText(/Not quite: the answer is C\./)).toBeVisible();
+  // One question at a time, like a computer-based exam.
+  const practice = page.getByRole('region', { name: 'Practise' });
+  await expect(practice.getByText('Question 1 of 6')).toBeVisible();
+  await practice.getByText('3', { exact: true }).click();
+  await expect(practice.getByText('Not quite. The answer is C.')).toBeVisible();
+  await practice.getByRole('button', { name: /^Next/ }).click();
+  await expect(practice.getByText('Question 2 of 6')).toBeVisible();
 
-  // Answer the rest correctly: the score and a best score appear.
-  const answers = ['6', '12', '24', '12', '2² × 3 × 5'];
-  for (const [i, answer] of answers.entries()) {
-    await page
-      .getByRole('group')
-      .nth(i + 1)
-      .getByText(answer, { exact: true })
-      .click();
+  // Keys work as in a CBT exam: C answers, the right arrow moves on.
+  await practice.getByRole('heading', { name: 'Find the HCF of 12 and 18.' }).press('c');
+  await expect(practice.getByText('Correct')).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+
+  for (const answer of ['12', '24', '12', '2² × 3 × 5']) {
+    await practice.getByText(answer, { exact: true }).click();
+    await practice.getByRole('button', { name: /^(Next|See my score)/ }).click();
   }
-  await expect(page.getByRole('status')).toHaveText('You got 5 of 6.');
-  await expect(page.getByText('Your best: 5 of 6')).toBeVisible();
+  await expect(practice.getByRole('status')).toHaveAccessibleName('5 out of 6');
+  await expect(practice.getByText('Your best: 5 of 6')).toBeVisible();
+
+  // The review grid goes back to a question, answer still showing.
+  await practice.getByRole('button', { name: 'Go to question 1 (✗)' }).first().click();
+  await expect(practice.getByText('Not quite. The answer is C.')).toBeVisible();
   await page.reload();
   await expect(page.getByText('Your best: 5 of 6')).toBeVisible();
 
