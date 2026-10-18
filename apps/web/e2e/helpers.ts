@@ -4,7 +4,7 @@ import { expect, type Page } from '@playwright/test';
 export async function signIn(page: Page, who: 'admin' | 'teacher' | 'student') {
   if (!page.url().includes('/sign-in')) await page.goto('/');
   await page.getByLabel('Email').fill(`${who}@greenfield.test`);
-  await page.getByLabel('Password').fill('dopple-demo');
+  await page.getByLabel('Password', { exact: true }).fill('dopple-demo');
   await page.getByRole('button', { name: 'Sign in' }).click();
 }
 

@@ -212,11 +212,23 @@ test('sends signed-out visitors to sign in, then back where they were going', as
 test('shows the API’s message for a wrong password', async ({ page }) => {
   await page.goto('/sign-in');
   await page.getByLabel('Email').fill('admin@greenfield.test');
-  await page.getByLabel('Password').fill('not-the-password');
+  await page.getByLabel('Password', { exact: true }).fill('not-the-password');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await expect(page.getByRole('alert')).toHaveText(
     'Email or password is incorrect',
   );
+});
+
+test('shows and hides the password with the eye button', async ({ page }) => {
+  await page.goto('/sign-in');
+  const password = page.getByLabel('Password', { exact: true });
+  await password.fill('dopple-demo');
+  await expect(password).toHaveAttribute('type', 'password');
+  await page.getByRole('button', { name: 'Show password' }).click();
+  await expect(password).toHaveAttribute('type', 'text');
+  await expect(password).toHaveValue('dopple-demo');
+  await page.getByRole('button', { name: 'Hide password' }).click();
+  await expect(password).toHaveAttribute('type', 'password');
 });
 
 test('welcomes a new school’s admin with their email filled in', async ({

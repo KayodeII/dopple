@@ -4,6 +4,7 @@ import type {
   ReactNode,
   SelectHTMLAttributes,
 } from 'react';
+import { useId, useState } from 'react';
 import { ApiError } from '../lib/api';
 
 /** Small building blocks shared by the pages. */
@@ -98,6 +99,57 @@ export function Field({
       {label}
       <input className={control} {...props} />
     </label>
+  );
+}
+
+/** A password input with an eye button, so people can check what they typed. */
+export function PasswordField({
+  label,
+  ...props
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & { label: string }) {
+  const id = useId();
+  const [shown, setShown] = useState(false);
+  return (
+    <div className="flex flex-col gap-1.5 text-sm text-fg-2">
+      <label htmlFor={id}>{label}</label>
+      <div className="relative">
+        <input
+          id={id}
+          type={shown ? 'text' : 'password'}
+          className={`${control} pr-12`}
+          {...props}
+        />
+        <button
+          type="button"
+          onClick={() => setShown((s) => !s)}
+          aria-label={shown ? 'Hide password' : 'Show password'}
+          aria-controls={id}
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-fg-3 hover:text-fg"
+        >
+          <EyeIcon crossed={shown} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EyeIcon({ crossed }: { crossed: boolean }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M1.5 10S4.5 4 10 4s8.5 6 8.5 6-3 6-8.5 6-8.5-6-8.5-6Z" />
+      <circle cx="10" cy="10" r="2.5" />
+      {crossed && <path d="M3 17 17 3" />}
+    </svg>
   );
 }
 

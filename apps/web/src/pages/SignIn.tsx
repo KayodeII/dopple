@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useSearchParams } from 'react-router';
 import { PoweredByDopple } from '../components/DoppleMark';
-import { Button, ErrorNote, Field } from '../components/ui';
+import { Button, ErrorNote, Field, PasswordField } from '../components/ui';
 import { useSchool } from '../lib/queries';
 import { useSession } from '../lib/session';
 import { useTheme } from '../lib/theme';
@@ -75,10 +75,9 @@ export function SignIn() {
                   defaultValue={params.get('email') ?? ''}
                   required
                 />
-                <Field
+                <PasswordField
                   label="Password"
                   name="password"
-                  type="password"
                   autoComplete="current-password"
                   required
                 />
