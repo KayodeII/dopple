@@ -18,6 +18,7 @@ export const RESERVED_SUBDOMAINS = new Set([
   'status',
   'mail',
   'help',
+  'learn',
   'support',
   'docs',
   'blog',

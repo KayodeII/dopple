@@ -422,3 +422,75 @@ export const startSchool = {
   haveSchool: 'Already on Dopple?',
   haveSchoolCta: 'Find your school',
 };
+
+/** Dopple Learn: free lessons and exam practice for anyone (ADR 0011). */
+export const learn = {
+  eyebrow: 'Dopple Learn · free',
+  title: 'Learn for free, from nursery to SS 3',
+  body: 'Short lessons and practice questions that follow the Nigerian curriculum. No school fees and no sign-up: if you can open this page, you can learn.',
+  dataNote: 'Lessons are mostly text, so they load quickly and use very little data.',
+  pickClass: 'Pick a class',
+  lessons: (n: number) => (n === 1 ? '1 lesson' : `${n} lessons`),
+  noLessons: 'Coming soon',
+  growing:
+    'Dopple Learn is new. We are adding lessons class by class, starting with English and Mathematics, and every lesson is checked by a teacher before it goes up.',
+  unavailable:
+    'Lessons could not load just now. Check your connection and try again in a minute.',
+  alsoTaught: (className: string) =>
+    `Other subjects in ${className}, lessons coming soon`,
+  /** Strings only: passed to the practice component, which runs in the browser. */
+  practice: {
+    title: 'Practise',
+    intro:
+      'Pick an answer to see if you are right and why. Your best score stays on this phone, and nothing is sent to us.',
+    tryAgain: 'Try again',
+    correct: 'Correct.',
+    wrong: 'Not quite: the answer is {letter}.',
+    score: 'You got {right} of {total}.',
+    best: 'Your best: {right} of {total}',
+  },
+  exams: {
+    title: 'The exams ahead',
+    body: 'What each exam is for, and when you sit it. Check dates and fees with the exam body before you register.',
+    list: [
+      {
+        name: 'Common Entrance (NCEE)',
+        by: 'NECO',
+        when: 'Primary 6',
+        what: 'Entrance to JSS 1 in Federal Unity Colleges. States run their own entrance exams for state schools.',
+      },
+      {
+        name: 'BECE (Junior WAEC)',
+        by: 'NECO or your state',
+        when: 'JSS 3',
+        what: 'The end of junior secondary, and the step into SS 1.',
+      },
+      {
+        name: 'WASSCE',
+        by: 'WAEC',
+        when: 'SS 3, or any time after school',
+        what: 'In school in May and June. Out of school, as a private candidate: computer-based, twice a year.',
+      },
+      {
+        name: 'NECO SSCE',
+        by: 'NECO',
+        when: 'SS 3, or any time after school',
+        what: 'In school in June and July. Out of school, the external exam (GCE) runs in November and December.',
+      },
+      {
+        name: 'NBC / NTC',
+        by: 'NABTEB',
+        when: 'Technical and business students',
+        what: 'Business and technical certificates, accepted like WASSCE for many courses, plus trade certificates.',
+      },
+      {
+        name: 'UTME',
+        by: 'JAMB',
+        when: 'Before university, polytechnic or college of education',
+        what: 'A computer-based exam: Use of English plus three subjects your course needs, then each school’s Post-UTME. You must be 16 by admission.',
+      },
+    ],
+    credits:
+      'Most universities ask for five credits (A1 to C6) in WASSCE or NECO, including English and Mathematics, from no more than two sittings.',
+  },
+};

@@ -8,6 +8,8 @@ Read it fully before changing anything, then read `docs/context/CONTEXT.md` for 
 A multi-tenant school management platform. Each school is a tenant with:
 
 - a **web app** on the school's own address (`<slug>.dopple.school` or a custom domain) for everyone: admins, teachers, students and parents. Each role sees its own screens. There is no desktop app for now (ADR 0007),
+- **Dopple Learn** (ADR 0011): free lessons and exam practice at `/learn` for anyone, school or
+  not, aimed at the millions of Nigerian children who can't afford school but can get online,
 - live video classes, a shared whiteboard, recorded lessons, exams (CBT), ID cards, bus tracking, events, attendance, grades and fee payments that settle to the school's own bank account.
 
 Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisions/`.
@@ -20,9 +22,11 @@ Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisio
 | `apps/site` | Marketing website (Next.js 16, Tailwind 4). Copy lives in `src/lib/content.ts` | Built (v1) |
 | `apps/web` | School web app (Vite, React, React Router) for staff, students and parents | Built (v1: sign-in, students, classes, timetables) |
 | `services/realtime` | Go WebSocket gateway: whiteboard sync, chat, presence | Planned |
+| `content/learn` | Dopple Learn lessons and practice questions (JSON), loaded with `pnpm learn:load` | Started (5 lessons) |
 | `infra` | Local dependencies (Postgres, Redis, NATS, Grafana LGTM) | Ready |
 | `docs/context` | Living project state for agents. **Update it every session.** | Ready |
 | `docs/decisions` | Architecture decision records (ADRs) | Ready |
+| `docs/research` | Background research, e.g. Nigeria's school system and exams. Read before product work | Ready |
 | `docs/roadmap.md` | Features announced as "coming soon"; keep in step with the website copy | Ready |
 
 ## Commands
@@ -35,6 +39,7 @@ pnpm infra:up                         # Postgres, Redis, NATS, Grafana (needs Do
 cp apps/api/.env.example apps/api/.env
 pnpm db:migrate                       # apply migrations as the owner role
 pnpm db:seed                          # two demo schools: greenfield, riverside
+pnpm learn:load                       # Dopple Learn content from content/learn (run after edits)
 pnpm dev                              # API on http://localhost:3000 with watch
 pnpm dev:site                         # marketing site on http://localhost:3100
 pnpm dev:web                          # school web app on http://greenfield.dopple.localhost:3200

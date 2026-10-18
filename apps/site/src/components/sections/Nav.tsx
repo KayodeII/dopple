@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { LinkButton } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
 
@@ -29,9 +30,15 @@ export function Nav() {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <a href="/login" className="px-3.5 py-3 text-[15px]">
+          <Link
+            href="/learn"
+            className="px-2 py-3 text-[15px] font-semibold sm:px-3.5"
+          >
+            Learn free
+          </Link>
+          <Link href="/login" className="px-2 py-3 text-[15px] sm:px-3.5">
             Log in
-          </a>
+          </Link>
           <LinkButton
             href="#demo"
             variant="ink"

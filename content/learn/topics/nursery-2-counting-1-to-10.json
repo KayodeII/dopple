@@ -1,0 +1,47 @@
+{
+  "slug": "nursery-2-counting-1-to-10",
+  "class": "nursery-2",
+  "subject": "early-numeracy",
+  "position": 1,
+  "title": "Counting from 1 to 10",
+  "summary": "Say the numbers in order and count real things, one at a time.",
+  "minutes": 10,
+  "lesson": [
+    { "type": "tip", "text": "For a parent, older brother or sister, or anyone helping a young child: read this together and use things you already have at home." },
+    { "type": "h", "text": "Say the numbers" },
+    { "type": "p", "text": "Say the numbers slowly with the child, then let them say them back: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10." },
+    { "type": "p", "text": "Clap once for each number. Then try it with fingers: hold up one finger for 1, two for 2, until all ten fingers are up." },
+    { "type": "h", "text": "Count real things" },
+    { "type": "p", "text": "Put a few bottle tops, spoons or stones in a line. Touch each one as you count it. Each thing gets one number, and the last number you say is how many there are." },
+    { "type": "example", "title": "Counting oranges", "steps": ["Put 4 oranges on the table.", "Touch the first one and say \"one\", the next \"two\", then \"three\", then \"four\".", "Ask: how many oranges are there? Four."] },
+    { "type": "h", "text": "What comes next?" },
+    { "type": "p", "text": "Say a number and ask the child for the next one. After 3 comes 4. After 9 comes 10." },
+    { "type": "tip", "text": "Little and often works best: five minutes of counting at the market or while washing plates is better than one long lesson." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which number comes after 5?",
+      "options": ["4", "6", "7", "3"],
+      "answer": 1,
+      "explanation": "Count up: 4, 5, 6. The number after 5 is 6."
+    },
+    {
+      "prompt": "Count the stars: ★ ★ ★. How many stars are there?",
+      "options": ["2", "4", "3", "5"],
+      "answer": 2,
+      "explanation": "Touch each star once: one, two, three. There are 3 stars."
+    },
+    {
+      "prompt": "Which number comes before 10?",
+      "options": ["9", "8", "11", "7"],
+      "answer": 0,
+      "explanation": "Count up to 10: 8, 9, 10. The number just before 10 is 9."
+    },
+    {
+      "prompt": "You have 2 hands. How many hands is that?",
+      "options": ["1", "2", "5", "10"],
+      "answer": 1,
+      "explanation": "One hand, two hands. That is 2."
+    }
+  ]
+}

@@ -5,6 +5,8 @@ import {
   customType,
   date,
   foreignKey,
+  integer,
+  jsonb,
   pgPolicy,
   pgRole,
   pgTable,
@@ -16,6 +18,7 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { CLASS_SLUGS, type LessonBlock } from '../modules/learn/content.js';
 
 /**
  * Database schema. Rules (see docs/decisions/0002-tenant-isolation.md):
@@ -392,6 +395,66 @@ export const schoolLogos = pgTable(
     }),
   ],
 ).enableRLS();
+
+/*
+ * Dopple Learn (ADR 0011): free lessons for anyone, outside any school. Platform-wide,
+ * not tenant-owned. Loaded from content/learn/ by scripts/learn-load.mjs as the owner;
+ * the app role may only read them (revoked in migration 0009).
+ */
+export const learnSubjects = pgTable('learn_subjects', {
+  slug: text('slug').primaryKey(),
+  name: text('name').notNull(),
+  /** The classes that take this subject, e.g. ['primary-1', 'primary-2']. */
+  classes: text('classes').array().notNull(),
+});
+
+export const learnTopics = pgTable(
+  'learn_topics',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    classLevel: text('class_level').notNull(),
+    subjectSlug: text('subject_slug')
+      .notNull()
+      .references(() => learnSubjects.slug),
+    position: integer('position').notNull(),
+    title: text('title').notNull(),
+    summary: text('summary').notNull(),
+    minutes: smallint('minutes').notNull(),
+    lesson: jsonb('lesson').$type<LessonBlock[]>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  () => [
+    check(
+      'learn_topics_class_level',
+      sql.raw(
+        `class_level in (${CLASS_SLUGS.map((c) => `'${c}'`).join(', ')})`,
+      ),
+    ),
+  ],
+);
+
+export const learnQuestions = pgTable(
+  'learn_questions',
+  {
+    topicId: uuid('topic_id')
+      .notNull()
+      .references(() => learnTopics.id, { onDelete: 'cascade' }),
+    position: smallint('position').notNull(),
+    prompt: text('prompt').notNull(),
+    options: text('options').array().notNull(),
+    /** Index into options, 0 to 3. */
+    answer: smallint('answer').notNull(),
+    explanation: text('explanation').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.topicId, t.position] }),
+    check('learn_questions_four_options', sql`cardinality(${t.options}) = 4`),
+    check('learn_questions_answer', sql`${t.answer} between 0 and 3`),
+  ],
+);
 
 export type TenantRow = typeof tenants.$inferSelect;
 export type Student = typeof students.$inferSelect;

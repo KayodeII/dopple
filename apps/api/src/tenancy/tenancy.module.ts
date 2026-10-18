@@ -24,6 +24,9 @@ export class TenancyModule implements NestModule {
         // Finding and creating schools happens on the platform host (ADR 0010).
         { path: 'schools', method: RequestMethod.ALL },
         { path: 'schools/{*rest}', method: RequestMethod.ALL },
+        // Free lessons for anyone, school or not (ADR 0011).
+        { path: 'learn', method: RequestMethod.ALL },
+        { path: 'learn/{*rest}', method: RequestMethod.ALL },
       )
       .forRoutes({ path: '{*rest}', method: RequestMethod.ALL });
   }

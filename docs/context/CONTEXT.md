@@ -1,6 +1,6 @@
 # Project context — handover note
 
-Last updated: 2026-10-15
+Last updated: 2026-10-18
 
 Read `AGENTS.md` first. This file says where the work stands. Update it at the end of every session.
 
@@ -30,11 +30,14 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - Website log-in and sign-up: header **Log in** → `/login` (find your school, keyboard combobox, then the school's sign-in page); `/start` (self-serve sign-up with live address check, server action → `POST /schools` → redirect to the new school's sign-in). Fixed the hero covering the header links.
 - Web app themes: light is the default, dark or "match my device" per person in Settings (now open to every role; school name/colour/logo stay admin-only). Theme colours are role-named tokens (`fg`, `fg-2`, `fg-3`, `raised`, `edge-2`, `warn`, …) set per `[data-theme]`. Sign-in redesigned: school colour panel with name, logo and the Dopple circles, form on the right, "Powered by dopple" footer.
 - Two school colours (migration 0008): optional `accent_color` beside `brand_color`, set in Settings; the web app paints it on the sign-in panel, the selected menu item and a stripe across the top. Seed gives Riverside blue + gold.
+- Research: `docs/research/nigeria-education.md` (structure nursery to SS 3, 2025 curriculum, every external exam, out-of-school children, data cost, children's data law). Read it before product work.
+- Dopple Learn v1 (ADR 0011, migration 0009): platform-wide `learn_subjects` / `learn_topics` / `learn_questions` (app role read-only), content in `content/learn/` loaded by `pnpm learn:load`, public `GET /learn`, `/learn/classes/:slug`, `/learn/topics/:slug`. Website `/learn` (pick a class, exams guide), `/learn/<class>`, `/learn/<class>/<lesson>` with practice (best score in browser storage only). "Learn free" in the site header. 5 starter lessons (Nursery 2, P2, P4, JSS 1, SS 1).
 - Local infra: `infra/docker-compose.yml` (Postgres 17, Redis 7, NATS JetStream, Grafana LGTM).
 - Repo rules: PR template with Before/After from the running UI (`apps/site` included), CI (checks, UI evidence, no co-author trailers), commit-msg hook.
 
 ## Next up
 
+0. **Dopple Learn, next:** more lessons (English and Mathematics for every class first; needs teachers to write and review), offline (service worker), CBT-style timed mock exams, exam guides for private candidates, placement ("where do I start?"), optional accounts with parent consent. **Proctored exams are a requirement** for exams that count (school CBT, scored mocks); see `docs/roadmap.md`, needs its own ADR first.
 1. Auth follow-ups: move rate-limit counters to Redis before scaling out, invites + password reset (needs email provider), Google/Microsoft sign-in, expired refresh-token cleanup.
 2. Core school records, continued: guardians (parent ↔ student, then parents' `/timetable/me`). Students leaving (status instead of deleting) and list paging when schools get large.
 3. `apps/web` next: assign subject teachers (needs a staff list endpoint), create sessions/classes/subjects from the UI, parent view after guardians, school colour per tenant, a shared `packages/ui` for tokens. `scripts/start-dopple.command` should also start `dev:web`.
@@ -47,6 +50,10 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - **Pay small small:** parents spread a term's fees into smaller instalments. Not built yet; see `docs/roadmap.md` for scope and open questions (plan vs. financed credit).
 
 ## Open questions
+
+- Who writes and reviews Learn content (paid teachers, volunteer teachers, partner schools)? Licence past questions from WAEC/NECO/JAMB, or only write our own?
+- Zero-rated data for `/learn` with a mobile network (as Airtel does for the Nigeria Learning Passport)?
+- Proctoring: camera snapshots of under-18s need parental consent and a retention limit under the NDPA; lab kiosk mode vs phones.
 
 - Admin UI for a school to opt in to the partner wall (logos are now uploaded in School settings and stored in Postgres, ADR 0010; move to S3/R2 when uploads grow).
 - Sign-up abuse: CAPTCHA or review queue for self-serve schools? Email verification needs the email provider.
@@ -65,6 +72,8 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 ## Session log
 
 Newest first. One or two lines each.
+
+- 2026-10-18 — Researched Nigeria's school system and exams; built Dopple Learn v1 (branch `learn`, stacked on PR #15, which lands #11–#14 on `main`: those had merged into their parent branches, not `main`). `scripts/learn-load.mjs` imports `src/modules/learn/content.ts` directly via Node type stripping, so keep that file free of relative imports. CI loads Learn content and rebuilds the site after the API starts. The user asked for proctored exams: recorded in ADR 0011 and the roadmap, not built yet.
 
 - 2026-10-15 — Accent colour (branch `school-colours`, stacked on #13). Migration 0008 drops and recreates `update_school_profile()` with a third argument (hand-written after the generated part). Settings' hex fields are now labelled "Main colour hex" / "Accent colour hex".
 - 2026-10-15 — Light/dark themes and new sign-in page (branch `web-themes`, stacked on PR #12). Token renames in `apps/web`: paper→`fg`, sand→`fg-2`, soft→`fg-3`, graphite→`raised`, iron→`edge-2`; `paper`/`ink`/`sun` are fixed colours. Theme choice is localStorage only (per device); `index.html` paints it before React loads. Settings warns if a school colour vanishes on either background.
