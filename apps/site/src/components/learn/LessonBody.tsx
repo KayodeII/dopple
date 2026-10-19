@@ -11,6 +11,7 @@ import { WorkedExample, type ExampleCopy } from './WorkedExample';
 export interface LessonCopy {
   listen: string;
   stop: string;
+  failed: string;
   remember: string;
   example: ExampleCopy;
 }
@@ -36,6 +37,7 @@ export function LessonBody({
             text={sectionText(section)}
             label={copy.listen}
             stopLabel={copy.stop}
+            failedLabel={copy.failed}
           />
         );
         if (!section.id) {

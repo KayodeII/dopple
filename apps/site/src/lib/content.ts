@@ -452,6 +452,7 @@ export const learn = {
     body: {
       listen: 'Listen',
       stop: 'Stop',
+      failed: 'No sound. Try again',
       remember: 'Remember!',
       example: {
         label: 'Worked example',

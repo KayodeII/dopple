@@ -19,6 +19,34 @@ function forSpeech(text: string) {
     .replace(/[✓✗]/g, '');
 }
 
+/** Chrome stops long utterances after about 15 seconds, so speak in sentence-sized pieces. */
+function toChunks(text: string) {
+  const chunks: string[] = [];
+  for (const sentence of text.split(/(?<=[.!?])\s+/)) {
+    const last = chunks.at(-1);
+    if (last && last.length + sentence.length < 180) chunks[chunks.length - 1] = `${last} ${sentence}`;
+    else chunks.push(sentence);
+  }
+  return chunks.filter((c) => c.trim());
+}
+
+/**
+ * A Nigerian English voice if the device has one, else British, else any English. Voices on
+ * the device come first: some browsers' online voices would spend the learner's data.
+ */
+function pickVoice(voices: SpeechSynthesisVoice[]) {
+  const ranked = [...voices].sort(
+    (a, b) => Number(b.localService) - Number(a.localService),
+  );
+  return (
+    ranked.find((v) => v.lang === 'en-NG') ??
+    ranked.find((v) => v.lang === 'en-GB') ??
+    ranked.find((v) => v.lang.startsWith('en'))
+  );
+}
+
+type State = 'idle' | 'speaking' | 'failed';
+
 /**
  * Reads a part of the lesson aloud with the browser's own voice: no download, no data
  * used. Helps young children, and parents who find English text hard. Hidden where the
@@ -28,67 +56,96 @@ export function ListenButton({
   text,
   label,
   stopLabel,
+  failedLabel,
 }: {
   text: string;
   label: string;
   stopLabel: string;
+  failedLabel: string;
 }) {
   const supported = useSyncExternalStore(
     noop,
     () => 'speechSynthesis' in window,
     () => false,
   );
-  const [speaking, setSpeaking] = useState(false);
-  // The utterance this button started, so leaving the page only stops our own voice.
-  const mine = useRef<SpeechSynthesisUtterance | null>(null);
+  const [state, setState] = useState<State>('idle');
+  // Which reading is ours, so another button starting (or leaving the page) is told apart
+  // from a real failure. The utterances are kept so Chrome doesn't drop them mid-speech.
+  const run = useRef(0);
+  const queued = useRef<SpeechSynthesisUtterance[]>([]);
 
   useEffect(
     () => () => {
-      if (mine.current) window.speechSynthesis.cancel();
+      if (run.current) window.speechSynthesis.cancel();
     },
     [],
   );
 
   if (!supported) return null;
 
-  function toggle() {
-    const synth = window.speechSynthesis;
-    synth.cancel();
-    if (speaking) {
-      mine.current = null;
-      setSpeaking(false);
-      return;
-    }
-    const utterance = new SpeechSynthesisUtterance(forSpeech(text));
-    const voices = synth.getVoices();
-    const voice =
-      voices.find((v) => v.lang === 'en-NG') ??
-      voices.find((v) => v.lang === 'en-GB');
-    if (voice) utterance.voice = voice;
-    utterance.lang = voice?.lang ?? 'en-NG';
-    utterance.rate = 0.92;
-    utterance.onend = utterance.onerror = () => {
-      if (mine.current === utterance) mine.current = null;
-      setSpeaking(false);
-    };
-    mine.current = utterance;
-    synth.speak(utterance);
-    setSpeaking(true);
+  function finish(id: number, next: State) {
+    if (run.current !== id) return;
+    run.current = 0;
+    queued.current = [];
+    setState(next);
   }
 
+  function start() {
+    const synth = window.speechSynthesis;
+    const busy = synth.speaking || synth.pending;
+    if (busy) synth.cancel();
+    const id = Date.now();
+    const voice = pickVoice(synth.getVoices());
+    const chunks = toChunks(forSpeech(text));
+    const speakAll = () => {
+      synth.resume();
+      queued.current = chunks.map((chunk, i) => {
+        const utterance = new SpeechSynthesisUtterance(chunk);
+        if (voice) utterance.voice = voice;
+        utterance.lang = voice?.lang ?? 'en-GB';
+        utterance.rate = 0.92;
+        if (i === chunks.length - 1) utterance.onend = () => finish(id, 'idle');
+        utterance.onerror = (event) =>
+          finish(
+            id,
+            event.error === 'interrupted' || event.error === 'canceled'
+              ? 'idle'
+              : 'failed',
+          );
+        synth.speak(utterance);
+        return utterance;
+      });
+    };
+    run.current = id;
+    setState('speaking');
+    // Chrome can drop a speak() made straight after cancel(), so give it a moment.
+    if (busy) setTimeout(speakAll, 80);
+    else speakAll();
+  }
+
+  function stop() {
+    run.current = 0;
+    queued.current = [];
+    window.speechSynthesis.cancel();
+    setState('idle');
+  }
+
+  const speaking = state === 'speaking';
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={speaking ? stop : start}
       aria-pressed={speaking}
       className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-[14px] font-semibold ${
         speaking
           ? 'border-ink bg-ink text-paper'
-          : 'border-rule-strong bg-white text-ink hover:border-ink'
+          : state === 'failed'
+            ? 'border-danger bg-white text-danger'
+            : 'border-rule-strong bg-white text-ink hover:border-ink'
       }`}
     >
       <SpeakerIcon speaking={speaking} />
-      {speaking ? stopLabel : label}
+      {speaking ? stopLabel : state === 'failed' ? failedLabel : label}
     </button>
   );
 }
