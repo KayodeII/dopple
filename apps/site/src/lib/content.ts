@@ -150,7 +150,7 @@ export const onboardingSteps = [
   },
   {
     title: 'Invite your teachers',
-    body: 'Staff sign in with your school code and find their classes already waiting.',
+    body: "Staff sign in at your school's own address and find their classes already waiting.",
   },
   {
     title: 'Ring the first bell',
@@ -383,3 +383,152 @@ export const footerLinks = [
 ] as const;
 
 export const contact = { email: 'hello@dopple.school', city: 'Lagos, Nigeria' };
+
+/** Log in: people find their school, then sign in on its own address (ADR 0010). */
+export const findSchool = {
+  eyebrow: 'Log in',
+  title: 'Find your school',
+  body: "Every school on Dopple has its own address. Search for yours and we'll take you to its sign-in page.",
+  label: 'School name or address',
+  placeholder: 'e.g. Greenfield College',
+  hint: 'Type at least two letters.',
+  noMatch: 'No school matches that.',
+  unavailable: 'School search is unavailable right now. Try again in a minute.',
+  newSchool: 'Setting up a new school?',
+  newSchoolCta: 'Start your school',
+};
+
+/** Start your school: self-serve sign-up. Copy for the form and its fields. */
+export const startSchool = {
+  eyebrow: 'Start your school',
+  title: 'Your school, on its own address',
+  body: "Create your school and its first admin account. You'll sign in straight away and can add classes, staff and students.",
+  schoolHeading: 'Your school',
+  adminHeading: 'Your admin account',
+  fields: {
+    name: 'School name',
+    slug: 'Web address',
+    city: 'City (optional)',
+    brandColor: 'School colour',
+    adminName: 'Your name',
+    adminEmail: 'Your email',
+    password: 'Password',
+  },
+  passwordHint: 'At least 10 characters.',
+  colourHint:
+    'Used across your school’s app. You can change it, and add a logo, later.',
+  submit: 'Create my school',
+  submitting: 'Creating your school…',
+  haveSchool: 'Already on Dopple?',
+  haveSchoolCta: 'Find your school',
+};
+
+/** Dopple Learn: free lessons and exam practice for anyone (ADR 0011). */
+export const learn = {
+  eyebrow: 'Dopple Learn · free',
+  title: 'Learn for free, from nursery to SS 3',
+  body: 'Short lessons and practice questions that follow the Nigerian curriculum. No school fees and no sign-up: if you can open this page, you can learn.',
+  dataNote: 'Lessons are mostly text, so they load quickly and use very little data.',
+  pickClass: 'Pick a class',
+  lessons: (n: number) => (n === 1 ? '1 lesson' : `${n} lessons`),
+  noLessons: 'Coming soon',
+  growing:
+    'Dopple Learn is new. We are adding lessons class by class, starting with English and Mathematics, and every lesson is checked by a teacher before it goes up.',
+  unavailable:
+    'Lessons could not load just now. Check your connection and try again in a minute.',
+  alsoTaught: (className: string) =>
+    `Other subjects in ${className}, lessons coming soon`,
+  lesson: {
+    start: 'Start the lesson',
+    toPractice: 'Go to the practice',
+    questions: (n: number) => `${n} questions`,
+    map: 'In this lesson',
+    yourTurn: 'Your turn',
+    nextLesson: 'Next lesson',
+    previousLesson: 'Previous lesson',
+    backTo: 'Back to',
+    allLessons: (className: string) => `All ${className} lessons`,
+    /** Strings only: passed to components that run in the browser. */
+    body: {
+      listen: 'Listen',
+      stop: 'Stop',
+      failed: 'No sound. Try again',
+      remember: 'Remember!',
+      example: {
+        label: 'Worked example',
+        count: 'Step {n} of {total}',
+        next: 'Show the next step',
+        all: 'Show all steps',
+        think: 'Try the next step in your head before you tap.',
+      },
+    },
+  },
+  /** Strings only: passed to the practice component, which runs in the browser. */
+  practice: {
+    title: 'Practise',
+    intro:
+      'One question at a time, like a computer-based exam. Your best score stays on this phone, and nothing is sent to us.',
+    progress: 'Question {n} of {total}',
+    keys: 'Keys: A–D to answer, ← → to move',
+    correct: 'Correct',
+    wrong: 'Not quite. The answer is {letter}.',
+    previous: 'Previous',
+    next: 'Next',
+    finish: 'See my score',
+    skip: 'Skip for now',
+    goTo: 'Go to question {n}',
+    unanswered: 'Not answered',
+    resultsTitle: 'Your score',
+    outOf: 'out of {total}',
+    great: 'Excellent. You have this topic.',
+    good: 'Good work. Look again at the ones you missed.',
+    keepGoing: 'Keep going. Read the lesson again, then try once more.',
+    review: 'Tap a question to look at it again.',
+    tryAgain: 'Try again',
+    best: 'Your best: {right} of {total}',
+  },
+  exams: {
+    title: 'The exams ahead',
+    body: 'What each exam is for, and when you sit it. Check dates and fees with the exam body before you register.',
+    list: [
+      {
+        name: 'Common Entrance (NCEE)',
+        by: 'NECO',
+        when: 'Primary 6',
+        what: 'Entrance to JSS 1 in Federal Unity Colleges. States run their own entrance exams for state schools.',
+      },
+      {
+        name: 'BECE (Junior WAEC)',
+        by: 'NECO or your state',
+        when: 'JSS 3',
+        what: 'The end of junior secondary, and the step into SS 1.',
+      },
+      {
+        name: 'WASSCE',
+        by: 'WAEC',
+        when: 'SS 3, or any time after school',
+        what: 'In school in May and June. Out of school, as a private candidate: computer-based, twice a year.',
+      },
+      {
+        name: 'NECO SSCE',
+        by: 'NECO',
+        when: 'SS 3, or any time after school',
+        what: 'In school in June and July. Out of school, the external exam (GCE) runs in November and December.',
+      },
+      {
+        name: 'NBC / NTC',
+        by: 'NABTEB',
+        when: 'Technical and business students',
+        what: 'Business and technical certificates, accepted like WASSCE for many courses, plus trade certificates.',
+      },
+      {
+        name: 'UTME',
+        by: 'JAMB',
+        when: 'Before university, polytechnic or college of education',
+        what: 'A computer-based exam: Use of English plus three subjects your course needs, then each school’s Post-UTME. You must be 16 by admission.',
+      },
+    ],
+    credits:
+      'Most universities ask for five credits (A1 to C6) in WASSCE or NECO, including English and Mathematics, from no more than two sittings.',
+  },
+};
