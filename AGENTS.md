@@ -69,6 +69,9 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 
 - One folder per feature under `apps/api/src/modules/<feature>`: `*.module.ts`, `*.controller.ts` (HTTP only), `*.service.ts` (logic), `*.spec.ts`. `students` is the reference.
 - ESM: relative imports end in `.js` (`import { X } from './x.js'`).
+- Outside services (payments, and email next) go through an adapter interface picked by an
+  environment variable, with a `fake` adapter for local runs and tests. Never call a provider's
+  API from a feature module. `modules/payments` is the reference (ADR 0013).
 - New environment variables go in `apps/api/src/config/env.ts` (validated with zod) **and** `.env.example`.
 - Schema changes: edit `schema.ts`, then `pnpm --filter @dopple/api db:generate`. Never edit an applied migration; add a new one.
 - Observability is automatic for HTTP, Postgres and logs. Add a custom metric in `src/observability/metrics.ts` only for business events (fees paid, exams started).

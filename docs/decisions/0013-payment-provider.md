@@ -23,17 +23,23 @@ Use [Bachs](https://bachs.io) (docs: https://docs.bachs.io), through its Connect
 - Webhooks (for example `collection.succeeded`) are the source of truth for a paid fee. We verify
   the signature, store the event id, and process each event once.
 
-The integration lives in one `fees` module behind a small interface, so the provider can change
-without touching the ledger.
+Bachs is the provider to start with, not forever. So everything goes through one adapter
+interface, `PaymentProvider` (`apps/api/src/modules/payments/payment-provider.ts`): school
+accounts, checkouts and verified, translated webhook events, with money in kobo. Fees and the
+ledger only ever see that interface. `PAYMENT_PROVIDER` picks the adapter (`bachs`, or `fake`
+for local runs and tests). Switching provider is one new adapter plus a change of that setting
+and its keys.
 
 ## Consequences
 
 - One integration instead of two. Bachs also offers subscriptions and virtual accounts, which may
   fit "Pay small small" instalments (`docs/roadmap.md`).
-- New environment variables (`BACHS_SECRET_KEY`, webhook secret) go in `src/config/env.ts` and
-  `.env.example` with the first fees PR. Build against the Bachs sandbox.
+- `BACHS_SECRET_KEY` picks the host by its prefix (`sk_sandbox_` or `sk_live_`), so moving from
+  sandbox to live is a key change. Production refuses to start with the fake provider.
+- The ledger stores the provider name with every account id and payment, so a school that
+  moves provider keeps its history.
 - To confirm with Bachs before launch, because the docs do not say: its licence in Nigeria (CBN)
   and the processor behind it; which Nigerian methods work for collections (bank transfer, USSD,
   cards in NGN); payout timing to Nigerian banks; and pricing.
-- A young provider is a concentration risk. If it falls short, Paystack or Flutterwave subaccounts
-  can replace it behind the same interface.
+- A young provider is a concentration risk. If it falls short, a Paystack or Flutterwave adapter
+  replaces it behind the same interface.

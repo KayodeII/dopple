@@ -32,6 +32,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - Two school colours (migration 0008): optional `accent_color` beside `brand_color`, set in Settings; the web app paints it on the sign-in panel, the selected menu item and a stripe across the top. Seed gives Riverside blue + gold.
 - Research: `docs/research/nigeria-education.md` (structure nursery to SS 3, 2025 curriculum, every external exam, out-of-school children, data cost, children's data law). Read it before product work.
 - Dopple Learn v1 (ADR 0011, migration 0009): platform-wide `learn_subjects` / `learn_topics` / `learn_questions` (app role read-only), content in `content/learn/` loaded by `pnpm learn:load`, public `GET /learn`, `/learn/classes/:slug`, `/learn/topics/:slug`. Website `/learn` (pick a class, exams guide), `/learn/<class>`, `/learn/<class>/<lesson>` with practice (best score in browser storage only). "Learn free" in the site header. 32 lessons: at least one English (or early literacy) and one maths (or early numeracy) lesson for every class from Nursery 1 to SS 3.
+- Payment adapters (ADR 0013): `PaymentProvider` interface in `modules/payments` (school accounts, checkouts, verified webhook events, money in kobo), `BachsProvider` (Connect direct charges, HMAC webhook check with secret rotation) and `FakeProvider`, picked by `PAYMENT_PROVIDER`. Not used by any route yet.
 - Local infra: `infra/docker-compose.yml` (Postgres 17, Redis 7, NATS JetStream, Grafana LGTM).
 - Repo rules: PR template with Before/After from the running UI (`apps/site` included), CI (checks, UI evidence, no co-author trailers), commit-msg hook.
 
@@ -43,7 +44,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 3. `apps/web` next: assign subject teachers (needs a staff list endpoint), create sessions/classes/subjects from the UI, parent view after guardians, school colour per tenant, a shared `packages/ui` for tokens. `scripts/start-dopple.command` should also start `dev:web`.
    - Site follow-ups: real pricing, demo-booking form backend (currently `action="#demo"`), legal pages, analytics.
 4. `services/realtime`: Go WebSocket gateway skeleton with NATS.
-5. Fees on Bachs (ADR 0013): a connected account per school, direct charges, webhook ledger. Confirm Bachs's CBN licence and Nigerian payment methods first (see architecture doc, "Fee payments").
+5. Fees on top of `PaymentProvider` (ADR 0013): fee items per student, school account onboarding, webhook endpoint (needs the raw body) and an idempotent ledger keyed by provider + event id. Email the same way: a `Mailer` interface with Resend and fake adapters. Confirm Bachs's CBN licence and Nigerian payment methods before going live (see architecture doc, "Fee payments").
 
 ## Coming soon (announced on the website)
 
@@ -71,6 +72,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-24 — Payment adapters (branch `payments-adapter`, on `record-decisions`). The user wants Bachs only to start and providers switchable by config: new AGENTS.md rule, outside services go through an env-picked adapter with a fake. Bachs amounts are decimal strings; we use kobo integers and convert in the adapter. `platform_fee` on checkouts is from the direct-charges guide, not yet tried in the sandbox.
 - 2026-10-24 — Recorded three decisions from the user: Resend for email (ADR 0012), Bachs (bachs.io) for fees, with a connected account per school (ADR 0013), school admins review Learn lessons (ADR 0014). Docs only (branch `record-decisions`, on #17).
 - 2026-10-18 — Added 27 English and maths lessons (branch `learn-lessons`, stacked on #16), so every class from Nursery 1 to SS 3 has at least one of each. Answers were worked twice, but no teacher has reviewed them yet: README asks for a second check in the PR.
 - 2026-10-18 — Researched Nigeria's school system and exams; built Dopple Learn v1 (branch `learn`, stacked on PR #15, which lands #11–#14 on `main`: those had merged into their parent branches, not `main`). `scripts/learn-load.mjs` imports `src/modules/learn/content.ts` directly via Node type stripping, so keep that file free of relative imports. CI loads Learn content and rebuilds the site after the API starts. The user asked for proctored exams: recorded in ADR 0011 and the roadmap, not built yet.

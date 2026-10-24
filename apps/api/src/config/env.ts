@@ -1,10 +1,18 @@
 import { z } from 'zod';
+import { paymentProviderNames } from '../modules/payments/payment-provider.js';
 
 /**
  * Every environment variable the API reads is declared here.
  * The app refuses to start if any value is missing or invalid.
  * OpenTelemetry reads its own OTEL_* variables; see .env.example.
  */
+/** `KEY=` in .env means "not set", not an empty value to validate. */
+const optional = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    schema.optional(),
+  );
+
 const envSchema = z
   .object({
     NODE_ENV: z
@@ -47,11 +55,44 @@ const envSchema = z
       .default('https://{host}'),
     /** New schools allowed per client IP per hour (self-serve sign-up, ADR 0010). */
     SCHOOL_SIGNUPS_PER_HOUR: z.coerce.number().int().positive().default(5),
+    /**
+     * Who takes fee payments (ADR 0013). `fake` moves no money: local runs and tests.
+     * Switching provider is this plus that provider's keys.
+     */
+    PAYMENT_PROVIDER: z.enum(paymentProviderNames).default('fake'),
+    /** `sk_sandbox_…` or `sk_live_…`; the prefix picks Bachs's sandbox or production. */
+    BACHS_SECRET_KEY: optional(
+      z
+        .string()
+        .regex(
+          /^sk_(sandbox|live)_/,
+          'must start with sk_sandbox_ or sk_live_',
+        ),
+    ),
+    /** Signing secret of our webhook endpoint in the Bachs developer portal. */
+    BACHS_WEBHOOK_SECRET: optional(z.string()),
   })
   .refine((env) => env.NODE_ENV !== 'production' || !!env.JWT_PRIVATE_KEY, {
     path: ['JWT_PRIVATE_KEY'],
     message: 'is required in production',
-  });
+  })
+  .refine(
+    (env) => env.NODE_ENV !== 'production' || env.PAYMENT_PROVIDER !== 'fake',
+    {
+      path: ['PAYMENT_PROVIDER'],
+      message: 'cannot be fake in production',
+    },
+  )
+  .refine(
+    (env) =>
+      env.PAYMENT_PROVIDER !== 'bachs' ||
+      (!!env.BACHS_SECRET_KEY && !!env.BACHS_WEBHOOK_SECRET),
+    {
+      path: ['BACHS_SECRET_KEY'],
+      message:
+        'BACHS_SECRET_KEY and BACHS_WEBHOOK_SECRET are required when PAYMENT_PROVIDER=bachs',
+    },
+  );
 
 export type Env = z.infer<typeof envSchema>;
 
