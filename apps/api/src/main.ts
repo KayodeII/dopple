@@ -5,7 +5,11 @@ import { ENV } from './config/config.module.js';
 import type { Env } from './config/env.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    // Payment webhooks are verified against the exact bytes the provider signed.
+    rawBody: true,
+  });
   app.useLogger(app.get(Logger));
   app.enableShutdownHooks();
 

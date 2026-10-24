@@ -12,7 +12,11 @@ import {
 import { z } from 'zod';
 import { ZodPipe } from '../../common/zod.pipe.js';
 import { Roles } from '../auth/decorators.js';
-import { createSlotBody, termQuery } from './timetable.dto.js';
+import {
+  createSlotBody,
+  myTimetableQuery,
+  termQuery,
+} from './timetable.dto.js';
 import { TimetableService } from './timetable.service.js';
 
 /** Class timetables are readable by anyone signed in; admins build them. */
@@ -28,11 +32,13 @@ export class TimetableController {
     return this.timetable.forClass(classId, query.termId);
   }
 
-  // Parents get their children's timetables once guardians exist.
-  @Roles('admin', 'teacher', 'student')
+  @Roles('admin', 'teacher', 'student', 'parent')
   @Get('timetable/me')
-  forMe(@Query(new ZodPipe(termQuery)) query: z.infer<typeof termQuery>) {
-    return this.timetable.forMe(query.termId);
+  forMe(
+    @Query(new ZodPipe(myTimetableQuery))
+    query: z.infer<typeof myTimetableQuery>,
+  ) {
+    return this.timetable.forMe(query.termId, query.studentId);
   }
 
   @Roles('admin')

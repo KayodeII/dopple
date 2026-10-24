@@ -25,3 +25,10 @@ export const refreshTokenReuse = meter.createCounter(
     description: 'A revoked refresh token was presented again (possible theft)',
   },
 );
+
+export const feePaymentsReceived = meter.createCounter(
+  'dopple.fees.payments_received',
+  {
+    description: 'Fee payments confirmed by the payment provider, by provider',
+  },
+);

@@ -8,12 +8,12 @@ import { ClsService } from 'nestjs-cls';
 import {
   classSubjects,
   enrolments,
-  students,
   timetableSlots,
 } from '../../database/schema.js';
 import { TenantDb } from '../../database/tenant-db.service.js';
 import { PRINCIPAL_KEY, type Principal } from '../auth/principal.js';
 import { findClassSession } from '../classes/lookups.js';
+import { myStudentIds } from '../guardians/my-students.js';
 import type { CreateSlotBody } from './timetable.dto.js';
 import { assertTeacherFree, selectLessons } from './lessons.js';
 
@@ -38,28 +38,44 @@ export class TimetableService {
     });
   }
 
-  /** A teacher's lessons across classes, or a student's own class timetable. */
-  forMe(termId: string) {
+  /**
+   * A teacher's lessons across classes, a student's own class timetable, or the
+   * timetable of one of a parent's children.
+   */
+  forMe(termId: string, studentId?: string) {
     const { userId, role } = this.cls.get<Principal>(PRINCIPAL_KEY);
-    return this.tenantDb.run((tx) => {
-      const mine =
-        role === 'student'
-          ? inArray(
-              timetableSlots.classId,
-              tx
-                .select({ classId: enrolments.classId })
-                .from(enrolments)
-                .innerJoin(
-                  students,
-                  and(
-                    eq(students.tenantId, enrolments.tenantId),
-                    eq(students.id, enrolments.studentId),
-                  ),
-                )
-                .where(eq(students.userId, userId)),
-            )
-          : eq(classSubjects.teacherId, userId);
-      return selectLessons(tx, and(eq(timetableSlots.termId, termId), mine));
+    if (role === 'parent' && !studentId) {
+      throw new UnprocessableEntityException('Choose which child');
+    }
+    return this.tenantDb.run(async (tx) => {
+      if (role !== 'student' && role !== 'parent') {
+        return selectLessons(
+          tx,
+          and(
+            eq(timetableSlots.termId, termId),
+            eq(classSubjects.teacherId, userId),
+          ),
+        );
+      }
+      const mine = (await myStudentIds(tx, userId)).map((s) => s.id);
+      if (studentId && !mine.includes(studentId)) {
+        throw new NotFoundException('Student not found');
+      }
+      return selectLessons(
+        tx,
+        and(
+          eq(timetableSlots.termId, termId),
+          inArray(
+            timetableSlots.classId,
+            tx
+              .select({ classId: enrolments.classId })
+              .from(enrolments)
+              .where(
+                inArray(enrolments.studentId, studentId ? [studentId] : mine),
+              ),
+          ),
+        ),
+      );
     });
   }
 

@@ -1,0 +1,51 @@
+{
+  "slug": "primary-3-multiplication-as-repeated-addition",
+  "class": "primary-3",
+  "subject": "mathematics",
+  "position": 1,
+  "title": "Multiplication as repeated addition",
+  "summary": "See multiplying as adding equal groups, and learn the 2, 5 and 10 times tables.",
+  "minutes": 15,
+  "lesson": [
+    { "type": "p", "text": "Multiplying is a quick way to add equal groups. The sign × means \"groups of\" or \"times\"." },
+    { "type": "example", "title": "4 plates with 3 puff-puff on each", "steps": ["Add the groups: 3 + 3 + 3 + 3 = 12.", "That is 4 groups of 3, written 4 × 3.", "So 4 × 3 = 12."] },
+    { "type": "h", "text": "Order doesn't matter" },
+    { "type": "p", "text": "4 × 3 and 3 × 4 both make 12. Turning the groups round doesn't change how many things there are." },
+    { "type": "h", "text": "Three tables to learn first" },
+    { "type": "list", "items": ["2 times: 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 (count in twos)", "5 times: 5, 10, 15, 20, 25, 30, 35, 40, 45, 50 (they end in 5 or 0)", "10 times: 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 (add a 0)"] },
+    { "type": "example", "title": "6 × 5", "steps": ["Count in fives six times: 5, 10, 15, 20, 25, 30.", "So 6 × 5 = 30."] },
+    { "type": "tip", "text": "Say a table out loud every day on the way to the market or while sweeping. A few minutes a day is how you learn it." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which is the same as 3 + 3 + 3 + 3 + 3?",
+      "options": ["3 × 3", "5 × 3", "3 + 5", "15 × 3"],
+      "answer": 1,
+      "explanation": "There are 5 groups of 3, so it is 5 × 3 (which makes 15)."
+    },
+    {
+      "prompt": "What is 7 × 2?",
+      "options": ["9", "72", "14", "16"],
+      "answer": 2,
+      "explanation": "Count in twos seven times: 2, 4, 6, 8, 10, 12, 14. So 7 × 2 = 14. (9 is 7 + 2.)"
+    },
+    {
+      "prompt": "What is 8 × 10?",
+      "options": ["80", "18", "800", "810"],
+      "answer": 0,
+      "explanation": "Multiplying by 10 adds a 0: 8 × 10 = 80."
+    },
+    {
+      "prompt": "There are 4 bags with 5 oranges in each bag. How many oranges altogether?",
+      "options": ["9", "45", "25", "20"],
+      "answer": 3,
+      "explanation": "4 groups of 5: 5 + 5 + 5 + 5 = 20. So 4 × 5 = 20."
+    },
+    {
+      "prompt": "Which answer is the same as 6 × 2?",
+      "options": ["2 × 6", "6 + 2", "6 × 6", "2 × 2"],
+      "answer": 0,
+      "explanation": "Order doesn't matter in multiplication: 6 × 2 = 2 × 6 = 12. 6 + 2 is only 8."
+    }
+  ]
+}

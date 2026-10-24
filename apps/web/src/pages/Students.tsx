@@ -9,6 +9,11 @@ import {
   PageHeader,
   Section,
 } from '../components/ui';
+import {
+  readStudentForm,
+  StudentFields,
+  type StudentInput,
+} from '../components/StudentForm';
 import { api } from '../lib/api';
 import { useStudents, useWrite } from '../lib/queries';
 import { useUser } from '../lib/session';
@@ -49,7 +54,7 @@ export function Students() {
         ) : (
           <div className="overflow-x-auto rounded-2xl bg-card">
             <table className="w-full min-w-[480px] text-left text-[15px]">
-              <thead className="text-[13px] text-soft">
+              <thead className="text-[13px] text-fg-3">
                 <tr>
                   <th className="px-4 py-3 font-normal">Admission no.</th>
                   <th className="px-4 py-3 font-normal">Name</th>
@@ -70,7 +75,7 @@ export function Students() {
                         {s.lastName}, {s.firstName}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-soft">
+                    <td className="px-4 py-3 text-fg-3">
                       {s.userId ? 'Linked' : '—'}
                     </td>
                   </tr>
@@ -87,22 +92,16 @@ export function Students() {
 function AddStudent({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const add = useWrite(
-    (input: Pick<Student, 'admissionNo' | 'firstName' | 'lastName'>) =>
+    (input: StudentInput) =>
       api<Student>('/students', { method: 'POST', body: input }),
     [['students']],
   );
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    add.mutate(
-      {
-        admissionNo: String(form.get('admissionNo')),
-        firstName: String(form.get('firstName')),
-        lastName: String(form.get('lastName')),
-      },
-      { onSuccess: (student) => navigate(`/students/${student.id}`) },
-    );
+    add.mutate(readStudentForm(new FormData(event.currentTarget)), {
+      onSuccess: (student) => navigate(`/students/${student.id}`),
+    });
   }
 
   return (
@@ -111,16 +110,11 @@ function AddStudent({ onClose }: { onClose: () => void }) {
         onSubmit={submit}
         className="flex flex-col gap-4 rounded-2xl bg-card p-5"
       >
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-          <Field
-            label="Admission number"
-            name="admissionNo"
-            required
-            maxLength={30}
-          />
-          <Field label="First name" name="firstName" required maxLength={80} />
-          <Field label="Last name" name="lastName" required maxLength={80} />
-        </div>
+        <StudentFields />
+        <p className="text-[14px] text-fg-3">
+          Only the admission number and names are needed now. Add the passport
+          photo, parents and health details on the student’s page next.
+        </p>
         <ErrorNote error={add.error} />
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={add.isPending}>

@@ -1,0 +1,47 @@
+{
+  "slug": "jss-3-simultaneous-equations",
+  "class": "jss-3",
+  "subject": "mathematics",
+  "position": 1,
+  "title": "Simultaneous linear equations",
+  "summary": "Find two unknowns from two equations, by elimination and by substitution.",
+  "minutes": 25,
+  "lesson": [
+    { "type": "p", "text": "Simultaneous equations are two equations with the same two unknowns. The answer is the pair of values (x and y) that makes both true at the same time." },
+    { "type": "h", "text": "Method 1: elimination" },
+    { "type": "p", "text": "Add or subtract the equations so that one unknown disappears." },
+    { "type": "example", "title": "x + y = 10 and x − y = 4", "steps": ["Add the two equations: the y's cancel. 2x = 14.", "x = 7.", "Put x = 7 into x + y = 10: 7 + y = 10, so y = 3.", "Check in the second: 7 − 3 = 4 ✓"] },
+    { "type": "example", "title": "3x + 2y = 12 and x + 2y = 8", "steps": ["Both have +2y, so subtract: (3x − x) = 12 − 8. 2x = 4.", "x = 2.", "Put into x + 2y = 8: 2 + 2y = 8, 2y = 6, y = 3."] },
+    { "type": "h", "text": "Method 2: substitution" },
+    { "type": "example", "title": "y = 2x and x + y = 9", "steps": ["Replace y with 2x in the second: x + 2x = 9.", "3x = 9, so x = 3.", "y = 2 × 3 = 6."] },
+    { "type": "h", "text": "Word problems" },
+    { "type": "example", "title": "2 pens and 1 book cost ₦700. 1 pen and 1 book cost ₦500.", "steps": ["Let a pen be p and a book b: 2p + b = 700 and p + b = 500.", "Subtract: p = 200.", "200 + b = 500, so b = 300. A pen costs ₦200 and a book ₦300."] },
+    { "type": "tip", "text": "Check your pair in both equations. If it works in only one, you made a slip." }
+  ],
+  "questions": [
+    {
+      "prompt": "Solve: x + y = 9 and x − y = 1",
+      "options": ["x = 4, y = 5", "x = 5, y = 4", "x = 9, y = 1", "x = 10, y = −1"],
+      "answer": 1,
+      "explanation": "Add: 2x = 10, so x = 5. Then 5 + y = 9, y = 4. x = 4, y = 5 fails the second equation (4 − 5 = −1)."
+    },
+    {
+      "prompt": "Solve: 2x + y = 11 and x + y = 7",
+      "options": ["x = 4, y = 3", "x = 3, y = 4", "x = 2, y = 7", "x = 5, y = 1"],
+      "answer": 0,
+      "explanation": "Subtract the second from the first: x = 4. Then 4 + y = 7, so y = 3. Check: 8 + 3 = 11 ✓"
+    },
+    {
+      "prompt": "If y = 3x and x + y = 12, what is y?",
+      "options": ["3", "4", "12", "9"],
+      "answer": 3,
+      "explanation": "Substitute: x + 3x = 12, 4x = 12, x = 3. Then y = 3 × 3 = 9. (3 is x, not y.)"
+    },
+    {
+      "prompt": "The sum of two numbers is 20 and their difference is 6. What is the bigger number?",
+      "options": ["14", "7", "13", "26"],
+      "answer": 2,
+      "explanation": "Let the numbers be a and b: a + b = 20 and a − b = 6. Add: 2a = 26, so a = 13, and b = 7. 26 is 2a, not a."
+    }
+  ]
+}

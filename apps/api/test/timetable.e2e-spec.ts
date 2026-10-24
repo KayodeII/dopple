@@ -297,7 +297,8 @@ describe('Timetable (e2e)', () => {
       '2 08:00 JSS 1A ENG',
     ]);
     expect(await mine('student')).toEqual(await timetable('jss1a'));
-    await as('parent').get(`/timetable/me?termId=${ids.term1}`).expect(403);
+    // Parents name a child (guardians.e2e-spec.ts covers the rest).
+    await as('parent').get(`/timetable/me?termId=${ids.term1}`).expect(422);
   });
 
   it('lets only admins change the timetable', async () => {
