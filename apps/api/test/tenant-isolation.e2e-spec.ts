@@ -58,6 +58,8 @@ describe('Tenant isolation (e2e)', () => {
     await app?.close();
     // Children before parents: these tables reference each other.
     for (const table of [
+      'student_photos',
+      'student_health',
       'student_guardians',
       'guardians',
       'fees',
@@ -180,6 +182,44 @@ describe('Tenant isolation (e2e)', () => {
           name: 'Changed',
         }),
     ).expect(404);
+  });
+
+  it('keeps a student’s photo and health to their own school', async () => {
+    const { rows } = await owner.query<{ tenant_id: string; id: string }>(
+      `select s.tenant_id, s.id from students s join tenants t on t.id = s.tenant_id
+       where t.slug = $1 and s.admission_no = 'A-1'`,
+      [schoolA],
+    );
+    const [studentA] = rows;
+    await owner.query(
+      `insert into student_photos (tenant_id, student_id, content_type, content)
+       values ($1, $2, 'image/jpeg', '\\xffd8ff00'::bytea)`,
+      [studentA.tenant_id, studentA.id],
+    );
+    await owner.query(
+      `insert into student_health (tenant_id, student_id, genotype) values ($1, $2, 'SS')`,
+      [studentA.tenant_id, studentA.id],
+    );
+    const tokenB = await tokenFor(schoolB);
+    const asB = (req: request.Test) =>
+      req.set('Host', host(schoolB)).auth(tokenB, { type: 'bearer' });
+    await asB(
+      request(app.getHttpServer()).get(`/students/${studentA.id}/photo`),
+    ).expect(404);
+    await asB(
+      request(app.getHttpServer())
+        .put(`/students/${studentA.id}/health`)
+        .send({ genotype: 'AA' }),
+    ).expect(404);
+    await asB(
+      request(app.getHttpServer()).delete(`/students/${studentA.id}/photo`),
+    ).expect(204);
+    const { rows: still } = await owner.query(
+      `select (select genotype from student_health where student_id = $1) as genotype,
+              (select count(*)::int from student_photos where student_id = $1) as photos`,
+      [studentA.id],
+    );
+    expect(still[0]).toEqual({ genotype: 'SS', photos: 1 });
   });
 
   it('names the school at each host, without signing in', async () => {

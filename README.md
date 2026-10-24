@@ -246,7 +246,9 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `POST` | `/auth/sign-out` | public, school | `{ refreshToken }` or the cookie → ends that session and clears the cookie |
 | `GET` | `/auth/me` | signed in | The current user |
 | `GET` / `POST` | `/students` | read: admin, teacher · write: admin | Students; search names and admission numbers with `?q=` |
-| `GET` / `PATCH` | `/students/:id` | read: admin, teacher · write: admin | One student with their class per session; edit any of `admissionNo`, `firstName`, `lastName`, `userId` |
+| `GET` / `PATCH` | `/students/:id` | read: admin, teacher · write: admin | One student's admission record (ADR 0016) with their class per session and health; edit any field: names, `sex`, `dateOfBirth`, `admittedOn`, `nationality`, `stateOfOrigin`, `lga`, `homeAddress`, `previousSchool`, `religion`, `userId` |
+| `PUT` | `/students/:id/health` | admin | Replace the health record `{ bloodGroup, genotype, allergies, conditions }` (all optional) |
+| `GET` / `PUT` / `DELETE` | `/students/:id/photo` | read: staff, the student, their parents · write: admin | The passport photo; upload the image itself as the body (PNG, JPEG or WebP, up to 200 KB) |
 | `GET` / `POST` | `/students/:id/guardians` | read: admin, teacher · write: admin | The student's parents and guardians; add `{ relationship, name, phone, email?, userId? }` or link one on record `{ relationship, guardianId }` (ADR 0015) |
 | `DELETE` | `/students/:id/guardians/:guardianId` | admin | Unlink; a guardian with no children left is removed |
 | `GET` | `/guardians?q=` | admin | Guardians by name or phone, with their children (for linking siblings) |

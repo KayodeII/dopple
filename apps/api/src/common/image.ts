@@ -2,7 +2,7 @@ export type ImageType = 'image/png' | 'image/jpeg' | 'image/webp';
 
 /**
  * What the bytes actually are, whatever the upload claimed. Only raster formats:
- * an SVG can carry script, and logos are served from the school's own origin.
+ * an SVG can carry script, and logos and photos are served from the school's own origin.
  */
 export function sniffImage(bytes: Buffer): ImageType | null {
   if (

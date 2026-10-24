@@ -29,7 +29,7 @@ describe('Students (e2e)', () => {
       [slug],
     );
     const hash = await hashPassword(password);
-    for (const role of ['admin', 'teacher', 'student']) {
+    for (const role of ['admin', 'teacher', 'student', 'parent']) {
       ids[role] = await insert(
         `insert into users (tenant_id, email, name, role, password_hash)
          values ($1, $2, $3, $4, $5)`,
@@ -56,7 +56,7 @@ describe('Students (e2e)', () => {
     }).compile();
     app = moduleRef.createNestApplication();
     await app.init();
-    for (const role of ['admin', 'teacher', 'student']) {
+    for (const role of ['admin', 'teacher', 'student', 'parent']) {
       const res = await request(app.getHttpServer())
         .post('/auth/sign-in')
         .set('Host', host)
@@ -69,6 +69,10 @@ describe('Students (e2e)', () => {
   afterAll(async () => {
     await app?.close();
     for (const table of [
+      'student_photos',
+      'student_health',
+      'student_guardians',
+      'guardians',
       'enrolments',
       'classes',
       'academic_sessions',
@@ -92,8 +96,13 @@ describe('Students (e2e)', () => {
         http().get(path).set('Host', host).auth(tokens[role], auth),
       post: (path: string, body: object) =>
         http().post(path).set('Host', host).auth(tokens[role], auth).send(body),
-      put: (path: string) =>
-        http().put(path).set('Host', host).auth(tokens[role], auth),
+      put: (path: string, body?: object | Buffer, type?: string) => {
+        const req = http().put(path).set('Host', host).auth(tokens[role], auth);
+        if (type) req.set('Content-Type', type);
+        return body === undefined ? req : req.send(body);
+      },
+      delete: (path: string) =>
+        http().delete(path).set('Host', host).auth(tokens[role], auth),
       patch: (path: string, body: object) =>
         http()
           .patch(path)
@@ -122,6 +131,16 @@ describe('Students (e2e)', () => {
       firstName: 'Chidi',
       lastName: 'Eze',
       userId: null,
+      middleName: null,
+      sex: null,
+      dateOfBirth: null,
+      admittedOn: null,
+      nationality: null,
+      stateOfOrigin: null,
+      lga: null,
+      homeAddress: null,
+      previousSchool: null,
+      religion: null,
     });
     ids.chidi = created.body.id;
     ids.ada = (
@@ -200,6 +219,18 @@ describe('Students (e2e)', () => {
       firstName: 'Chidinma',
       lastName: 'Eze',
       userId: null,
+      middleName: null,
+      sex: null,
+      dateOfBirth: null,
+      admittedOn: null,
+      nationality: null,
+      stateOfOrigin: null,
+      lga: null,
+      homeAddress: null,
+      previousSchool: null,
+      religion: null,
+      photoUpdatedAt: null,
+      health: null,
       enrolments: [
         {
           session: { id: ids.newer, name: '2026/2027' },
@@ -225,5 +256,125 @@ describe('Students (e2e)', () => {
       .expect(403);
     await as('student').get('/students').expect(403);
     await as('student').get(`/students/${ids.ada}`).expect(403);
+  });
+
+  it('keeps the whole admission record, all of it optional but checked', async () => {
+    const res = await admin
+      .patch(`/students/${ids.ada}`, {
+        middleName: ' Chiamaka ',
+        sex: 'female',
+        dateOfBirth: '2014-03-09',
+        admittedOn: '2026-09-07',
+        nationality: 'Nigerian',
+        stateOfOrigin: 'Anambra',
+        lga: 'Onitsha North',
+        homeAddress: '12 Admiralty Way, Lekki',
+        previousSchool: 'Sunrise Primary School',
+        religion: 'christianity',
+      })
+      .expect(200);
+    expect(res.body).toMatchObject({
+      middleName: 'Chiamaka',
+      stateOfOrigin: 'Anambra',
+      dateOfBirth: '2014-03-09',
+    });
+    // Blank text means "not given".
+    expect(
+      (await admin.patch(`/students/${ids.ada}`, { lga: '  ' }).expect(200))
+        .body.lga,
+    ).toBeNull();
+
+    for (const bad of [
+      { stateOfOrigin: 'Lagos State' },
+      { sex: 'unknown' },
+      { religion: 'none' },
+      { dateOfBirth: '2999-01-01' },
+      { dateOfBirth: '09/03/2014' },
+    ]) {
+      await admin.patch(`/students/${ids.ada}`, bad).expect(400);
+    }
+    await admin
+      .post('/students', {
+        admissionNo: 'A-004',
+        firstName: 'Bayo',
+        lastName: 'Ade',
+        sex: 'male',
+        stateOfOrigin: 'Oyo',
+      })
+      .expect(201);
+  });
+
+  it('keeps health details apart, for staff to read and admins to change', async () => {
+    await admin
+      .put(`/students/${ids.ada}/health`, {
+        bloodGroup: 'O+',
+        genotype: 'AS',
+        allergies: 'Groundnuts',
+      })
+      .expect(200, {
+        bloodGroup: 'O+',
+        genotype: 'AS',
+        allergies: 'Groundnuts',
+        conditions: null,
+      });
+    const read = await as('teacher').get(`/students/${ids.ada}`).expect(200);
+    expect(read.body.health).toEqual({
+      bloodGroup: 'O+',
+      genotype: 'AS',
+      allergies: 'Groundnuts',
+      conditions: null,
+    });
+    await as('teacher')
+      .put(`/students/${ids.ada}/health`, { genotype: 'AA' })
+      .expect(403);
+    await admin
+      .put(`/students/${ids.ada}/health`, { genotype: 'XY' })
+      .expect(400);
+    // Clearing every field removes the record.
+    await admin.put(`/students/${ids.ada}/health`, {}).expect(200);
+    expect(
+      (await admin.get(`/students/${ids.ada}`).expect(200)).body.health,
+    ).toBeNull();
+  });
+
+  it('stores a passport photo that only staff, the student and their parents can see', async () => {
+    const jpeg = Buffer.concat([
+      Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+      Buffer.alloc(100),
+    ]);
+    await admin
+      .put(`/students/${ids.ada}/photo`, Buffer.from('<svg/>'), 'image/svg+xml')
+      .expect(422);
+    await admin
+      .put(`/students/${ids.ada}/photo`, Buffer.alloc(205_000), 'image/jpeg')
+      .expect(413);
+    await as('teacher')
+      .put(`/students/${ids.ada}/photo`, jpeg, 'image/jpeg')
+      .expect(403);
+    const saved = await admin
+      .put(`/students/${ids.ada}/photo`, jpeg, 'image/jpeg')
+      .expect(200);
+    expect(saved.body.photoUpdatedAt).toEqual(expect.any(String));
+
+    for (const role of ['admin', 'teacher', 'student']) {
+      const res = await as(role).get(`/students/${ids.ada}/photo`).expect(200);
+      expect(res.headers['content-type']).toBe('image/jpeg');
+      expect(res.headers['cache-control']).toBe('private, no-store');
+    }
+    // Ada is the student account's own record; Chidi is not.
+    await as('student').get(`/students/${ids.chidi}/photo`).expect(403);
+    await as('parent').get(`/students/${ids.ada}/photo`).expect(403);
+    const guardian = await insert(
+      `insert into guardians (tenant_id, name, phone, user_id) values ($1, 'Parent', '+2348030000000', $2)`,
+      [ids.tenant, ids.parent],
+    );
+    await owner.query(
+      `insert into student_guardians (tenant_id, student_id, guardian_id, relationship) values ($1, $2, $3, 'Mother')`,
+      [ids.tenant, ids.ada, guardian],
+    );
+    await as('parent').get(`/students/${ids.ada}/photo`).expect(200);
+
+    await admin.delete(`/students/${ids.ada}/photo`).expect(204);
+    await admin.get(`/students/${ids.ada}/photo`).expect(404);
   });
 });

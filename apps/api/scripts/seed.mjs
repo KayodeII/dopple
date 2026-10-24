@@ -24,6 +24,13 @@ if (!url) throw new Error('MIGRATION_DATABASE_URL is not set (see .env.example)'
 const client = new pg.Client({ connectionString: url });
 await client.connect();
 
+// Admission details for the demo students, filled in once (photos are left for the admin to add).
+const profiles = {
+  'GF-001': { sex: 'female', dob: '2014-05-12', state: 'Ogun', lga: 'Abeokuta South', address: '14 Admiralty Way, Lekki, Lagos', previous: 'Bright Stars Primary School', genotype: 'AA', blood: 'O+', allergies: 'Groundnuts' },
+  'GF-002': { sex: 'female', dob: '2014-11-02', state: 'Anambra', lga: 'Onitsha North', address: '3 Chevron Drive, Lekki, Lagos', previous: 'Grace Nursery and Primary School', genotype: 'AS', blood: 'A+', allergies: null },
+  'RA-001': { sex: 'male', dob: '2014-08-21', state: 'Kano', lga: 'Nassarawa', address: '22 Aba Road, Port Harcourt', previous: 'Rivers Model Primary School', genotype: 'AA', blood: 'B+', allergies: null },
+};
+
 const schools = [
   { slug: 'greenfield', name: 'Greenfield College', city: 'Lekki, Lagos', showcase: true, brandColor: null, accentColor: null, students: [['GF-001', 'Tolu', 'Adebayo'], ['GF-002', 'Amaka', 'Obi']] },
   { slug: 'riverside', name: 'Riverside Academy', city: 'Port Harcourt', showcase: true, brandColor: '#2b5fd9', accentColor: '#f2b632', students: [['RA-001', 'Musa', 'Bello']] },
@@ -171,6 +178,20 @@ try {
          values ($1, $2, $3, $4, $5)
          on conflict on constraint users_email_per_tenant do nothing`,
         [tenantId, `${role}@${school.slug}.test`, name, role, hashPassword(DEMO_PASSWORD)],
+      );
+    }
+    for (const [admissionNo, p] of Object.entries(profiles)) {
+      await client.query(
+        `update students set sex = $3, date_of_birth = $4, admitted_on = '2026-09-07', nationality = 'Nigerian',
+           state_of_origin = $5, lga = $6, home_address = $7, previous_school = $8
+         where tenant_id = $1 and admission_no = $2 and date_of_birth is null`,
+        [tenantId, admissionNo, p.sex, p.dob, p.state, p.lga, p.address, p.previous],
+      );
+      await client.query(
+        `insert into student_health (tenant_id, student_id, blood_group, genotype, allergies)
+         select tenant_id, id, $3, $4, $5 from students where tenant_id = $1 and admission_no = $2
+         on conflict do nothing`,
+        [tenantId, admissionNo, p.blood, p.genotype, p.allergies],
       );
     }
     await seedStructure(tenantId, school.slug);

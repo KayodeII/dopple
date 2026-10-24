@@ -85,6 +85,13 @@
       "when": 1792854709539,
       "tag": "0011_guardians",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792857270398,
+      "tag": "0012_student_profile",
+      "breakpoints": true
     }
   ]
 }

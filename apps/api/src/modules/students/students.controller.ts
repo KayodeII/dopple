@@ -1,34 +1,30 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
+  Req,
+  Res,
 } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
+import { readBody } from '../../common/read-body.js';
 import { ZodPipe } from '../../common/zod.pipe.js';
 import { Roles } from '../auth/decorators.js';
-import { StudentsService } from './students.service.js';
-
-const name = z.string().trim().min(1).max(80);
-const studentFields = {
-  admissionNo: z.string().trim().min(1).max(30),
-  firstName: name,
-  lastName: name,
-  userId: z.uuid().nullable(),
-};
-const createStudentBody = z.object({
-  ...studentFields,
-  userId: studentFields.userId.optional(),
-});
-const updateStudentBody = z
-  .object(studentFields)
-  .partial()
-  .refine((patch) => Object.keys(patch).length > 0, 'Nothing to change');
-const listQuery = z.object({ q: z.string().trim().max(80).optional() });
+import {
+  createStudentBody,
+  healthBody,
+  listStudentsQuery,
+  updateStudentBody,
+} from './students.dto.js';
+import { PHOTO_MAX_BYTES, StudentsService } from './students.service.js';
 
 /** Student records hold children's details: staff only, and only admins change them. */
 @Roles('admin', 'teacher')
@@ -37,7 +33,10 @@ export class StudentsController {
   constructor(private readonly students: StudentsService) {}
 
   @Get()
-  list(@Query(new ZodPipe(listQuery)) query: z.infer<typeof listQuery>) {
+  list(
+    @Query(new ZodPipe(listStudentsQuery))
+    query: z.infer<typeof listStudentsQuery>,
+  ) {
     return this.students.list(query);
   }
 
@@ -63,5 +62,43 @@ export class StudentsController {
     body: z.infer<typeof updateStudentBody>,
   ) {
     return this.students.update(id, body);
+  }
+
+  @Roles('admin')
+  @Put(':id/health')
+  setHealth(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(healthBody)) body: z.infer<typeof healthBody>,
+  ) {
+    return this.students.setHealth(id, body);
+  }
+
+  /** The passport photo. Students and parents may see their own; the service checks. */
+  @Roles('admin', 'teacher', 'student', 'parent')
+  @Get(':id/photo')
+  async photo(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
+    const { contentType, content } = await this.students.photo(id);
+    res
+      .set({
+        'Content-Type': contentType,
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+      })
+      .send(content);
+  }
+
+  /** The body is the image itself (Content-Type image/png, image/jpeg or image/webp). */
+  @Roles('admin')
+  @Put(':id/photo')
+  async setPhoto(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+    return this.students.setPhoto(id, await readBody(req, PHOTO_MAX_BYTES));
+  }
+
+  @Roles('admin')
+  @Delete(':id/photo')
+  @HttpCode(204)
+  removePhoto(@Param('id', ParseUUIDPipe) id: string) {
+    return this.students.removePhoto(id);
   }
 }

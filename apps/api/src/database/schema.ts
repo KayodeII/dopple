@@ -44,6 +44,10 @@ const tenantIsolation = (table: string) =>
 const createdAt = () =>
   timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => 'bytea',
+});
+
 /** Tenant registry: one row per school. Not tenant-scoped; read-only for the app role. */
 export const tenants = pgTable(
   'tenants',
@@ -81,13 +85,31 @@ export const students = pgTable(
     id: uuid('id').notNull().defaultRandom(),
     admissionNo: text('admission_no').notNull(),
     firstName: text('first_name').notNull(),
+    middleName: text('middle_name'),
     lastName: text('last_name').notNull(),
+    sex: text('sex', { enum: ['female', 'male'] }),
+    dateOfBirth: date('date_of_birth'),
+    /** When the student joined the school. */
+    admittedOn: date('admitted_on'),
+    nationality: text('nationality'),
+    /** One of the 36 states or the FCT (students.dto.ts). */
+    stateOfOrigin: text('state_of_origin'),
+    lga: text('lga'),
+    homeAddress: text('home_address'),
+    previousSchool: text('previous_school'),
+    /** Sensitive under the NDPA; optional. Schools use it to place students in CRS or IRS. */
+    religion: text('religion', { enum: ['christianity', 'islam', 'other'] }),
     /** The student's own sign-in account, if they have one. */
     userId: uuid('user_id'),
     createdAt: createdAt(),
   },
   (t) => [
     primaryKey({ columns: [t.tenantId, t.id] }),
+    check('students_sex', sql`${t.sex} in ('female', 'male')`),
+    check(
+      'students_religion',
+      sql`${t.religion} in ('christianity', 'islam', 'other')`,
+    ),
     unique('students_admission_no_per_tenant').on(t.tenantId, t.admissionNo),
     unique('students_user_per_tenant').on(t.tenantId, t.userId),
     foreignKey({
@@ -95,6 +117,75 @@ export const students = pgTable(
       foreignColumns: [users.tenantId, users.id],
     }),
     tenantIsolation('students'),
+  ],
+).enableRLS();
+
+/**
+ * Health details staff need in an emergency (ADR 0016). Health data is sensitive under
+ * the NDPA, so it is kept apart from the main record and every field is optional.
+ */
+export const studentHealth = pgTable(
+  'student_health',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    studentId: uuid('student_id').notNull(),
+    bloodGroup: text('blood_group', {
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    }),
+    genotype: text('genotype', {
+      enum: ['AA', 'AS', 'AC', 'SS', 'SC', 'CC'],
+    }),
+    allergies: text('allergies'),
+    /** Conditions and medicines the school should know about, e.g. asthma, inhaler. */
+    conditions: text('conditions'),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.studentId] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    check(
+      'student_health_blood_group',
+      sql`${t.bloodGroup} in ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')`,
+    ),
+    check(
+      'student_health_genotype',
+      sql`${t.genotype} in ('AA', 'AS', 'AC', 'SS', 'SC', 'CC')`,
+    ),
+    tenantIsolation('student_health'),
+  ],
+).enableRLS();
+
+/** The student's passport photograph. Private, unlike school logos. */
+export const studentPhotos = pgTable(
+  'student_photos',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    studentId: uuid('student_id').notNull(),
+    contentType: text('content_type', {
+      enum: ['image/png', 'image/jpeg', 'image/webp'],
+    }).notNull(),
+    content: bytea('content').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.studentId] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    check('student_photos_size', sql`octet_length(${t.content}) <= 204800`),
+    check(
+      'student_photos_type',
+      sql`${t.contentType} in ('image/png', 'image/jpeg', 'image/webp')`,
+    ),
+    tenantIsolation('student_photos'),
   ],
 ).enableRLS();
 
@@ -408,10 +499,6 @@ export const timetableSlots = pgTable(
     tenantIsolation('timetable_slots'),
   ],
 ).enableRLS();
-
-const bytea = customType<{ data: Buffer; driverData: Buffer }>({
-  dataType: () => 'bytea',
-});
 
 /**
  * A school's uploaded logo (ADR 0010). Kept in Postgres while files are small;

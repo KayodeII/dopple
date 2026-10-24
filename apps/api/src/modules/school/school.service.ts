@@ -12,7 +12,7 @@ import { TenantDb } from '../../database/tenant-db.service.js';
 import { InjectDb, type Database } from '../../database/tokens.js';
 import { schoolOrigin } from '../../tenancy/school-url.js';
 import { TENANT_KEY, type Tenant } from '../../tenancy/tenant.js';
-import { sniffImage } from './image.js';
+import { sniffImage } from '../../common/image.js';
 
 export const LOGO_MAX_BYTES = 200 * 1024;
 

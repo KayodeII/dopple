@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { ZodPipe } from '../../common/zod.pipe.js';
 import { Public, Roles } from '../auth/decorators.js';
 import { brandColor } from '../schools/schools.dto.js';
-import { readBody } from './read-body.js';
+import { readBody } from '../../common/read-body.js';
 import { LOGO_MAX_BYTES, SchoolService } from './school.service.js';
 
 const updateSchoolBody = z
