@@ -34,6 +34,13 @@ export function Shell() {
     },
     { to: '/classes', label: 'Classes', icon: classIcon, show: isStaff(user) },
     {
+      to: '/fees',
+      label: 'Fees',
+      icon: feesIcon,
+      // Parents too, once guardians exist.
+      show: user.role === 'admin' || user.role === 'student',
+    },
+    {
       to: '/settings',
       label: 'Settings',
       icon: settingsIcon,
@@ -155,6 +162,13 @@ const settingsIcon = icon(
   <>
     <circle cx="9" cy="9" r="2.5" />
     <path d="M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.5 1.5M12.5 12.5L14 14M4 14l1.5-1.5M12.5 5.5L14 4" />
+  </>,
+);
+const feesIcon = icon(
+  <>
+    <rect x="2" y="4.5" width="14" height="9" rx="1.5" />
+    <circle cx="9" cy="9" r="1.75" />
+    <path d="M4.5 7v4M13.5 7v4" />
   </>,
 );
 const classIcon = icon(

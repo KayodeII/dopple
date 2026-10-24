@@ -87,3 +87,23 @@ export interface Lesson {
   subject: { id: string; code: string; name: string };
   teacher: Ref | null;
 }
+
+export interface Fee {
+  id: string;
+  description: string;
+  /** Kobo. */
+  amountMinor: number;
+  paidMinor: number;
+  currency: string;
+  dueOn: string | null;
+  status: 'paid' | 'part-paid' | 'unpaid';
+  student: ClassStudent;
+}
+
+export interface PaymentAccount {
+  provider: string;
+  connected: boolean;
+  status?: 'pending' | 'active' | 'restricted';
+  /** What the provider still needs from the school. */
+  requirementsDue?: string[];
+}

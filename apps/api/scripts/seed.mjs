@@ -144,6 +144,13 @@ try {
       );
     }
     await seedStructure(tenantId, school.slug);
+    // First-term tuition for every student, once. No payment account: the admin sets that up.
+    await client.query(
+      `insert into fees (tenant_id, student_id, description, amount_minor, due_on)
+       select tenant_id, id, 'First term tuition', 8500000, '2026-09-30' from students
+       where tenant_id = $1 and not exists (select 1 from fees where tenant_id = $1)`,
+      [tenantId],
+    );
   }
   await client.query('commit');
   console.log(`Seeded ${schools.length} schools. Sign-in: admin@, teacher@ or student@<slug>.test, password "${DEMO_PASSWORD}".`);

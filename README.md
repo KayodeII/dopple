@@ -213,6 +213,8 @@ API variables are validated at startup in [`apps/api/src/config/env.ts`](apps/ap
 | `LOGIN_RATE_LIMIT_PER_MINUTE` | `10` | Sign-in attempts per IP per minute (refresh gets 3×) |
 | `SCHOOL_URL_FORMAT` | `https://{host}` | A school's web app address; `{host}` is `<slug>.<PLATFORM_DOMAIN>` or its custom domain. Locally `http://{host}:3200` |
 | `SCHOOL_SIGNUPS_PER_HOUR` | `5` | New schools per client IP per hour |
+| `PAYMENT_PROVIDER` | `fake` | Who takes fee payments: `fake` (no money; not allowed in production) or `bachs` |
+| `BACHS_SECRET_KEY` / `BACHS_WEBHOOK_SECRET` | — | Needed when `PAYMENT_PROVIDER=bachs`. An `sk_sandbox_` key uses the sandbox, `sk_live_` production |
 | `LOG_LEVEL` | `info` | pino log level |
 | `OTEL_*` | OTLP → `localhost:4318` | Standard OpenTelemetry variables; set exporters to `none` without Grafana |
 
@@ -256,6 +258,12 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `GET` / `POST` | `/classes/:id/timetable` | read: signed in · write: admin | Weekly periods for `?termId=`; refuses overlaps and teacher double-booking (409) |
 | `DELETE` | `/classes/:id/timetable/:slotId` | admin | Remove a period |
 | `GET` | `/timetable/me` | admin, teacher, student | `?termId=`: the lessons I teach, or my class's timetable |
+| `GET` / `POST` | `/fees/account` | admin | The school's own account with the payment provider; `POST` sets it up (ADR 0013) |
+| `GET` / `POST` | `/fees` | admin | All fees with what is paid (`?studentId=`); bill `{ description, amountMinor, dueOn?, studentIds \| classId }` (kobo) |
+| `DELETE` | `/fees/:id` | admin | Delete a fee nobody has tried to pay (409 otherwise) |
+| `GET` | `/fees/me` | student | My fees |
+| `POST` | `/fees/:id/pay` | student | Start paying what is left; returns the provider's payment page `{ url }` |
+| `POST` | `/payments/webhooks/:provider` | public, signed | Payment events from the provider (verified by its adapter, counted once per event id) |
 
 ## Testing
 
@@ -270,7 +278,7 @@ pnpm test:e2e     # API e2e tests, site smoke tests and web app tests (need a mi
 
 ## Observability
 
-OpenTelemetry starts before the app (`node --import ./dist/instrumentation.js`). It traces HTTP, Express and Postgres automatically. Logs are pino JSON that include `trace_id`, so you can jump from a log line to its trace. Every span and request log carries the school (`tenant.id`, `tenant.slug`). Business metrics (sign-ins, refresh-token reuse, tenant requests) live in `apps/api/src/observability/metrics.ts`.
+OpenTelemetry starts before the app (`node --import ./dist/instrumentation.js`). It traces HTTP, Express and Postgres automatically. Logs are pino JSON that include `trace_id`, so you can jump from a log line to its trace. Every span and request log carries the school (`tenant.id`, `tenant.slug`). Business metrics (sign-ins, refresh-token reuse, tenant requests, fee payments received) live in `apps/api/src/observability/metrics.ts`.
 
 Locally, `pnpm infra:up` runs Grafana at http://localhost:3001 (user `admin`, password `admin`). See [ADR 0003](docs/decisions/0003-observability.md).
 

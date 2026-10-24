@@ -23,6 +23,7 @@ test.describe('as a student', () => {
     await expect(nav.getByRole('link')).toHaveText([
       'Home',
       'Timetable',
+      'Fees',
       'Settings',
     ]);
     await expect(page.getByRole('region', { name: 'Today' })).toBeVisible();
