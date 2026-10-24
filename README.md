@@ -28,7 +28,7 @@ Each school (a **tenant**) gets:
 | --- | --- | --- |
 | Core API | `apps/api` | Running: tenancy, row-level security, auth, observability, school records (students, classes, enrolments, timetable) |
 | Marketing site | `apps/site` | Built (v1) |
-| School web app (staff, students, parents) | `apps/web` | Built (v1): sign-in, students, classes, timetables. No desktop app ([ADR 0007](docs/decisions/0007-web-only.md)) |
+| School web app (staff, students, parents) | `apps/web` | Built (v1): sign-in, students and guardians, classes, timetables, fees, parent view. No desktop app ([ADR 0007](docs/decisions/0007-web-only.md)) |
 | Realtime gateway | `services/realtime` | Planned |
 | Local infrastructure | `infra` | Ready |
 
@@ -172,7 +172,7 @@ Double-click `scripts/start-dopple.command`, or run it from a terminal. It insta
 
 ### Try it
 
-`*.localhost` resolves to `127.0.0.1`, so each demo school has its own local address. The seed creates a 2026/2027 session with three terms, a few subjects, two JSS 1 classes (students enrolled in JSS 1A, which takes every subject with the demo teacher), and accounts `admin@<slug>.test`, `teacher@<slug>.test` and `student@<slug>.test`, all with the password `dopple-demo`.
+`*.localhost` resolves to `127.0.0.1`, so each demo school has its own local address. The seed creates a 2026/2027 session with three terms, a few subjects, two JSS 1 classes (students enrolled in JSS 1A, which takes every subject with the demo teacher), and accounts `admin@<slug>.test`, `teacher@<slug>.test`, `student@<slug>.test` and `parent@<slug>.test` (the first student's mother), all with the password `dopple-demo`.
 
 **On the website:** http://localhost:3100/login finds a school and sends you to its sign-in page; http://localhost:3100/start creates a new school.
 
@@ -247,6 +247,11 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `GET` | `/auth/me` | signed in | The current user |
 | `GET` / `POST` | `/students` | read: admin, teacher · write: admin | Students; search names and admission numbers with `?q=` |
 | `GET` / `PATCH` | `/students/:id` | read: admin, teacher · write: admin | One student with their class per session; edit any of `admissionNo`, `firstName`, `lastName`, `userId` |
+| `GET` / `POST` | `/students/:id/guardians` | read: admin, teacher · write: admin | The student's parents and guardians; add `{ relationship, name, phone, email?, userId? }` or link one on record `{ relationship, guardianId }` (ADR 0015) |
+| `DELETE` | `/students/:id/guardians/:guardianId` | admin | Unlink; a guardian with no children left is removed |
+| `GET` | `/guardians?q=` | admin | Guardians by name or phone, with their children (for linking siblings) |
+| `PATCH` | `/guardians/:id` | admin | Edit `name`, `phone`, `email`, or `userId` (a parent account) |
+| `GET` | `/children` | parent | My children, with their class in the latest session |
 | `GET` / `POST` | `/sessions` | read: signed in · write: admin | School years with their terms |
 | `GET` / `POST` | `/subjects` | read: signed in · write: admin | Subjects and their codes |
 | `GET` / `POST` | `/classes` | read: signed in · write: admin | Class groups; filter with `?sessionId=` |
@@ -257,12 +262,12 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `PUT` / `DELETE` | `/classes/:id/subjects/:subjectId` | admin | Add a subject, set its teacher (`{ teacherId }`; 409 if they're busy during its periods), or remove it |
 | `GET` / `POST` | `/classes/:id/timetable` | read: signed in · write: admin | Weekly periods for `?termId=`; refuses overlaps and teacher double-booking (409) |
 | `DELETE` | `/classes/:id/timetable/:slotId` | admin | Remove a period |
-| `GET` | `/timetable/me` | admin, teacher, student | `?termId=`: the lessons I teach, or my class's timetable |
+| `GET` | `/timetable/me` | admin, teacher, student, parent | `?termId=`: the lessons I teach, or my class's timetable; parents add `&studentId=` |
 | `GET` / `POST` | `/fees/account` | admin | The school's own account with the payment provider; `POST` sets it up (ADR 0013) |
 | `GET` / `POST` | `/fees` | admin | All fees with what is paid (`?studentId=`); bill `{ description, amountMinor, dueOn?, studentIds \| classId }` (kobo) |
 | `DELETE` | `/fees/:id` | admin | Delete a fee nobody has tried to pay (409 otherwise) |
-| `GET` | `/fees/me` | student | My fees |
-| `POST` | `/fees/:id/pay` | student | Start paying what is left; returns the provider's payment page `{ url }` |
+| `GET` | `/fees/me` | student, parent | My fees, or my children's |
+| `POST` | `/fees/:id/pay` | student, parent | Start paying what is left; returns the provider's payment page `{ url }` |
 | `POST` | `/payments/webhooks/:provider` | public, signed | Payment events from the provider (verified by its adapter, counted once per event id) |
 
 ## Testing

@@ -127,6 +127,60 @@ export const users = pgTable(
 ).enableRLS();
 
 /**
+ * A student's parents or guardians: who the school calls, and, once they have an
+ * account, who signs in for the child (ADR 0015). Contact details do not need an
+ * account: many parents have a phone but no email.
+ */
+export const guardians = pgTable(
+  'guardians',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    name: text('name').notNull(),
+    /** E.164, e.g. +2348031234567 (see guardians.dto.ts). */
+    phone: text('phone').notNull(),
+    email: text('email'),
+    /** The guardian's parent account, if they have one. */
+    userId: uuid('user_id'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    unique('guardians_user_per_tenant').on(t.tenantId, t.userId),
+    foreignKey({
+      columns: [t.tenantId, t.userId],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    tenantIsolation('guardians'),
+  ],
+).enableRLS();
+
+/** Which guardians look after which students. A guardian can have several children. */
+export const studentGuardians = pgTable(
+  'student_guardians',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    studentId: uuid('student_id').notNull(),
+    guardianId: uuid('guardian_id').notNull(),
+    /** "Mother", "Uncle", ... as the school records it. */
+    relationship: text('relationship').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.studentId, t.guardianId] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.guardianId],
+      foreignColumns: [guardians.tenantId, guardians.id],
+    }).onDelete('cascade'),
+    tenantIsolation('student_guardians'),
+  ],
+).enableRLS();
+
+/**
  * Long-lived sign-in sessions. Only a SHA-256 of the token is stored, so a
  * database leak does not hand out sessions. Rotated on every refresh.
  */

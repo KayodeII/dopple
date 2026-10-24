@@ -1,7 +1,7 @@
 // Seeds two demo schools so tenant isolation can be seen locally:
 //   curl -H "Host: greenfield.dopple.localhost" localhost:3000/students
 //   curl -H "Host: riverside.dopple.localhost"  localhost:3000/students
-// Each school gets demo admin, teacher and student accounts (password below) for trying sign-in:
+// Each school gets demo admin, teacher, student and parent accounts (password below) for trying sign-in:
 //   curl -H "Host: greenfield.dopple.localhost" -H 'content-type: application/json' \
 //     -d '{"email":"admin@greenfield.test","password":"dopple-demo"}' localhost:3000/auth/sign-in
 // Runs as the database owner (MIGRATION_DATABASE_URL) because the app role cannot write tenants.
@@ -115,6 +115,36 @@ async function seedStructure(tenantId, slug) {
   );
 }
 
+// The demo parent account is the first student's mother; the second student, if any,
+// has a father on record with a phone number and no account, as many parents are.
+async function seedGuardians(tenantId, slug, admissionNos) {
+  const exists = await client.query('select 1 from guardians where tenant_id = $1 limit 1', [tenantId]);
+  if (exists.rowCount) return;
+  const kids = await client.query(
+    'select id, last_name from students where tenant_id = $1 and admission_no = any($2) order by admission_no',
+    [tenantId, admissionNos.slice(0, 2)],
+  );
+  const parent = await client.query('select id from users where tenant_id = $1 and email = $2', [
+    tenantId,
+    `parent@${slug}.test`,
+  ]);
+  const guardians = [
+    ['Demo Parent', '+2348031234567', `parent@${slug}.test`, parent.rows[0].id, 'Mother'],
+    [`Emeka ${kids.rows[1]?.last_name}`, '+2348057654321', null, null, 'Father'],
+  ];
+  for (const [i, kid] of kids.rows.entries()) {
+    const [name, phone, email, userId, relationship] = guardians[i];
+    const { rows } = await client.query(
+      `insert into guardians (tenant_id, name, phone, email, user_id) values ($1, $2, $3, $4, $5) returning id`,
+      [tenantId, name, phone, email, userId],
+    );
+    await client.query(
+      `insert into student_guardians (tenant_id, student_id, guardian_id, relationship) values ($1, $2, $3, $4)`,
+      [tenantId, kid.id, rows[0].id, relationship],
+    );
+  }
+}
+
 try {
   await client.query('begin');
   for (const school of schools) {
@@ -135,7 +165,7 @@ try {
         [tenantId, admissionNo, firstName, lastName],
       );
     }
-    for (const [role, name] of [['admin', 'Demo Admin'], ['teacher', 'Demo Teacher'], ['student', 'Demo Student']]) {
+    for (const [role, name] of [['admin', 'Demo Admin'], ['teacher', 'Demo Teacher'], ['student', 'Demo Student'], ['parent', 'Demo Parent']]) {
       await client.query(
         `insert into users (tenant_id, email, name, role, password_hash)
          values ($1, $2, $3, $4, $5)
@@ -144,6 +174,7 @@ try {
       );
     }
     await seedStructure(tenantId, school.slug);
+    await seedGuardians(tenantId, school.slug, school.students.map(([admissionNo]) => admissionNo));
     // First-term tuition for every student, once. No payment account: the admin sets that up.
     await client.query(
       `insert into fees (tenant_id, student_id, description, amount_minor, due_on)
@@ -153,7 +184,7 @@ try {
     );
   }
   await client.query('commit');
-  console.log(`Seeded ${schools.length} schools. Sign-in: admin@, teacher@ or student@<slug>.test, password "${DEMO_PASSWORD}".`);
+  console.log(`Seeded ${schools.length} schools. Sign-in: admin@, teacher@, student@ or parent@<slug>.test, password "${DEMO_PASSWORD}".`);
 } catch (error) {
   await client.query('rollback');
   throw error;

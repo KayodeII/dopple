@@ -78,6 +78,13 @@
       "when": 1792838987297,
       "tag": "0010_fees",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792854709539,
+      "tag": "0011_guardians",
+      "breakpoints": true
     }
   ]
 }

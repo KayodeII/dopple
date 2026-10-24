@@ -15,7 +15,7 @@ import { Roles } from '../auth/decorators.js';
 import { createFeesBody, listFeesQuery } from './fees.dto.js';
 import { FeesService } from './fees.service.js';
 
-/** Admins bill and see every fee; students see and pay their own (parents after guardians). */
+/** Admins bill and see every fee; students and parents see and pay their own. */
 @Controller('fees')
 export class FeesController {
   constructor(private readonly fees: FeesService) {}
@@ -40,7 +40,7 @@ export class FeesController {
     return this.fees.list(query);
   }
 
-  @Roles('student')
+  @Roles('student', 'parent')
   @Get('me')
   mine() {
     return this.fees.mine();
@@ -61,7 +61,7 @@ export class FeesController {
     return this.fees.remove(id);
   }
 
-  @Roles('student')
+  @Roles('student', 'parent')
   @Post(':id/pay')
   pay(@Param('id', ParseUUIDPipe) id: string) {
     return this.fees.startPayment(id);

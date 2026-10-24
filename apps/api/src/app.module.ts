@@ -6,6 +6,7 @@ import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
 import { FeesModule } from './modules/fees/fees.module.js';
+import { GuardiansModule } from './modules/guardians/guardians.module.js';
 import { LearnModule } from './modules/learn/learn.module.js';
 import { SchoolModule } from './modules/school/school.module.js';
 import { SchoolsModule } from './modules/schools/schools.module.js';
@@ -32,6 +33,7 @@ import { TenancyModule } from './tenancy/tenancy.module.js';
     // Features (one folder per module under src/modules)
     AuthModule, // global guard: every route needs a token unless @Public()
     StudentsModule,
+    GuardiansModule, // parents and guardians, and the children a parent signs in for
     AcademicSessionsModule,
     SubjectsModule,
     ClassesModule,

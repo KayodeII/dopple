@@ -58,6 +58,8 @@ describe('Tenant isolation (e2e)', () => {
     await app?.close();
     // Children before parents: these tables reference each other.
     for (const table of [
+      'student_guardians',
+      'guardians',
       'fees',
       'school_logos',
       'timetable_slots',
@@ -135,6 +137,49 @@ describe('Tenant isolation (e2e)', () => {
         ),
       ).toBe(true);
     }
+  });
+
+  it('keeps guardians to their school, and will not link one across schools', async () => {
+    const { rows } = await owner.query<{ slug: string; id: string }>(
+      `insert into guardians (tenant_id, name, phone)
+       select id, slug || ' parent', '+2348030000000' from tenants where slug = any($1)
+       returning (select slug from tenants t where t.id = tenant_id), id`,
+      [[schoolA, schoolB]],
+    );
+    const guardianOf = Object.fromEntries(rows.map((r) => [r.slug, r.id]));
+    const tokenB = await tokenFor(schoolB);
+    const asB = (req: request.Test) =>
+      req.set('Host', host(schoolB)).auth(tokenB, { type: 'bearer' });
+
+    const listed = await asB(
+      request(app.getHttpServer()).get('/guardians'),
+    ).expect(200);
+    expect(listed.body.map((g: { id: string }) => g.id)).toEqual([
+      guardianOf[schoolB],
+    ]);
+
+    const [studentA, studentB] = (
+      await owner.query<{ id: string }>(
+        `select s.id from students s join tenants t on t.id = s.tenant_id
+         where t.slug = any($1) and s.admission_no = any('{A-1,B-1}') order by s.admission_no`,
+        [[schoolA, schoolB]],
+      )
+    ).rows.map((r) => r.id);
+    await asB(
+      request(app.getHttpServer()).get(`/students/${studentA}/guardians`),
+    ).expect(404);
+    await asB(
+      request(app.getHttpServer())
+        .post(`/students/${studentB}/guardians`)
+        .send({ guardianId: guardianOf[schoolA], relationship: 'Mother' }),
+    ).expect(422);
+    await asB(
+      request(app.getHttpServer())
+        .patch(`/guardians/${guardianOf[schoolA]}`)
+        .send({
+          name: 'Changed',
+        }),
+    ).expect(404);
   });
 
   it('names the school at each host, without signing in', async () => {

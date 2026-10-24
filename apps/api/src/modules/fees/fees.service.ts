@@ -32,6 +32,7 @@ import {
   type PaymentEvent,
   type PaymentProvider,
 } from '../payments/payment-provider.js';
+import { myStudentIds } from '../guardians/my-students.js';
 import type { CreateFeesBody } from './fees.dto.js';
 
 /** What a fee looks like to the web app: what is owed, and how much of it is paid. */
@@ -145,15 +146,17 @@ export class FeesService {
   }
 
   list(query: { studentId?: string }) {
-    return this.listWhere(
+    return this.listWhere(() =>
       query.studentId ? eq(fees.studentId, query.studentId) : undefined,
     );
   }
 
-  /** A student's own fees. Parents see their children's once guardians exist. */
+  /** A student's own fees, or a parent's children's. */
   mine() {
     const { userId } = this.cls.get<Principal>(PRINCIPAL_KEY);
-    return this.listWhere(eq(students.userId, userId));
+    return this.listWhere((tx) =>
+      inArray(students.id, myStudentIds(tx, userId)),
+    );
   }
 
   create(input: CreateFeesBody) {
@@ -224,13 +227,16 @@ export class FeesService {
     const { userId } = this.cls.get<Principal>(PRINCIPAL_KEY);
     const pending = await this.tenantDb.run(async (tx, tenant) => {
       const [fee] = await tx
-        .select({ ...feeColumns, userId: students.userId })
+        .select(feeColumns)
         .from(fees)
         .innerJoin(students, sameStudent)
         .where(eq(fees.id, feeId));
       if (!fee) throw new NotFoundException('Fee not found');
-      if (fee.userId !== userId) {
-        throw new ForbiddenException('You can only pay your own fees');
+      const mine = await myStudentIds(tx, userId);
+      if (!mine.some((s) => s.id === fee.student.id)) {
+        throw new ForbiddenException(
+          'You can only pay your own or your children’s fees',
+        );
       }
       const owed = fee.amountMinor - fee.paidMinor;
       if (owed <= 0) throw new ConflictException('This fee is already paid');
@@ -390,13 +396,13 @@ export class FeesService {
     });
   }
 
-  private listWhere(where: SQL | undefined) {
+  private listWhere(where: (tx: Transaction) => SQL | undefined) {
     return this.tenantDb.run(async (tx) => {
       const rows = await tx
         .select(feeColumns)
         .from(fees)
         .innerJoin(students, sameStudent)
-        .where(where)
+        .where(where(tx))
         .orderBy(desc(fees.createdAt), students.lastName, students.firstName);
       return rows.map(withStatus);
     });
