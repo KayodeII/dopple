@@ -1,6 +1,6 @@
 # Project context — handover note
 
-Last updated: 2026-10-18
+Last updated: 2026-10-24
 
 Read `AGENTS.md` first. This file says where the work stands. Update it at the end of every session.
 
@@ -37,13 +37,13 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 ## Next up
 
-0. **Dopple Learn, next:** a teacher review of the 27 lessons added on 2026-10-18 (written by an agent, answers checked, but not yet reviewed by a teacher), then more lessons per class following the NERDC scheme of work and other subjects, offline (service worker), CBT-style timed mock exams, exam guides for private candidates, placement ("where do I start?"), optional accounts with parent consent. **Proctored exams are a requirement** for exams that count (school CBT, scored mocks); see `docs/roadmap.md`, needs its own ADR first.
-1. Auth follow-ups: move rate-limit counters to Redis before scaling out, invites + password reset (needs email provider), Google/Microsoft sign-in, expired refresh-token cleanup.
+0. **Dopple Learn, next:** a school admin's review of the 27 lessons added on 2026-10-18 (ADR 0014; written by an agent, answers checked, not yet reviewed), then more lessons per class following the NERDC scheme of work and other subjects, offline (service worker), CBT-style timed mock exams, exam guides for private candidates, placement ("where do I start?"), optional accounts with parent consent. **Proctored exams are a requirement** for exams that count (school CBT, scored mocks); see `docs/roadmap.md`, needs its own ADR first.
+1. Auth follow-ups: move rate-limit counters to Redis before scaling out, invites + password reset (Resend, ADR 0012), Google/Microsoft sign-in, expired refresh-token cleanup.
 2. Core school records, continued: guardians (parent ↔ student, then parents' `/timetable/me`). Students leaving (status instead of deleting) and list paging when schools get large.
 3. `apps/web` next: assign subject teachers (needs a staff list endpoint), create sessions/classes/subjects from the UI, parent view after guardians, school colour per tenant, a shared `packages/ui` for tokens. `scripts/start-dopple.command` should also start `dev:web`.
    - Site follow-ups: real pricing, demo-booking form backend (currently `action="#demo"`), legal pages, analytics.
 4. `services/realtime`: Go WebSocket gateway skeleton with NATS.
-5. Fees: payment provider subaccounts, webhook ledger (see architecture doc, "Fee payments").
+5. Fees on Bachs (ADR 0013): a connected account per school, direct charges, webhook ledger. Confirm Bachs's CBN licence and Nigerian payment methods first (see architecture doc, "Fee payments").
 
 ## Coming soon (announced on the website)
 
@@ -51,15 +51,13 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 ## Open questions
 
-- Who writes and reviews Learn content (paid teachers, volunteer teachers, partner schools)? Licence past questions from WAEC/NECO/JAMB, or only write our own?
+- Learn content: school admins review it (ADR 0014). Still open: hide or label unreviewed lessons? Licence past questions from WAEC/NECO/JAMB, or only write our own?
 - Zero-rated data for `/learn` with a mobile network (as Airtel does for the Nigeria Learning Passport)?
 - Proctoring: camera snapshots of under-18s need parental consent and a retention limit under the NDPA; lab kiosk mode vs phones.
 
 - Admin UI for a school to opt in to the partner wall (logos are now uploaded in School settings and stored in Postgres, ADR 0010; move to S3/R2 when uploads grow).
 - Sign-up abuse: CAPTCHA or review queue for self-serve schools? Email verification needs the email provider.
-- Email provider for invites and password resets (Postmark, SES, Resend?).
 - Google/Microsoft sign-in: one platform OAuth app, or schools bring their own Workspace/Entra tenant?
-- Payment provider: Paystack, Flutterwave or both?
 - Launch region and data-residency promises.
 - Cloud provider (AWS + Cloudflare?).
 
@@ -73,6 +71,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-24 — Recorded three decisions from the user: Resend for email (ADR 0012), Bachs (bachs.io) for fees, with a connected account per school (ADR 0013), school admins review Learn lessons (ADR 0014). Docs only (branch `record-decisions`, on #17).
 - 2026-10-18 — Added 27 English and maths lessons (branch `learn-lessons`, stacked on #16), so every class from Nursery 1 to SS 3 has at least one of each. Answers were worked twice, but no teacher has reviewed them yet: README asks for a second check in the PR.
 - 2026-10-18 — Researched Nigeria's school system and exams; built Dopple Learn v1 (branch `learn`, stacked on PR #15, which lands #11–#14 on `main`: those had merged into their parent branches, not `main`). `scripts/learn-load.mjs` imports `src/modules/learn/content.ts` directly via Node type stripping, so keep that file free of relative imports. CI loads Learn content and rebuilds the site after the API starts. The user asked for proctored exams: recorded in ADR 0011 and the roadmap, not built yet.
 

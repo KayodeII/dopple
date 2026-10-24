@@ -19,7 +19,8 @@ Free lessons and practice questions for anyone (ADR 0011). This folder is the so
 - At least 3 questions, each with exactly 4 options (A to D), `answer` as the index (0 = A), and
   an explanation that shows the working, plus why a tempting wrong answer is wrong.
 - **Write your own questions.** Never copy WAEC, NECO or JAMB past questions; they own them.
-- Work out every answer yourself, then have a second teacher check it in the pull request.
+- Work out every answer yourself, then have a school admin review the lesson and approve the pull
+  request (ADR 0014). Name the reviewer in the PR.
 
 `pnpm --filter @dopple/api test` checks the format (four options, a valid answer, known subjects
 and classes, no repeated slugs or positions) before anything reaches the database.
