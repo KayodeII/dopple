@@ -1,0 +1,50 @@
+{
+  "slug": "ss-3-idioms",
+  "class": "ss-3",
+  "subject": "english-language",
+  "position": 1,
+  "title": "Idioms and what they really mean",
+  "summary": "Common English idioms tested in WASSCE and UTME, and how to work out their meaning.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "p", "text": "An idiom is a group of words whose meaning is different from the meanings of the separate words. \"It's raining cats and dogs\" has nothing to do with animals: it means it is raining heavily." },
+    { "type": "h", "text": "Idioms worth knowing" },
+    { "type": "list", "items": ["a piece of cake: very easy", "burn the midnight oil: study or work late into the night", "bury the hatchet: make peace after a quarrel", "let the cat out of the bag: reveal a secret by mistake", "break the ice: get people talking at the start of a meeting", "beat about the bush: avoid saying the main point", "take the bull by the horns: face a difficulty boldly", "a wet blanket: someone who spoils other people's fun", "turn over a new leaf: change your behaviour for the better", "at the eleventh hour: at the last possible moment", "a bone of contention: the cause of a disagreement", "once in a blue moon: very rarely"] },
+    { "type": "h", "text": "How to answer idiom questions" },
+    { "type": "example", "title": "Ifeanyi decided to take the bull by the horns and report the matter.", "steps": ["Don't picture a real bull. Ask what the whole sentence is about: reporting a matter.", "Reporting something difficult takes courage.", "So the idiom means he faced the difficulty boldly."] },
+    { "type": "p", "text": "Exam options usually include one choice that takes the words literally (about real bulls). It is almost always wrong." },
+    { "type": "tip", "text": "Keep a notebook of idioms you meet in novels, newspapers and past comprehension passages, with a sentence of your own for each." }
+  ],
+  "questions": [
+    {
+      "prompt": "The two brothers have finally buried the hatchet. This means they have",
+      "options": ["hidden a weapon", "made peace", "started a fight", "gone into farming"],
+      "answer": 1,
+      "explanation": "To bury the hatchet is to end a quarrel and make peace. \"Hidden a weapon\" takes the words literally."
+    },
+    {
+      "prompt": "Bola let the cat out of the bag about the surprise party. Bola",
+      "options": ["released an animal", "planned the party", "revealed the secret", "cancelled the party"],
+      "answer": 2,
+      "explanation": "To let the cat out of the bag is to reveal a secret, usually by mistake."
+    },
+    {
+      "prompt": "The candidates burnt the midnight oil before the exam. They",
+      "options": ["studied late into the night", "wasted fuel", "slept early", "caused a fire"],
+      "answer": 0,
+      "explanation": "Burning the midnight oil means working or studying late at night."
+    },
+    {
+      "prompt": "Stop beating about the bush and tell us what happened. The speaker wants the listener to",
+      "options": ["leave the farm", "speak more slowly", "keep quiet", "come to the point"],
+      "answer": 3,
+      "explanation": "Beating about the bush means avoiding the main point, so the speaker wants them to say it directly."
+    },
+    {
+      "prompt": "The land between the two villages has become a bone of contention. The land is",
+      "options": ["a burial ground", "a cause of disagreement", "very fertile", "for sale"],
+      "answer": 1,
+      "explanation": "A bone of contention is something people argue over."
+    }
+  ]
+}

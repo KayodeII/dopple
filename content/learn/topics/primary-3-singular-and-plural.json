@@ -1,0 +1,55 @@
+{
+  "slug": "primary-3-singular-and-plural",
+  "class": "primary-3",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "Singular and plural",
+  "summary": "Change a naming word from one to more than one, including the tricky ones.",
+  "minutes": 15,
+  "lesson": [
+    { "type": "p", "text": "A singular noun names one thing: a book. A plural noun names more than one: books." },
+    { "type": "h", "text": "Most nouns: add -s" },
+    { "type": "list", "items": ["book → books", "goat → goats", "pencil → pencils"] },
+    { "type": "h", "text": "Ending in s, x, ch or sh: add -es" },
+    { "type": "list", "items": ["bus → buses", "box → boxes", "church → churches", "dish → dishes"] },
+    { "type": "h", "text": "Consonant + y: change y to -ies" },
+    { "type": "list", "items": ["baby → babies", "city → cities", "lorry → lorries"] },
+    { "type": "p", "text": "But if a vowel comes before the y, just add -s: boy → boys, day → days, key → keys." },
+    { "type": "h", "text": "Special plurals to learn by heart" },
+    { "type": "list", "items": ["man → men, woman → women, child → children", "tooth → teeth, foot → feet, mouse → mice", "sheep → sheep, fish → fish (they stay the same)"] },
+    { "type": "example", "title": "Make it plural: one lady, one tomato", "steps": ["Lady ends in a consonant + y: lady → ladies.", "Tomato ends in o and adds -es: tomato → tomatoes (like potato → potatoes).", "Two ladies bought ten tomatoes."] },
+    { "type": "tip", "text": "Say the plural out loud. If it sounds like an extra syllable (box-es, bus-es), it usually needs -es." }
+  ],
+  "questions": [
+    {
+      "prompt": "What is the plural of \"box\"?",
+      "options": ["boxs", "boxes", "boxies", "box"],
+      "answer": 1,
+      "explanation": "Box ends in x, so add -es: boxes."
+    },
+    {
+      "prompt": "What is the plural of \"child\"?",
+      "options": ["childs", "childes", "children", "childrens"],
+      "answer": 2,
+      "explanation": "Child is a special plural: children. \"Childrens\" is wrong because children is already plural."
+    },
+    {
+      "prompt": "What is the plural of \"city\"?",
+      "options": ["cities", "citys", "cityes", "citties"],
+      "answer": 0,
+      "explanation": "City ends in a consonant (t) + y, so change y to -ies: cities."
+    },
+    {
+      "prompt": "Which plural is correct?",
+      "options": ["two foots", "three sheeps", "four mouses", "five teeth"],
+      "answer": 3,
+      "explanation": "Tooth becomes teeth. The others should be feet, sheep and mice."
+    },
+    {
+      "prompt": "What is the plural of \"key\"?",
+      "options": ["kies", "keyes", "keys", "key"],
+      "answer": 2,
+      "explanation": "A vowel (e) comes before the y, so just add -s: keys. Only consonant + y changes to -ies."
+    }
+  ]
+}

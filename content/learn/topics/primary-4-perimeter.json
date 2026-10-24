@@ -1,0 +1,45 @@
+{
+  "slug": "primary-4-perimeter",
+  "class": "primary-4",
+  "subject": "mathematics",
+  "position": 2,
+  "title": "Perimeter of squares and rectangles",
+  "summary": "Find the distance all the way round a shape.",
+  "minutes": 15,
+  "lesson": [
+    { "type": "p", "text": "The perimeter of a shape is the distance all the way round its edge. If you walk round a football field once, the distance you walk is its perimeter." },
+    { "type": "h", "text": "Add up all the sides" },
+    { "type": "example", "title": "A rectangle 7 cm long and 4 cm wide", "steps": ["A rectangle has 4 sides: two long and two short.", "7 + 4 + 7 + 4 = 22.", "The perimeter is 22 cm."] },
+    { "type": "h", "text": "Shortcuts" },
+    { "type": "list", "items": ["Rectangle: perimeter = 2 × (length + width)", "Square: all 4 sides are equal, so perimeter = 4 × side"] },
+    { "type": "example", "title": "A square tile with sides of 9 cm", "steps": ["Perimeter = 4 × 9.", "= 36 cm."] },
+    { "type": "example", "title": "Fencing a garden 12 m by 5 m", "steps": ["Perimeter = 2 × (12 + 5).", "= 2 × 17.", "= 34 m of fence."] },
+    { "type": "tip", "text": "Always write the unit (cm or m) with your answer. Perimeter is a length, so it uses cm or m, not square units." }
+  ],
+  "questions": [
+    {
+      "prompt": "What is the perimeter of a square with sides of 6 cm?",
+      "options": ["12 cm", "24 cm", "36 cm", "10 cm"],
+      "answer": 1,
+      "explanation": "A square has 4 equal sides: 4 × 6 = 24 cm. 36 is 6 × 6, which is the area, not the perimeter."
+    },
+    {
+      "prompt": "A rectangle is 8 m long and 5 m wide. What is its perimeter?",
+      "options": ["13 m", "40 m", "26 m", "21 m"],
+      "answer": 2,
+      "explanation": "2 × (8 + 5) = 2 × 13 = 26 m. 13 m adds only two of the four sides."
+    },
+    {
+      "prompt": "Mr Adamu fences a garden 10 m long and 3 m wide. How many metres of fence does he need?",
+      "options": ["26 m", "30 m", "13 m", "23 m"],
+      "answer": 0,
+      "explanation": "Fence goes all the way round: 2 × (10 + 3) = 2 × 13 = 26 m."
+    },
+    {
+      "prompt": "A square has a perimeter of 20 cm. How long is each side?",
+      "options": ["4 cm", "10 cm", "80 cm", "5 cm"],
+      "answer": 3,
+      "explanation": "4 equal sides make 20 cm, so each side is 20 ÷ 4 = 5 cm."
+    }
+  ]
+}

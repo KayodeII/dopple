@@ -58,6 +58,7 @@ describe('Tenant isolation (e2e)', () => {
     await app?.close();
     // Children before parents: these tables reference each other.
     for (const table of [
+      'school_logos',
       'timetable_slots',
       'enrolments',
       'class_subjects',
@@ -113,7 +114,7 @@ describe('Tenant isolation (e2e)', () => {
         .get('/school')
         .set('Host', host(slug))
         .expect(200);
-      expect(res.body).toEqual({ slug, name: slug });
+      expect(res.body).toMatchObject({ slug, name: slug, brandColor: null });
     }
   });
 
@@ -363,6 +364,70 @@ describe('Tenant isolation (e2e)', () => {
     await a
       .delete(`/classes/${timetableB}/timetable/${lessonB.id}`)
       .expect(404);
+  });
+
+  it('keeps each school’s branding and logo to itself', async () => {
+    const tokenA = await tokenFor(schoolA);
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await request(app.getHttpServer())
+      .patch('/school')
+      .set('Host', host(schoolA))
+      .auth(tokenA, { type: 'bearer' })
+      .send({ brandColor: '#123456', accentColor: '#abcdef' })
+      .expect(200);
+    await request(app.getHttpServer())
+      .put('/school/logo')
+      .set('Host', host(schoolA))
+      .set('Content-Type', 'image/png')
+      .auth(tokenA, { type: 'bearer' })
+      .send(png)
+      .expect(200);
+
+    const b = await request(app.getHttpServer())
+      .get('/school')
+      .set('Host', host(schoolB))
+      .expect(200);
+    expect(b.body).toMatchObject({
+      slug: schoolB,
+      brandColor: null,
+      accentColor: null,
+      logoUrl: null,
+    });
+    await request(app.getHttpServer())
+      .get('/school/logo')
+      .set('Host', host(schoolB))
+      .expect(404);
+
+    // The app role cannot write another school's logo, or the registry, directly.
+    const appRole = new pg.Client({
+      connectionString: process.env.DATABASE_URL,
+    });
+    await appRole.connect();
+    const idOf = async (slug: string) =>
+      (
+        await owner.query<{ id: string }>(
+          'select id from tenants where slug = $1',
+          [slug],
+        )
+      ).rows[0]!.id;
+    const [idA, idB] = [await idOf(schoolA), await idOf(schoolB)];
+    await appRole.query('begin');
+    await appRole.query(`select set_config('app.tenant_id', $1, true)`, [idB]);
+    const { rowCount } = await appRole.query(
+      'update school_logos set content_type = $1 where tenant_id = $2',
+      ['image/jpeg', idA],
+    );
+    expect(rowCount).toBe(0);
+    await expect(
+      appRole.query('update tenants set brand_color = null where id = $1', [
+        idA,
+      ]),
+    ).rejects.toThrow(/permission denied/);
+    await appRole.query('rollback');
+    await appRole.end();
   });
 
   it('returns nothing when no tenant is set on the connection', async () => {

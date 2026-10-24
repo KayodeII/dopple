@@ -2,8 +2,11 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  customType,
   date,
   foreignKey,
+  integer,
+  jsonb,
   pgPolicy,
   pgRole,
   pgTable,
@@ -15,6 +18,7 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { CLASS_SLUGS, type LessonBlock } from '../modules/learn/content.js';
 
 /**
  * Database schema. Rules (see docs/decisions/0002-tenant-isolation.md):
@@ -40,21 +44,32 @@ const createdAt = () =>
   timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 
 /** Tenant registry: one row per school. Not tenant-scoped; read-only for the app role. */
-export const tenants = pgTable('tenants', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  slug: text('slug').notNull().unique(),
-  name: text('name').notNull(),
-  customDomain: text('custom_domain').unique(),
-  status: text('status', { enum: ['active', 'suspended'] })
-    .notNull()
-    .default('active'),
-  /** Public logo for the marketing site's partner wall. */
-  logoUrl: text('logo_url'),
-  city: text('city'),
-  /** The school has agreed to appear on the public partner wall. Off by default. */
-  showcase: boolean('showcase').notNull().default(false),
-  createdAt: createdAt(),
-});
+export const tenants = pgTable(
+  'tenants',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    name: text('name').notNull(),
+    customDomain: text('custom_domain').unique(),
+    status: text('status', { enum: ['active', 'suspended'] })
+      .notNull()
+      .default('active'),
+    /** Public logo for the marketing site's partner wall. */
+    logoUrl: text('logo_url'),
+    city: text('city'),
+    /** The school has agreed to appear on the public partner wall. Off by default. */
+    showcase: boolean('showcase').notNull().default(false),
+    /** The school's colour for its web app, "#rrggbb". Null: Dopple's default. */
+    brandColor: text('brand_color'),
+    /** A second school colour for highlights, "#rrggbb". Null: the brand colour again. */
+    accentColor: text('accent_color'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check('tenants_brand_color', sql`${t.brandColor} ~ '^#[0-9a-f]{6}$'`),
+    check('tenants_accent_color', sql`${t.accentColor} ~ '^#[0-9a-f]{6}$'`),
+  ],
+);
 
 export const students = pgTable(
   'students',
@@ -338,6 +353,108 @@ export const timetableSlots = pgTable(
     tenantIsolation('timetable_slots'),
   ],
 ).enableRLS();
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => 'bytea',
+});
+
+/**
+ * A school's uploaded logo (ADR 0010). Kept in Postgres while files are small;
+ * served at GET /school/logo on the school's own address. Unlike other tenant
+ * tables, every school's row is READABLE (logos are public), so reads must filter
+ * by tenant_id themselves; writes are still limited to the school's own row.
+ */
+export const schoolLogos = pgTable(
+  'school_logos',
+  {
+    tenantId: uuid('tenant_id')
+      .primaryKey()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    contentType: text('content_type', {
+      enum: ['image/png', 'image/jpeg', 'image/webp'],
+    }).notNull(),
+    content: bytea('content').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check('school_logos_size', sql`octet_length(${t.content}) <= 204800`),
+    check(
+      'school_logos_type',
+      sql`${t.contentType} in ('image/png', 'image/jpeg', 'image/webp')`,
+    ),
+    tenantIsolation('school_logos'),
+    // Logos are public (sign-in pages, the website's school search): anyone may read,
+    // but the isolation policy above still limits writes to the school itself.
+    pgPolicy('school_logos_public_read', {
+      as: 'permissive',
+      for: 'select',
+      to: appRole,
+      using: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+/*
+ * Dopple Learn (ADR 0011): free lessons for anyone, outside any school. Platform-wide,
+ * not tenant-owned. Loaded from content/learn/ by scripts/learn-load.mjs as the owner;
+ * the app role may only read them (revoked in migration 0009).
+ */
+export const learnSubjects = pgTable('learn_subjects', {
+  slug: text('slug').primaryKey(),
+  name: text('name').notNull(),
+  /** The classes that take this subject, e.g. ['primary-1', 'primary-2']. */
+  classes: text('classes').array().notNull(),
+});
+
+export const learnTopics = pgTable(
+  'learn_topics',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    classLevel: text('class_level').notNull(),
+    subjectSlug: text('subject_slug')
+      .notNull()
+      .references(() => learnSubjects.slug),
+    position: integer('position').notNull(),
+    title: text('title').notNull(),
+    summary: text('summary').notNull(),
+    minutes: smallint('minutes').notNull(),
+    lesson: jsonb('lesson').$type<LessonBlock[]>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  () => [
+    check(
+      'learn_topics_class_level',
+      sql.raw(
+        `class_level in (${CLASS_SLUGS.map((c) => `'${c}'`).join(', ')})`,
+      ),
+    ),
+  ],
+);
+
+export const learnQuestions = pgTable(
+  'learn_questions',
+  {
+    topicId: uuid('topic_id')
+      .notNull()
+      .references(() => learnTopics.id, { onDelete: 'cascade' }),
+    position: smallint('position').notNull(),
+    prompt: text('prompt').notNull(),
+    options: text('options').array().notNull(),
+    /** Index into options, 0 to 3. */
+    answer: smallint('answer').notNull(),
+    explanation: text('explanation').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.topicId, t.position] }),
+    check('learn_questions_four_options', sql`cardinality(${t.options}) = 4`),
+    check('learn_questions_answer', sql`${t.answer} between 0 and 3`),
+  ],
+);
 
 export type TenantRow = typeof tenants.$inferSelect;
 export type Student = typeof students.$inferSelect;

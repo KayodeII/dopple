@@ -1,0 +1,46 @@
+{
+  "slug": "nursery-1-letter-sounds-a-to-e",
+  "class": "nursery-1",
+  "subject": "early-literacy",
+  "position": 1,
+  "title": "Letter sounds: a, b, c, d, e",
+  "summary": "Learn the sound each of the first five letters makes, with words the child knows.",
+  "minutes": 10,
+  "lesson": [
+    { "type": "tip", "text": "For a parent, older brother or sister, or anyone helping a young child: read this aloud and point at things around you." },
+    { "type": "h", "text": "Letters have names and sounds" },
+    { "type": "p", "text": "Every letter has a name (\"bee\" for b) and a sound (\"buh\" for b). To read words, children need the sounds first. Say the sound short and clear, without a long \"uh\" at the end where you can." },
+    { "type": "h", "text": "The five sounds" },
+    { "type": "list", "items": ["a as in ant, apple", "b as in ball, bag, bread", "c as in cat, cup, cake", "d as in dog, drum, door", "e as in egg, elephant"] },
+    { "type": "example", "title": "A sound game", "steps": ["Say: \"I spy something that starts with b.\"", "The child looks around and points: \"Ball!\" or \"Bag!\"", "Say the word slowly together: b... all. Hear the b at the start."] },
+    { "type": "h", "text": "Trace the letters" },
+    { "type": "p", "text": "Write the letter big on paper or in sand. Let the child trace it with a finger while saying its sound." },
+    { "type": "tip", "text": "Do a little every day. Five minutes of sounds each morning is better than one long lesson a week." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which word starts with the sound \"b\"?",
+      "options": ["cat", "ball", "egg", "dog"],
+      "answer": 1,
+      "explanation": "Say it slowly: b... all. Ball starts with b. Cat starts with c, egg with e and dog with d."
+    },
+    {
+      "prompt": "What sound does \"dog\" start with?",
+      "options": ["d", "b", "g", "o"],
+      "answer": 0,
+      "explanation": "Say it slowly: d... og. The first sound is d. The g is the last sound, not the first."
+    },
+    {
+      "prompt": "Which word starts with the same sound as \"apple\"?",
+      "options": ["egg", "cup", "ant", "bread"],
+      "answer": 2,
+      "explanation": "Apple and ant both start with the sound a."
+    },
+    {
+      "prompt": "\"Cup\" starts with which letter?",
+      "options": ["e", "a", "d", "c"],
+      "answer": 3,
+      "explanation": "Cup starts with the sound c, the same as cat and cake."
+    }
+  ]
+}

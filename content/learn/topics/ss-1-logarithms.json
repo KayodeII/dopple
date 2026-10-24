@@ -1,0 +1,54 @@
+{
+  "slug": "ss-1-logarithms",
+  "class": "ss-1",
+  "subject": "general-mathematics",
+  "position": 2,
+  "title": "Logarithms",
+  "summary": "What a logarithm is, how it links to indices, and the three laws.",
+  "minutes": 25,
+  "lesson": [
+    { "type": "p", "text": "A logarithm answers the question: what power do I raise the base to, to get this number? Since 10^2 = 100, the logarithm of 100 to base 10 is 2. We write log₁₀ 100 = 2." },
+    { "type": "h", "text": "Index form and log form" },
+    { "type": "p", "text": "If a^x = N, then log_a N = x. The two say exactly the same thing." },
+    { "type": "list", "items": ["2^3 = 8 means log₂ 8 = 3", "5^2 = 25 means log₅ 25 = 2", "10^0 = 1 means log₁₀ 1 = 0 (the log of 1 is 0 in any base)", "a^1 = a means log_a a = 1"] },
+    { "type": "example", "title": "Evaluate log₃ 81", "steps": ["Ask: 3 to what power gives 81?", "3^4 = 3 × 3 × 3 × 3 = 81.", "So log₃ 81 = 4."] },
+    { "type": "h", "text": "The laws" },
+    { "type": "p", "text": "They come straight from the laws of indices." },
+    { "type": "list", "items": ["Product: log a + log b = log (ab)", "Quotient: log a − log b = log (a ÷ b)", "Power: log a^n = n log a"] },
+    { "type": "example", "title": "Simplify log₁₀ 2 + log₁₀ 5", "steps": ["Product law: log₁₀ (2 × 5) = log₁₀ 10.", "10^1 = 10, so the answer is 1."] },
+    { "type": "example", "title": "Simplify log 8 ÷ log 2 (same base)", "steps": ["8 = 2^3, so log 8 = 3 log 2 (power law).", "3 log 2 ÷ log 2 = 3."] },
+    { "type": "tip", "text": "log a + log b is NOT log (a + b). That mistake costs marks every year." }
+  ],
+  "questions": [
+    {
+      "prompt": "Evaluate log₂ 32.",
+      "options": ["16", "5", "4", "6"],
+      "answer": 1,
+      "explanation": "2^5 = 2 × 2 × 2 × 2 × 2 = 32, so log₂ 32 = 5. (16 is 32 ÷ 2, not a power.)"
+    },
+    {
+      "prompt": "Write 10^3 = 1000 in logarithm form.",
+      "options": ["log₁₀ 3 = 1000", "log₃ 1000 = 10", "log₁₀ 1000 = 3", "log₁₀₀₀ 10 = 3"],
+      "answer": 2,
+      "explanation": "a^x = N becomes log_a N = x. Here a = 10, x = 3, N = 1000: log₁₀ 1000 = 3."
+    },
+    {
+      "prompt": "Simplify log₁₀ 4 + log₁₀ 25.",
+      "options": ["2", "log₁₀ 29", "100", "1"],
+      "answer": 0,
+      "explanation": "Product law: log₁₀ (4 × 25) = log₁₀ 100 = 2. log₁₀ 29 adds the numbers instead of multiplying."
+    },
+    {
+      "prompt": "What is log₇ 1?",
+      "options": ["7", "1", "1/7", "0"],
+      "answer": 3,
+      "explanation": "7^0 = 1, so log₇ 1 = 0. The log of 1 is 0 in every base."
+    },
+    {
+      "prompt": "Simplify log₃ 54 − log₃ 2.",
+      "options": ["27", "3", "log₃ 52", "9"],
+      "answer": 1,
+      "explanation": "Quotient law: log₃ (54 ÷ 2) = log₃ 27. 3^3 = 27, so the answer is 3."
+    }
+  ]
+}

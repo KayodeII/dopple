@@ -1,0 +1,52 @@
+{
+  "slug": "ss-2-vowel-sounds",
+  "class": "ss-2",
+  "subject": "english-language",
+  "position": 1,
+  "title": "Oral English: short and long vowels",
+  "summary": "Hear the difference between ship and sheep, full and fool, for the WASSCE oral test.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "p", "text": "English spelling does not show sounds clearly, so the WASSCE oral test asks which words share a vowel sound. The symbols between slashes are from the phonetic alphabet used in exam papers." },
+    { "type": "h", "text": "Three pairs that are often mixed up" },
+    { "type": "list", "items": ["/ɪ/ short: ship, sit, live, women, busy, village", "/iː/ long: sheep, seat, leave, key, people, police", "/ʊ/ short: full, book, good, put, woman, could", "/uː/ long: fool, food, shoe, blue, juice, two", "/æ/ short: cat, bag, man, plait", "/ɑː/ long: cart, father, heart, half, calm"] },
+    { "type": "h", "text": "Watch the spelling traps" },
+    { "type": "p", "text": "The same letters can make different sounds, and different letters can make the same sound. Look at \"women\": the o makes /ɪ/. In \"people\", the eo makes /iː/. In \"heart\", ea makes /ɑː/, but in \"heat\" it makes /iː/." },
+    { "type": "example", "title": "Which word has the same vowel sound as \"seat\"? sit, key, bed, set", "steps": ["Say \"seat\": it has the long /iː/.", "sit has short /ɪ/; bed and set have /e/.", "key has /iː/. The answer is key."] },
+    { "type": "h", "text": "Practise with minimal pairs" },
+    { "type": "p", "text": "Say these pairs aloud and make the long sound clearly longer: ship/sheep, live/leave, full/fool, pull/pool, cat/cart, hat/heart." },
+    { "type": "tip", "text": "Listen to news readers on radio or online and copy how they say words. Saying words aloud beats reading them silently." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which word has the same vowel sound as \"ship\"?",
+      "options": ["sheep", "busy", "seat", "shape"],
+      "answer": 1,
+      "explanation": "Ship has short /ɪ/. In busy, the u is also /ɪ/ (\"bizzy\"). Sheep and seat have long /iː/."
+    },
+    {
+      "prompt": "Which word has the long vowel /uː/?",
+      "options": ["book", "full", "food", "put"],
+      "answer": 2,
+      "explanation": "Food has long /uː/. Book, full and put all have short /ʊ/, even though book and food look alike."
+    },
+    {
+      "prompt": "Which word contains /ɑː/?",
+      "options": ["heart", "hat", "heat", "hurt"],
+      "answer": 0,
+      "explanation": "Heart is pronounced with /ɑː/, like cart. Hat has /æ/, heat has /iː/ and hurt has /ɜː/."
+    },
+    {
+      "prompt": "In which word does the letter o make the sound /ɪ/?",
+      "options": ["woman", "women", "home", "hot"],
+      "answer": 1,
+      "explanation": "Women is said \"wimin\": its first vowel is /ɪ/. Woman has /ʊ/ in the first syllable."
+    },
+    {
+      "prompt": "Which word has the same vowel sound as \"pool\"?",
+      "options": ["pull", "good", "could", "blue"],
+      "answer": 3,
+      "explanation": "Pool and blue both have long /uː/. Pull, good and could have short /ʊ/."
+    }
+  ]
+}

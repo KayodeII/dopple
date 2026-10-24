@@ -1,0 +1,53 @@
+{
+  "slug": "primary-5-comparing-adjectives",
+  "class": "primary-5",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "Comparing with adjectives",
+  "summary": "Use tall, taller and tallest, and good, better and best, correctly.",
+  "minutes": 15,
+  "lesson": [
+    { "type": "p", "text": "An adjective describes a noun: a tall tree, a sweet mango. When we compare things, the adjective changes form." },
+    { "type": "list", "items": ["Positive (one thing): Ola is tall.", "Comparative (two things): Ola is taller than Femi.", "Superlative (three or more): Ola is the tallest in the class."] },
+    { "type": "h", "text": "Short adjectives: -er and -est" },
+    { "type": "list", "items": ["small → smaller → smallest", "big → bigger → biggest (double the last letter)", "happy → happier → happiest (y becomes i)", "large → larger → largest (just add -r, -st)"] },
+    { "type": "h", "text": "Long adjectives: more and most" },
+    { "type": "list", "items": ["beautiful → more beautiful → most beautiful", "expensive → more expensive → most expensive"] },
+    { "type": "h", "text": "Irregular adjectives" },
+    { "type": "list", "items": ["good → better → best", "bad → worse → worst", "many → more → most", "little → less → least"] },
+    { "type": "example", "title": "Fill the gap: Lagos is ___ than Ibadan. (busy)", "steps": ["Two places are compared, so use the comparative.", "Busy ends in a consonant + y: busy → busier.", "Lagos is busier than Ibadan."] },
+    { "type": "tip", "text": "Never use both: \"more bigger\" and \"most tallest\" are wrong. Use either -er/-est or more/most, not both." }
+  ],
+  "questions": [
+    {
+      "prompt": "Choose the correct word: This mango is ___ than that one.",
+      "options": ["sweet", "sweetest", "sweeter", "more sweeter"],
+      "answer": 2,
+      "explanation": "Two mangoes are compared, so use the comparative: sweeter. \"More sweeter\" uses both forms, which is wrong."
+    },
+    {
+      "prompt": "Choose the correct word: Zainab is the ___ runner in the school.",
+      "options": ["fast", "fastest", "faster", "most fast"],
+      "answer": 1,
+      "explanation": "She is compared with everyone in the school (more than two), so use the superlative: fastest."
+    },
+    {
+      "prompt": "What is the comparative of \"good\"?",
+      "options": ["better", "gooder", "best", "more good"],
+      "answer": 0,
+      "explanation": "Good is irregular: good → better → best. \"Gooder\" is not a word."
+    },
+    {
+      "prompt": "Which sentence is correct?",
+      "options": ["This is the most cheapest shop.", "My bag is more heavy than yours.", "Kano is more bigger than Jos.", "This is the most beautiful dress."],
+      "answer": 3,
+      "explanation": "Beautiful is long, so it takes most. The others should be cheapest, heavier and bigger."
+    },
+    {
+      "prompt": "What is the superlative of \"bad\"?",
+      "options": ["baddest", "worse", "worst", "most bad"],
+      "answer": 2,
+      "explanation": "Bad is irregular: bad → worse → worst. Worse is the comparative, for two things."
+    }
+  ]
+}

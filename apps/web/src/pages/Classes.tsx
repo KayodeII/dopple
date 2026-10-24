@@ -53,15 +53,15 @@ export function Classes() {
             <li key={c.id}>
               <Link
                 to={`/classes/${c.id}`}
-                className="flex flex-col gap-1 rounded-2xl bg-card p-5 hover:bg-graphite"
+                className="flex flex-col gap-1 rounded-2xl bg-card p-5 hover:bg-raised"
               >
-                <span className="font-mono text-[12.5px] text-soft">
+                <span className="font-mono text-[12.5px] text-fg-3">
                   {c.level}
                 </span>
                 <span className="font-display text-2xl font-semibold">
                   {c.name}
                 </span>
-                <span className="text-sm text-soft">
+                <span className="text-sm text-fg-3">
                   {c.formTeacher
                     ? `Form teacher: ${c.formTeacher.name}`
                     : 'No form teacher'}

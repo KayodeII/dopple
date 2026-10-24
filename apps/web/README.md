@@ -22,7 +22,8 @@ The dev server proxies `/api/*` to the API (`DOPPLE_API_URL`, default `http://lo
 | `src/lib/queries.ts` | TanStack Query hooks per resource, and `useWrite` for changes |
 | `src/router.tsx` | Routes; signed-out visitors go to `/sign-in?next=…`, staff pages show "Staff only" to others |
 | `src/components/Shell.tsx` | Sidebar layout from the design canvas |
-| `src/pages/` | Sign-in, home, my timetable, students, student, classes, class |
+| `src/pages/` | Sign-in, home, my timetable, students, student, classes, class, school settings (admins: name, colour, logo) |
+| `src/components/SchoolTheme.tsx` | Applies the school's colour (`--color-school`, readable `--color-on-school`) and shows its logo |
 | `e2e/` | Playwright tests against the running API and seeded demo school |
 
 ## Test
