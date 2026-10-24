@@ -1,0 +1,52 @@
+{
+  "slug": "primary-6-ratio-and-sharing",
+  "class": "primary-6",
+  "subject": "mathematics",
+  "position": 1,
+  "title": "Ratio and sharing",
+  "summary": "Compare amounts with a ratio and share things in a given ratio.",
+  "minutes": 18,
+  "lesson": [
+    { "type": "p", "text": "A ratio compares two amounts. If a class has 2 boys for every 3 girls, the ratio of boys to girls is 2 : 3 (say \"2 to 3\"). The order matters: girls to boys is 3 : 2." },
+    { "type": "h", "text": "Simplifying a ratio" },
+    { "type": "p", "text": "Divide both sides by the same number, just like simplifying a fraction." },
+    { "type": "example", "title": "Simplify 12 : 18", "steps": ["6 divides both 12 and 18.", "12 ÷ 6 = 2 and 18 ÷ 6 = 3.", "12 : 18 = 2 : 3."] },
+    { "type": "h", "text": "Sharing in a ratio" },
+    { "type": "example", "title": "Share ₦600 between Obi and Efe in the ratio 1 : 2", "steps": ["Add the parts: 1 + 2 = 3 parts.", "One part = ₦600 ÷ 3 = ₦200.", "Obi gets 1 part = ₦200. Efe gets 2 parts = ₦400.", "Check: ₦200 + ₦400 = ₦600."] },
+    { "type": "h", "text": "Finding a missing amount" },
+    { "type": "example", "title": "Boys to girls is 3 : 4. There are 21 boys. How many girls?", "steps": ["3 parts = 21 boys, so 1 part = 21 ÷ 3 = 7.", "Girls are 4 parts = 4 × 7 = 28."] },
+    { "type": "tip", "text": "Always check that your shares add up to the total. If they don't, something went wrong." }
+  ],
+  "questions": [
+    {
+      "prompt": "Simplify the ratio 10 : 15.",
+      "options": ["1 : 5", "2 : 3", "5 : 3", "10 : 5"],
+      "answer": 1,
+      "explanation": "Divide both by 5: 10 ÷ 5 = 2 and 15 ÷ 5 = 3. So 10 : 15 = 2 : 3."
+    },
+    {
+      "prompt": "Share 35 sweets between Kola and Nneka in the ratio 2 : 5. How many does Nneka get?",
+      "options": ["10", "14", "25", "7"],
+      "answer": 2,
+      "explanation": "2 + 5 = 7 parts. One part = 35 ÷ 7 = 5. Nneka gets 5 parts = 25. Kola gets 10; 10 + 25 = 35."
+    },
+    {
+      "prompt": "In a basket there are 8 oranges and 12 mangoes. What is the ratio of oranges to mangoes in its simplest form?",
+      "options": ["2 : 3", "3 : 2", "8 : 20", "4 : 3"],
+      "answer": 0,
+      "explanation": "8 : 12, divide both by 4: 2 : 3. Oranges come first because the question asks oranges to mangoes."
+    },
+    {
+      "prompt": "The ratio of teachers to pupils is 1 : 30. There are 4 teachers. How many pupils?",
+      "options": ["34", "30", "7", "120"],
+      "answer": 3,
+      "explanation": "Each teacher has 30 pupils: 4 × 30 = 120 pupils."
+    },
+    {
+      "prompt": "₦1,000 is shared in the ratio 3 : 2. What is the larger share?",
+      "options": ["₦400", "₦600", "₦300", "₦500"],
+      "answer": 1,
+      "explanation": "3 + 2 = 5 parts. One part = ₦1,000 ÷ 5 = ₦200. The larger share is 3 parts = ₦600."
+    }
+  ]
+}

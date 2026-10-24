@@ -22,3 +22,8 @@ export const createSlotBody = z
 export type CreateSlotBody = z.infer<typeof createSlotBody>;
 
 export const termQuery = z.object({ termId: z.uuid() });
+
+/** Parents say which child's timetable they want. */
+export const myTimetableQuery = termQuery.extend({
+  studentId: z.uuid().optional(),
+});

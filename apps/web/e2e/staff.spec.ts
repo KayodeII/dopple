@@ -86,6 +86,46 @@ test.describe('as the school admin', () => {
     );
   });
 
+  test('records a student’s guardians, linking a parent already on record', async () => {
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('link', { name: 'Playwright, Ngozika' }).click();
+    const guardians = page.getByRole('region', {
+      name: 'Parents and guardians',
+    });
+    await expect(guardians).toContainText('No parent or guardian on record');
+
+    // Emeka Obi is a seeded father of another student.
+    await guardians.getByRole('button', { name: 'Add guardian' }).click();
+    await guardians.getByLabel('Relationship to Ngozika').fill('Uncle');
+    await guardians
+      .getByLabel('Already a parent here? Search by name or phone')
+      .fill('Emeka');
+    await guardians.getByRole('button', { name: 'Link Emeka Obi' }).click();
+    await expect(guardians.getByRole('listitem')).toHaveCount(1);
+    await expect(guardians).toContainText('Uncle');
+
+    await guardians.getByRole('button', { name: 'Add guardian' }).click();
+    await guardians.getByLabel('Relationship to Ngozika').fill('Mother');
+    await guardians.getByLabel('Full name').fill('Bisi Playwright');
+    await guardians
+      .getByLabel('Phone', { exact: true })
+      .fill('0803 000 1111');
+    await guardians
+      .getByRole('button', { name: 'Add guardian', exact: true })
+      .last()
+      .click();
+    const bisi = guardians.getByRole('listitem').filter({
+      hasText: 'Bisi Playwright',
+    });
+    await expect(bisi).toContainText('0803 000 1111');
+    await expect(bisi).toContainText('No parent account yet');
+
+    await guardians
+      .getByRole('button', { name: 'Remove Emeka Obi from Ngozika' })
+      .click();
+    await expect(guardians.getByRole('listitem')).toHaveCount(1);
+  });
+
   test('builds a class timetable and refuses overlapping lessons', async () => {
     await page
       .getByRole('link', { name: 'Classes', exact: true })
@@ -124,6 +164,73 @@ test.describe('as the school admin', () => {
     await expect(saturday).toHaveCount(0);
   });
 
+  test('brands the app in the school’s colours and logo, then goes back to the default', async () => {
+    await page.getByRole('link', { name: 'Settings' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Settings', level: 1 }),
+    ).toBeVisible();
+    const cssColor = (name: string) => () =>
+      page.evaluate(
+        (name) =>
+          getComputedStyle(document.documentElement)
+            .getPropertyValue(name)
+            .trim(),
+        name,
+      );
+    const schoolColor = cssColor('--color-school');
+    const accentColor = cssColor('--color-accent');
+
+    // Without an accent, the main colour does both jobs.
+    await page.getByLabel('Main colour hex').fill('#f5b400');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByText('Saved.')).toBeVisible();
+    expect(await schoolColor()).toBe('#f5b400');
+    // Light colour: buttons switch to dark text so they stay readable.
+    const onSchool = await page.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-on-school')
+        .trim(),
+    );
+    expect(onSchool).toBe('#0b0b0a');
+    expect(await accentColor()).toBe('#f5b400');
+
+    await page.getByLabel('Accent colour hex').fill('#2b5fd9');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(accentColor).toBe('#2b5fd9');
+    expect(await schoolColor()).toBe('#f5b400');
+
+    // A 1x1 PNG is enough to prove the upload, storage and display path.
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await page
+      .locator('input[type=file]')
+      .setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: png });
+    await expect(
+      page.getByRole('img', { name: 'Greenfield College logo' }).first(),
+    ).toBeVisible();
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'logo.svg',
+      mimeType: 'image/svg+xml',
+      buffer: Buffer.from('<svg/>'),
+    });
+    await expect(page.getByRole('alert')).toHaveText(
+      'Choose a PNG, JPEG or WebP image.',
+    );
+
+    // Put the demo school back as it was.
+    await page.getByRole('button', { name: 'Remove logo' }).click();
+    await expect(
+      page.getByRole('img', { name: 'Greenfield College logo' }),
+    ).toHaveCount(0);
+    await page.getByRole('button', { name: 'Use Dopple’s colour' }).click();
+    await page.getByRole('button', { name: 'Same as main colour' }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(schoolColor).toBe('#2f7a55');
+    expect(await accentColor()).toBe('#2f7a55');
+  });
+
   test('signs out, and a reload stays signed out', async () => {
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page).toHaveURL(/\/sign-in/);
@@ -150,4 +257,12 @@ test('shows the API’s message for a wrong password', async ({ page }) => {
   await expect(page.getByRole('alert')).toHaveText(
     'Email or password is incorrect',
   );
+});
+
+test('welcomes a new school’s admin with their email filled in', async ({
+  page,
+}) => {
+  await page.goto('/sign-in?email=ada%40example.test&welcome=1');
+  await expect(page.getByText('Your school is ready.')).toBeVisible();
+  await expect(page.getByLabel('Email')).toHaveValue('ada@example.test');
 });

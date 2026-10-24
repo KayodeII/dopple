@@ -58,6 +58,10 @@ describe('Tenant isolation (e2e)', () => {
     await app?.close();
     // Children before parents: these tables reference each other.
     for (const table of [
+      'student_guardians',
+      'guardians',
+      'fees',
+      'school_logos',
       'timetable_slots',
       'enrolments',
       'class_subjects',
@@ -107,13 +111,84 @@ describe('Tenant isolation (e2e)', () => {
     expect(await studentsAt(schoolB)).toEqual(['B-1']);
   });
 
+  it('keeps each school’s fees to itself, even without a WHERE clause', async () => {
+    const { rows } = await owner.query<{ tenant_id: string; id: string }>(
+      `insert into fees (tenant_id, student_id, description, amount_minor)
+       select tenant_id, id, admission_no || ' fees', 100000 from students
+       where tenant_id in (select id from tenants where slug = any($1))
+       returning tenant_id, id`,
+      [[schoolA, schoolB]],
+    );
+    expect(rows).toHaveLength(3);
+    for (const [slug, count] of [
+      [schoolA, 2],
+      [schoolB, 1],
+    ] as const) {
+      const token = await tokenFor(slug);
+      const res = await request(app.getHttpServer())
+        .get('/fees')
+        .set('Host', host(slug))
+        .auth(token, { type: 'bearer' })
+        .expect(200);
+      expect(res.body).toHaveLength(count);
+      expect(
+        (res.body as { student: { admissionNo: string } }[]).every((fee) =>
+          fee.student.admissionNo.startsWith(slug === schoolA ? 'A-' : 'B-'),
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('keeps guardians to their school, and will not link one across schools', async () => {
+    const { rows } = await owner.query<{ slug: string; id: string }>(
+      `insert into guardians (tenant_id, name, phone)
+       select id, slug || ' parent', '+2348030000000' from tenants where slug = any($1)
+       returning (select slug from tenants t where t.id = tenant_id), id`,
+      [[schoolA, schoolB]],
+    );
+    const guardianOf = Object.fromEntries(rows.map((r) => [r.slug, r.id]));
+    const tokenB = await tokenFor(schoolB);
+    const asB = (req: request.Test) =>
+      req.set('Host', host(schoolB)).auth(tokenB, { type: 'bearer' });
+
+    const listed = await asB(
+      request(app.getHttpServer()).get('/guardians'),
+    ).expect(200);
+    expect(listed.body.map((g: { id: string }) => g.id)).toEqual([
+      guardianOf[schoolB],
+    ]);
+
+    const [studentA, studentB] = (
+      await owner.query<{ id: string }>(
+        `select s.id from students s join tenants t on t.id = s.tenant_id
+         where t.slug = any($1) and s.admission_no = any('{A-1,B-1}') order by s.admission_no`,
+        [[schoolA, schoolB]],
+      )
+    ).rows.map((r) => r.id);
+    await asB(
+      request(app.getHttpServer()).get(`/students/${studentA}/guardians`),
+    ).expect(404);
+    await asB(
+      request(app.getHttpServer())
+        .post(`/students/${studentB}/guardians`)
+        .send({ guardianId: guardianOf[schoolA], relationship: 'Mother' }),
+    ).expect(422);
+    await asB(
+      request(app.getHttpServer())
+        .patch(`/guardians/${guardianOf[schoolA]}`)
+        .send({
+          name: 'Changed',
+        }),
+    ).expect(404);
+  });
+
   it('names the school at each host, without signing in', async () => {
     for (const slug of [schoolA, schoolB]) {
       const res = await request(app.getHttpServer())
         .get('/school')
         .set('Host', host(slug))
         .expect(200);
-      expect(res.body).toEqual({ slug, name: slug });
+      expect(res.body).toMatchObject({ slug, name: slug, brandColor: null });
     }
   });
 
@@ -363,6 +438,70 @@ describe('Tenant isolation (e2e)', () => {
     await a
       .delete(`/classes/${timetableB}/timetable/${lessonB.id}`)
       .expect(404);
+  });
+
+  it('keeps each school’s branding and logo to itself', async () => {
+    const tokenA = await tokenFor(schoolA);
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await request(app.getHttpServer())
+      .patch('/school')
+      .set('Host', host(schoolA))
+      .auth(tokenA, { type: 'bearer' })
+      .send({ brandColor: '#123456', accentColor: '#abcdef' })
+      .expect(200);
+    await request(app.getHttpServer())
+      .put('/school/logo')
+      .set('Host', host(schoolA))
+      .set('Content-Type', 'image/png')
+      .auth(tokenA, { type: 'bearer' })
+      .send(png)
+      .expect(200);
+
+    const b = await request(app.getHttpServer())
+      .get('/school')
+      .set('Host', host(schoolB))
+      .expect(200);
+    expect(b.body).toMatchObject({
+      slug: schoolB,
+      brandColor: null,
+      accentColor: null,
+      logoUrl: null,
+    });
+    await request(app.getHttpServer())
+      .get('/school/logo')
+      .set('Host', host(schoolB))
+      .expect(404);
+
+    // The app role cannot write another school's logo, or the registry, directly.
+    const appRole = new pg.Client({
+      connectionString: process.env.DATABASE_URL,
+    });
+    await appRole.connect();
+    const idOf = async (slug: string) =>
+      (
+        await owner.query<{ id: string }>(
+          'select id from tenants where slug = $1',
+          [slug],
+        )
+      ).rows[0]!.id;
+    const [idA, idB] = [await idOf(schoolA), await idOf(schoolB)];
+    await appRole.query('begin');
+    await appRole.query(`select set_config('app.tenant_id', $1, true)`, [idB]);
+    const { rowCount } = await appRole.query(
+      'update school_logos set content_type = $1 where tenant_id = $2',
+      ['image/jpeg', idA],
+    );
+    expect(rowCount).toBe(0);
+    await expect(
+      appRole.query('update tenants set brand_color = null where id = $1', [
+        idA,
+      ]),
+    ).rejects.toThrow(/permission denied/);
+    await appRole.query('rollback');
+    await appRole.end();
   });
 
   it('returns nothing when no tenant is set on the connection', async () => {

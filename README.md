@@ -28,7 +28,7 @@ Each school (a **tenant**) gets:
 | --- | --- | --- |
 | Core API | `apps/api` | Running: tenancy, row-level security, auth, observability, school records (students, classes, enrolments, timetable) |
 | Marketing site | `apps/site` | Built (v1) |
-| School web app (staff, students, parents) | `apps/web` | Built (v1): sign-in, students, classes, timetables. No desktop app ([ADR 0007](docs/decisions/0007-web-only.md)) |
+| School web app (staff, students, parents) | `apps/web` | Built (v1): sign-in, students and guardians, classes, timetables, fees, parent view. No desktop app ([ADR 0007](docs/decisions/0007-web-only.md)) |
 | Realtime gateway | `services/realtime` | Planned |
 | Local infrastructure | `infra` | Ready |
 
@@ -172,7 +172,9 @@ Double-click `scripts/start-dopple.command`, or run it from a terminal. It insta
 
 ### Try it
 
-`*.localhost` resolves to `127.0.0.1`, so each demo school has its own local address. The seed creates a 2026/2027 session with three terms, a few subjects, two JSS 1 classes (students enrolled in JSS 1A, which takes every subject with the demo teacher), and accounts `admin@<slug>.test`, `teacher@<slug>.test` and `student@<slug>.test`, all with the password `dopple-demo`.
+`*.localhost` resolves to `127.0.0.1`, so each demo school has its own local address. The seed creates a 2026/2027 session with three terms, a few subjects, two JSS 1 classes (students enrolled in JSS 1A, which takes every subject with the demo teacher), and accounts `admin@<slug>.test`, `teacher@<slug>.test`, `student@<slug>.test` and `parent@<slug>.test` (the first student's mother), all with the password `dopple-demo`.
+
+**On the website:** http://localhost:3100/login finds a school and sends you to its sign-in page; http://localhost:3100/start creates a new school.
 
 **In the browser:** with `pnpm dev` and `pnpm dev:web` running, open http://greenfield.dopple.localhost:3200 (or `riverside.`) in Chrome and sign in with one of those accounts. Admins and teachers get Students and Classes; students get their own timetable.
 
@@ -209,6 +211,10 @@ API variables are validated at startup in [`apps/api/src/config/env.ts`](apps/ap
 | `ACCESS_TOKEN_TTL_SECONDS` | `900` | Access-token lifetime |
 | `REFRESH_TOKEN_TTL_DAYS` | `30` | Refresh-token lifetime |
 | `LOGIN_RATE_LIMIT_PER_MINUTE` | `10` | Sign-in attempts per IP per minute (refresh gets 3×) |
+| `SCHOOL_URL_FORMAT` | `https://{host}` | A school's web app address; `{host}` is `<slug>.<PLATFORM_DOMAIN>` or its custom domain. Locally `http://{host}:3200` |
+| `SCHOOL_SIGNUPS_PER_HOUR` | `5` | New schools per client IP per hour |
+| `PAYMENT_PROVIDER` | `fake` | Who takes fee payments: `fake` (no money; not allowed in production) or `bachs` |
+| `BACHS_SECRET_KEY` / `BACHS_WEBHOOK_SECRET` | — | Needed when `PAYMENT_PROVIDER=bachs`. An `sk_sandbox_` key uses the sandbox, `sk_live_` production |
 | `LOG_LEVEL` | `info` | pino log level |
 | `OTEL_*` | OTLP → `localhost:4318` | Standard OpenTelemetry variables; set exporters to `none` without Grafana |
 
@@ -218,6 +224,7 @@ Website (`apps/site/.env.local`, see `.env.example`):
 | --- | --- | --- |
 | `DOPPLE_API_URL` | `http://localhost:3000` | Where the partner wall reads `/showcase/schools` |
 | `SHOWCASE_MIN_SCHOOLS` | `6` | Hide the partner wall until this many schools opt in |
+| `PLATFORM_DOMAIN` | `dopple.school` | Shown after the address on the sign-up form (`greenfield.<this>`); the real address comes from the API |
 
 ## API
 
@@ -229,12 +236,22 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `GET` | `/health/ready` | public, platform | The database is reachable |
 | `GET` | `/showcase/schools` | public, platform | Schools that opted in to the website's partner wall |
 | `GET` | `/.well-known/jwks.json` | public, platform | Public key for verifying access tokens |
+| `GET` | `/schools?q=` | public, platform | Find a school by part of its name or address (2+ characters, at most 8 results), with its sign-in URL |
+| `GET` | `/schools/availability?slug=` | public, platform | Whether an address is free, and why not |
+| `POST` | `/schools` | public, platform | Self-serve sign-up: a new school and its first admin (rate-limited) |
+| `GET` / `PATCH` | `/school` | read: public · write: admin | The school at this address: name, colour, logo URL. Admins change `name` and `brandColor` |
+| `GET` / `PUT` / `DELETE` | `/school/logo` | read: public · write: admin | The school's logo; upload the image itself as the body (PNG, JPEG or WebP, up to 200 KB) |
 | `POST` | `/auth/sign-in` | public, school | `{ email, password }` → access and refresh tokens (rate-limited). With `X-Dopple-Session: cookie` the refresh token is set as a cookie instead |
 | `POST` | `/auth/refresh` | public, school | `{ refreshToken }`, or the cookie with `X-Dopple-Session: cookie` → new token pair (rate-limited) |
 | `POST` | `/auth/sign-out` | public, school | `{ refreshToken }` or the cookie → ends that session and clears the cookie |
 | `GET` | `/auth/me` | signed in | The current user |
 | `GET` / `POST` | `/students` | read: admin, teacher · write: admin | Students; search names and admission numbers with `?q=` |
 | `GET` / `PATCH` | `/students/:id` | read: admin, teacher · write: admin | One student with their class per session; edit any of `admissionNo`, `firstName`, `lastName`, `userId` |
+| `GET` / `POST` | `/students/:id/guardians` | read: admin, teacher · write: admin | The student's parents and guardians; add `{ relationship, name, phone, email?, userId? }` or link one on record `{ relationship, guardianId }` (ADR 0015) |
+| `DELETE` | `/students/:id/guardians/:guardianId` | admin | Unlink; a guardian with no children left is removed |
+| `GET` | `/guardians?q=` | admin | Guardians by name or phone, with their children (for linking siblings) |
+| `PATCH` | `/guardians/:id` | admin | Edit `name`, `phone`, `email`, or `userId` (a parent account) |
+| `GET` | `/children` | parent | My children, with their class in the latest session |
 | `GET` / `POST` | `/sessions` | read: signed in · write: admin | School years with their terms |
 | `GET` / `POST` | `/subjects` | read: signed in · write: admin | Subjects and their codes |
 | `GET` / `POST` | `/classes` | read: signed in · write: admin | Class groups; filter with `?sessionId=` |
@@ -245,7 +262,13 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `PUT` / `DELETE` | `/classes/:id/subjects/:subjectId` | admin | Add a subject, set its teacher (`{ teacherId }`; 409 if they're busy during its periods), or remove it |
 | `GET` / `POST` | `/classes/:id/timetable` | read: signed in · write: admin | Weekly periods for `?termId=`; refuses overlaps and teacher double-booking (409) |
 | `DELETE` | `/classes/:id/timetable/:slotId` | admin | Remove a period |
-| `GET` | `/timetable/me` | admin, teacher, student | `?termId=`: the lessons I teach, or my class's timetable |
+| `GET` | `/timetable/me` | admin, teacher, student, parent | `?termId=`: the lessons I teach, or my class's timetable; parents add `&studentId=` |
+| `GET` / `POST` | `/fees/account` | admin | The school's own account with the payment provider; `POST` sets it up (ADR 0013) |
+| `GET` / `POST` | `/fees` | admin | All fees with what is paid (`?studentId=`); bill `{ description, amountMinor, dueOn?, studentIds \| classId }` (kobo) |
+| `DELETE` | `/fees/:id` | admin | Delete a fee nobody has tried to pay (409 otherwise) |
+| `GET` | `/fees/me` | student, parent | My fees, or my children's |
+| `POST` | `/fees/:id/pay` | student, parent | Start paying what is left; returns the provider's payment page `{ url }` |
+| `POST` | `/payments/webhooks/:provider` | public, signed | Payment events from the provider (verified by its adapter, counted once per event id) |
 
 ## Testing
 
@@ -260,7 +283,7 @@ pnpm test:e2e     # API e2e tests, site smoke tests and web app tests (need a mi
 
 ## Observability
 
-OpenTelemetry starts before the app (`node --import ./dist/instrumentation.js`). It traces HTTP, Express and Postgres automatically. Logs are pino JSON that include `trace_id`, so you can jump from a log line to its trace. Every span and request log carries the school (`tenant.id`, `tenant.slug`). Business metrics (sign-ins, refresh-token reuse, tenant requests) live in `apps/api/src/observability/metrics.ts`.
+OpenTelemetry starts before the app (`node --import ./dist/instrumentation.js`). It traces HTTP, Express and Postgres automatically. Logs are pino JSON that include `trace_id`, so you can jump from a log line to its trace. Every span and request log carries the school (`tenant.id`, `tenant.slug`). Business metrics (sign-ins, refresh-token reuse, tenant requests, fee payments received) live in `apps/api/src/observability/metrics.ts`.
 
 Locally, `pnpm infra:up` runs Grafana at http://localhost:3001 (user `admin`, password `admin`). See [ADR 0003](docs/decisions/0003-observability.md).
 
@@ -284,7 +307,7 @@ The full rules are in [`AGENTS.md`](AGENTS.md). The non-negotiable ones:
 | [`AGENTS.md`](AGENTS.md) | Rules and commands for anyone changing the code |
 | [`docs/context/CONTEXT.md`](docs/context/CONTEXT.md) | Current state, next up, open questions, session log |
 | [`docs/architecture.md`](docs/architecture.md) | One-page architecture and how `apps/api` maps to it |
-| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only, browser sessions, web app stack |
+| [`docs/decisions/`](docs/decisions) | ADRs: tech stack, tenant isolation, observability, authentication, school structure, timetable, web only, browser sessions, web app stack, self-serve schools and branding |
 | [`docs/roadmap.md`](docs/roadmap.md) | Features announced as coming soon |
 | [Architecture overview](https://claude.ai/code/artifact/bd7488b4-c632-49d5-aae1-6a5e88965ff9) | Full design with diagrams |
 | [Website and portal designs](https://claude.ai/code/artifact/f45b09ad-3e6b-44ca-8bb6-033d7ca1bcd3) | Design canvas |

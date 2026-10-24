@@ -8,6 +8,8 @@ Read it fully before changing anything, then read `docs/context/CONTEXT.md` for 
 A multi-tenant school management platform. Each school is a tenant with:
 
 - a **web app** on the school's own address (`<slug>.dopple.school` or a custom domain) for everyone: admins, teachers, students and parents. Each role sees its own screens. There is no desktop app for now (ADR 0007),
+- **Dopple Learn** (ADR 0011): free lessons and exam practice at `/learn` for anyone, school or
+  not, aimed at the millions of Nigerian children who can't afford school but can get online,
 - live video classes, a shared whiteboard, recorded lessons, exams (CBT), ID cards, bus tracking, events, attendance, grades and fee payments that settle to the school's own bank account.
 
 Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisions/`.
@@ -18,11 +20,13 @@ Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisio
 | --- | --- | --- |
 | `apps/api` | NestJS 12 API (TypeScript, ESM): tenancy, school records, exams, fees | Scaffolded |
 | `apps/site` | Marketing website (Next.js 16, Tailwind 4). Copy lives in `src/lib/content.ts` | Built (v1) |
-| `apps/web` | School web app (Vite, React, React Router) for staff, students and parents | Built (v1: sign-in, students, classes, timetables) |
+| `apps/web` | School web app (Vite, React, React Router) for staff, students and parents | Built (v1: sign-in, students and guardians, classes, timetables, fees, parent view) |
 | `services/realtime` | Go WebSocket gateway: whiteboard sync, chat, presence | Planned |
+| `content/learn` | Dopple Learn lessons and practice questions (JSON), loaded with `pnpm learn:load` | Started (32 lessons: English and maths in every class) |
 | `infra` | Local dependencies (Postgres, Redis, NATS, Grafana LGTM) | Ready |
 | `docs/context` | Living project state for agents. **Update it every session.** | Ready |
 | `docs/decisions` | Architecture decision records (ADRs) | Ready |
+| `docs/research` | Background research, e.g. Nigeria's school system and exams. Read before product work | Ready |
 | `docs/roadmap.md` | Features announced as "coming soon"; keep in step with the website copy | Ready |
 
 ## Commands
@@ -35,6 +39,7 @@ pnpm infra:up                         # Postgres, Redis, NATS, Grafana (needs Do
 cp apps/api/.env.example apps/api/.env
 pnpm db:migrate                       # apply migrations as the owner role
 pnpm db:seed                          # two demo schools: greenfield, riverside
+pnpm learn:load                       # Dopple Learn content from content/learn (run after edits)
 pnpm dev                              # API on http://localhost:3000 with watch
 pnpm dev:site                         # marketing site on http://localhost:3100
 pnpm dev:web                          # school web app on http://greenfield.dopple.localhost:3200
@@ -57,11 +62,16 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 3. Never accept a tenant id from request input (body, query, headers other than the host). The tenant comes from `TenantMiddleware`.
 4. The API connects as `dopple_app`, which is not a superuser and not the table owner. Do not change that; superusers bypass row-level security.
 5. A change that touches tenancy needs a test in `apps/api/test/tenant-isolation.e2e-spec.ts`.
+6. The app role never writes `tenants` directly. New schools go through `create_school()` and name/colour changes through `update_school_profile()` (ADR 0010).
+7. `school_logos` is the one tenant table readable across schools (logos are public). Always filter it by `tenant_id` when reading.
 
 ### Code
 
 - One folder per feature under `apps/api/src/modules/<feature>`: `*.module.ts`, `*.controller.ts` (HTTP only), `*.service.ts` (logic), `*.spec.ts`. `students` is the reference.
 - ESM: relative imports end in `.js` (`import { X } from './x.js'`).
+- Outside services (payments, and email next) go through an adapter interface picked by an
+  environment variable, with a `fake` adapter for local runs and tests. Never call a provider's
+  API from a feature module. `modules/payments` is the reference (ADR 0013).
 - New environment variables go in `apps/api/src/config/env.ts` (validated with zod) **and** `.env.example`.
 - Schema changes: edit `schema.ts`, then `pnpm --filter @dopple/api db:generate`. Never edit an applied migration; add a new one.
 - Observability is automatic for HTTP, Postgres and logs. Add a custom metric in `src/observability/metrics.ts` only for business events (fees paid, exams started).
@@ -75,6 +85,7 @@ Grafana (traces, metrics, logs): http://localhost:3001, user `admin`, password `
 - Use the design tokens from `src/app/globals.css` (`bg-paper`, `text-ink`, `bg-sun`, `font-display`, …), not raw hex values.
 - Never invent testimonials, stats or partner logos. The partner wall only shows schools from `GET /showcase/schools` and hides below `SHOWCASE_MIN_SCHOOLS`.
 - Every animation must stop under `prefers-reduced-motion` (handled globally in `globals.css`; keep it that way).
+- **Log in** goes to `/login` (find your school, then that school's own sign-in page); `/start` is self-serve sign-up (ADR 0010). Both reach the API only server-side: route handlers in `src/app/api/schools` and the server action in `src/app/start/actions.ts`, using `DOPPLE_API_URL`.
 - Smoke tests: `pnpm --filter @dopple/site build && pnpm --filter @dopple/site test:e2e` (set `CHROMIUM_PATH` to reuse an installed Chromium).
 
 ### School web app (`apps/web`)

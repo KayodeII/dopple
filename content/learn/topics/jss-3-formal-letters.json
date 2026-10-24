@@ -1,0 +1,52 @@
+{
+  "slug": "jss-3-formal-letters",
+  "class": "jss-3",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "Writing a formal letter",
+  "summary": "The layout, tone and parts of a formal letter, as expected in BECE and WASSCE.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "p", "text": "A formal letter is written to someone in an official position: a principal, a chairman, an editor, a company. It must follow a fixed layout and use polite, serious language." },
+    { "type": "h", "text": "The parts, in order" },
+    { "type": "list", "items": ["1. Writer's address, top right, followed by the date.", "2. Receiver's title and address, on the left, below the date.", "3. Salutation: Dear Sir, Dear Madam, or Dear Sir/Madam.", "4. Title (heading) in capitals or underlined, saying what the letter is about.", "5. Body: an opening paragraph giving the reason for writing, middle paragraphs with details, and a closing paragraph.", "6. Subscript: Yours faithfully, then your signature and full name."] },
+    { "type": "h", "text": "Tone" },
+    { "type": "list", "items": ["No slang, short forms (don't, can't) or greetings like \"How are you?\".", "Be clear and to the point.", "Be polite even when complaining."] },
+    { "type": "example", "title": "Opening of a letter to a local government chairman", "steps": ["Dear Sir,", "THE POOR STATE OF THE ROAD TO OKE-ADO MARKET", "I write on behalf of the traders of Oke-Ado to draw your attention to the bad state of the road leading to our market..."] },
+    { "type": "h", "text": "Faithfully or sincerely?" },
+    { "type": "p", "text": "When you start with \"Dear Sir\" or \"Dear Madam\", end with \"Yours faithfully\". If you start with the person's name (Dear Mr Bello), end with \"Yours sincerely\". Note the small f and s; never \"Yours Faithfully\"." },
+    { "type": "tip", "text": "Examiners mark layout as well as content. Practise the layout until you can write it without thinking." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which subscript is correct for a formal letter that begins \"Dear Sir\"?",
+      "options": ["Yours sincerely,", "Your faithfully,", "Yours faithfully,", "Yours Faithfully,"],
+      "answer": 2,
+      "explanation": "\"Dear Sir\" goes with \"Yours faithfully\", with a capital Y and small f. \"Your\" without the s is wrong."
+    },
+    {
+      "prompt": "Where does the writer's address go in a formal letter?",
+      "options": ["Top right", "Bottom left", "Below the salutation", "After the subscript"],
+      "answer": 0,
+      "explanation": "The writer's address goes at the top right, with the date under it."
+    },
+    {
+      "prompt": "Which of these does NOT belong in a formal letter?",
+      "options": ["A title", "The receiver's address", "\"How is your family?\"", "Yours faithfully"],
+      "answer": 2,
+      "explanation": "Personal greetings belong in informal letters. A formal letter goes straight to its purpose."
+    },
+    {
+      "prompt": "What comes immediately after the salutation?",
+      "options": ["The date", "The title of the letter", "The writer's address", "The subscript"],
+      "answer": 1,
+      "explanation": "After \"Dear Sir,\" comes the title, which tells the reader what the letter is about."
+    },
+    {
+      "prompt": "Which sentence has the right tone for a formal letter?",
+      "options": ["I'm writing coz the road is bad.", "Abeg fix this road sharp sharp.", "Una road don spoil finish.", "I write to complain about the condition of the road."],
+      "answer": 3,
+      "explanation": "Formal letters use full, polite standard English, with no short forms (I'm, coz) or Pidgin."
+    }
+  ]
+}

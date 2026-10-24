@@ -1,0 +1,56 @@
+{
+  "slug": "ss-1-concord",
+  "class": "ss-1",
+  "subject": "english-language",
+  "position": 1,
+  "title": "Concord: making the verb agree",
+  "summary": "Subject–verb agreement rules that WASSCE and UTME test every year.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "p", "text": "Concord means agreement. A singular subject takes a singular verb, and a plural subject takes a plural verb: The boy runs. The boys run." },
+    { "type": "h", "text": "Find the real subject" },
+    { "type": "p", "text": "Words between the subject and the verb don't change it." },
+    { "type": "list", "items": ["The box of mangoes is heavy. (The subject is box, not mangoes.)", "One of the girls was absent. (One, not girls.)", "The principal, with his staff, is here. (With his staff doesn't add to the subject.)"] },
+    { "type": "h", "text": "Each, every, either, neither, everyone" },
+    { "type": "p", "text": "These are singular: Each of the students has a textbook. Everyone was happy. Neither of the answers is correct." },
+    { "type": "h", "text": "Either ... or, neither ... nor" },
+    { "type": "p", "text": "The verb agrees with the subject nearer to it (proximity): Neither the teacher nor the students were late. Neither the students nor the teacher was late." },
+    { "type": "h", "text": "Nouns that look plural but are singular" },
+    { "type": "list", "items": ["News: The news is good.", "Subjects: Mathematics is my best subject. Economics is interesting.", "Diseases: Measles is dangerous."] },
+    { "type": "h", "text": "Two subjects joined by and" },
+    { "type": "p", "text": "Usually plural: Tola and Kunle are here. But if both name one idea or one person, it is singular: Bread and butter is my breakfast. My friend and adviser has arrived (one person)." },
+    { "type": "tip", "text": "Cover the words between the subject and the verb with your finger, then read the sentence again. The right verb is usually obvious." }
+  ],
+  "questions": [
+    {
+      "prompt": "Each of the candidates ___ a pencil.",
+      "options": ["have", "has", "are having", "were having"],
+      "answer": 1,
+      "explanation": "\"Each\" is singular, so the verb is singular: has. \"Candidates\" is not the subject."
+    },
+    {
+      "prompt": "The news about the strike ___ worrying.",
+      "options": ["is", "are", "were", "have been"],
+      "answer": 0,
+      "explanation": "News is singular even though it ends in -s: The news is worrying."
+    },
+    {
+      "prompt": "Neither Tola nor her sisters ___ coming to the party.",
+      "options": ["is", "was", "are", "has been"],
+      "answer": 2,
+      "explanation": "With neither ... nor, the verb agrees with the nearer subject, \"her sisters\", which is plural: are."
+    },
+    {
+      "prompt": "One of the boys who broke the windows ___ been caught.",
+      "options": ["have", "were", "are", "has"],
+      "answer": 3,
+      "explanation": "The subject is \"one\", which is singular: has been caught. \"Boys\" and \"windows\" are not the subject."
+    },
+    {
+      "prompt": "Mathematics ___ my favourite subject.",
+      "options": ["are", "is", "were", "have"],
+      "answer": 1,
+      "explanation": "Names of subjects ending in -s (Mathematics, Physics, Economics) are singular: is."
+    }
+  ]
+}

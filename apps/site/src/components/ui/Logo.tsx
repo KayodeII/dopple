@@ -25,10 +25,16 @@ export function LogoMark({ size = 30 }: { size?: number }) {
   );
 }
 
-export function Logo({ size = 30 }: { size?: number }) {
+export function Logo({
+  size = 30,
+  href = '#top',
+}: {
+  size?: number;
+  href?: string;
+}) {
   return (
     <a
-      href="#top"
+      href={href}
       className="flex items-center gap-2.5"
       aria-label="Dopple home"
     >

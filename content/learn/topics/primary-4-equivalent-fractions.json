@@ -1,0 +1,54 @@
+{
+  "slug": "primary-4-equivalent-fractions",
+  "class": "primary-4",
+  "subject": "mathematics",
+  "position": 1,
+  "title": "Equivalent fractions",
+  "summary": "Different-looking fractions that are the same amount, and how to simplify them.",
+  "minutes": 15,
+  "lesson": [
+    { "type": "p", "text": "A fraction is part of a whole. In 3/4, the bottom number (the denominator) tells us the whole is cut into 4 equal parts, and the top number (the numerator) tells us we have 3 of them." },
+    { "type": "h", "text": "Same amount, different numbers" },
+    { "type": "p", "text": "Cut a loaf of bread into 2 equal pieces and take 1: that is 1/2. Cut the same loaf into 4 equal pieces and take 2: that is 2/4. You have the same amount of bread. So 1/2 and 2/4 are equivalent fractions." },
+    { "type": "h", "text": "Making equivalent fractions" },
+    { "type": "p", "text": "Multiply the top and the bottom by the same number. The fraction stays the same amount." },
+    { "type": "example", "title": "Fractions equal to 1/2", "steps": ["1/2 = (1 × 2)/(2 × 2) = 2/4", "1/2 = (1 × 3)/(2 × 3) = 3/6", "1/2 = (1 × 5)/(2 × 5) = 5/10"] },
+    { "type": "example", "title": "Fill the gap: 2/5 = ?/10", "steps": ["What turns 5 into 10? Multiply by 2.", "Do the same to the top: 2 × 2 = 4.", "So 2/5 = 4/10."] },
+    { "type": "h", "text": "Simplest form" },
+    { "type": "p", "text": "To simplify, divide the top and the bottom by the same number until no number except 1 divides both." },
+    { "type": "example", "title": "Simplify 6/8", "steps": ["2 divides both 6 and 8.", "6 ÷ 2 = 3 and 8 ÷ 2 = 4, so 6/8 = 3/4.", "Nothing except 1 divides both 3 and 4, so 3/4 is the simplest form."] },
+    { "type": "tip", "text": "Whatever you do to the top, do to the bottom. If you multiply only one of them, the amount changes." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which fraction is equal to 1/2?",
+      "options": ["2/3", "3/6", "1/4", "2/5"],
+      "answer": 1,
+      "explanation": "Multiply the top and bottom of 1/2 by 3: (1 × 3)/(2 × 3) = 3/6."
+    },
+    {
+      "prompt": "Fill the gap: 2/5 = ?/10",
+      "options": ["2", "4", "5", "8"],
+      "answer": 1,
+      "explanation": "5 × 2 = 10, so multiply the top by 2 as well: 2 × 2 = 4. So 2/5 = 4/10."
+    },
+    {
+      "prompt": "What is 6/8 in its simplest form?",
+      "options": ["3/4", "2/3", "1/2", "6/4"],
+      "answer": 0,
+      "explanation": "Divide the top and bottom by 2: 6 ÷ 2 = 3 and 8 ÷ 2 = 4, giving 3/4. Nothing else divides both 3 and 4."
+    },
+    {
+      "prompt": "Which fraction is NOT equal to 2/3?",
+      "options": ["4/6", "6/9", "8/12", "3/4"],
+      "answer": 3,
+      "explanation": "4/6, 6/9 and 8/12 all simplify to 2/3. 3/4 is a different amount: three quarters is more than two thirds."
+    },
+    {
+      "prompt": "Ada ate 2/8 of a cake. What is 2/8 in its simplest form?",
+      "options": ["1/6", "1/4", "2/4", "1/2"],
+      "answer": 1,
+      "explanation": "Divide the top and bottom by 2: 2 ÷ 2 = 1 and 8 ÷ 2 = 4. Ada ate 1/4 of the cake."
+    }
+  ]
+}

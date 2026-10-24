@@ -1,0 +1,53 @@
+{
+  "slug": "primary-6-tenses",
+  "class": "primary-6",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "Present, past and future tense",
+  "summary": "Show when something happens by changing the verb.",
+  "minutes": 18,
+  "lesson": [
+    { "type": "p", "text": "The tense of a verb tells us when something happens: now, before, or later." },
+    { "type": "h", "text": "Simple present: things that happen now or always" },
+    { "type": "list", "items": ["I walk to school every day.", "She walks to school every day. (add -s after he, she, it)", "The sun rises in the east."] },
+    { "type": "h", "text": "Simple past: things that already happened" },
+    { "type": "p", "text": "Most verbs add -ed: walk → walked, play → played, carry → carried. Many common verbs are irregular and must be learnt." },
+    { "type": "list", "items": ["go → went", "eat → ate", "buy → bought", "see → saw", "write → wrote", "take → took", "come → came", "bring → brought"] },
+    { "type": "h", "text": "Simple future: things that will happen" },
+    { "type": "p", "text": "Use will + the base verb: I will travel to Owerri tomorrow." },
+    { "type": "example", "title": "Choose the tense: Yesterday, Hauwa ___ (buy) a new bag.", "steps": ["\"Yesterday\" tells us it has already happened: past tense.", "Buy is irregular: buy → bought.", "Yesterday, Hauwa bought a new bag."] },
+    { "type": "tip", "text": "Look for time words: yesterday, last week, ago (past); every day, always (present); tomorrow, next year (future)." }
+  ],
+  "questions": [
+    {
+      "prompt": "Choose the correct verb: Last Sunday, we ___ to church.",
+      "options": ["go", "went", "will go", "goes"],
+      "answer": 1,
+      "explanation": "\"Last Sunday\" is in the past, and go is irregular: go → went."
+    },
+    {
+      "prompt": "Choose the correct verb: My father ___ the newspaper every morning.",
+      "options": ["read", "reading", "reads", "will reads"],
+      "answer": 2,
+      "explanation": "\"Every morning\" is a habit, so use the simple present. After \"my father\" (he), add -s: reads."
+    },
+    {
+      "prompt": "What is the past tense of \"bring\"?",
+      "options": ["brought", "bringed", "brang", "brung"],
+      "answer": 0,
+      "explanation": "Bring is irregular: bring → brought. \"Bringed\" is a common mistake."
+    },
+    {
+      "prompt": "Which sentence is in the future tense?",
+      "options": ["Ada cooked jollof rice.", "Ada cooks jollof rice.", "Ada is cooking jollof rice.", "Ada will cook jollof rice."],
+      "answer": 3,
+      "explanation": "Will + base verb (will cook) shows the future."
+    },
+    {
+      "prompt": "Find the mistake: \"Two days ago, Tunde eat all the bread.\"",
+      "options": ["eat should be ate", "ago should be after", "all should be every", "There is no mistake"],
+      "answer": 0,
+      "explanation": "\"Two days ago\" is in the past, so eat must change to ate."
+    }
+  ]
+}

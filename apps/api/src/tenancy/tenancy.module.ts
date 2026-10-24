@@ -4,12 +4,10 @@ import {
   type MiddlewareConsumer,
   type NestModule,
 } from '@nestjs/common';
-import { SchoolController } from './school.controller.js';
 import { TenantMiddleware } from './tenant.middleware.js';
 import { TenantRegistry } from './tenant-registry.service.js';
 
 @Module({
-  controllers: [SchoolController],
   providers: [TenantRegistry, TenantMiddleware],
   exports: [TenantRegistry],
 })
@@ -23,6 +21,14 @@ export class TenancyModule implements NestModule {
         // Platform-level public routes (served on dopple.school itself, no school host).
         { path: 'showcase/{*rest}', method: RequestMethod.ALL },
         { path: '.well-known/{*rest}', method: RequestMethod.ALL },
+        // Finding and creating schools happens on the platform host (ADR 0010).
+        { path: 'schools', method: RequestMethod.ALL },
+        { path: 'schools/{*rest}', method: RequestMethod.ALL },
+        // Free lessons for anyone, school or not (ADR 0011).
+        { path: 'learn', method: RequestMethod.ALL },
+        { path: 'learn/{*rest}', method: RequestMethod.ALL },
+        // Payment provider webhooks: signed by the provider, no school host (ADR 0013).
+        { path: 'payments/{*rest}', method: RequestMethod.ALL },
       )
       .forRoutes({ path: '{*rest}', method: RequestMethod.ALL });
   }

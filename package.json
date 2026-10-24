@@ -17,6 +17,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "db:migrate": "pnpm --filter @dopple/api db:migrate",
     "db:seed": "pnpm --filter @dopple/api db:seed",
+    "learn:load": "pnpm --filter @dopple/api learn:load",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
     "infra:down": "docker compose -f infra/docker-compose.yml down",
     "dev:site": "pnpm --filter @dopple/site dev",

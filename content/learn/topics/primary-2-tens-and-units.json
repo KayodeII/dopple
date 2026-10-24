@@ -1,0 +1,53 @@
+{
+  "slug": "primary-2-tens-and-units",
+  "class": "primary-2",
+  "subject": "mathematics",
+  "position": 1,
+  "title": "Tens and units",
+  "summary": "What each digit in a two-digit number is worth.",
+  "minutes": 12,
+  "lesson": [
+    { "type": "p", "text": "Numbers from 10 to 99 have two digits. The place of a digit tells us what it is worth." },
+    { "type": "h", "text": "Bundles of ten" },
+    { "type": "p", "text": "Take 34 broom sticks. Tie them in bundles of 10. You get 3 bundles and 4 sticks left over. So 34 is 3 tens and 4 units." },
+    { "type": "list", "items": ["The left digit is the tens.", "The right digit is the units (ones)."] },
+    { "type": "example", "title": "The number 58", "steps": ["5 is in the tens place, so it is worth 5 tens = 50.", "8 is in the units place, so it is worth 8.", "58 = 50 + 8."] },
+    { "type": "h", "text": "Building a number" },
+    { "type": "example", "title": "7 tens and 2 units", "steps": ["7 tens = 70.", "2 units = 2.", "70 + 2 = 72."] },
+    { "type": "h", "text": "Which is bigger?" },
+    { "type": "p", "text": "Compare the tens first. 61 is bigger than 49 because 6 tens is more than 4 tens. If the tens are the same, compare the units: 47 is bigger than 43." },
+    { "type": "tip", "text": "Money helps: ₦10 notes are tens and ₦1 coins are units. ₦36 is three ₦10 notes and six ₦1 coins." }
+  ],
+  "questions": [
+    {
+      "prompt": "In the number 63, what is the 6 worth?",
+      "options": ["6", "60", "3", "600"],
+      "answer": 1,
+      "explanation": "The 6 is in the tens place, so it is worth 6 tens = 60."
+    },
+    {
+      "prompt": "What number is 4 tens and 9 units?",
+      "options": ["94", "13", "49", "409"],
+      "answer": 2,
+      "explanation": "4 tens = 40 and 9 units = 9. 40 + 9 = 49. 94 swaps the digits round."
+    },
+    {
+      "prompt": "Which number is the biggest?",
+      "options": ["39", "52", "48", "25"],
+      "answer": 1,
+      "explanation": "Compare the tens: 52 has 5 tens, more than any of the others."
+    },
+    {
+      "prompt": "85 = 80 + ?",
+      "options": ["5", "8", "50", "85"],
+      "answer": 0,
+      "explanation": "85 is 8 tens (80) and 5 units. So 85 = 80 + 5."
+    },
+    {
+      "prompt": "Funmi has three ₦10 notes and four ₦1 coins. How much money does she have?",
+      "options": ["₦7", "₦43", "₦304", "₦34"],
+      "answer": 3,
+      "explanation": "Three ₦10 notes are 3 tens = ₦30. Four ₦1 coins are ₦4. ₦30 + ₦4 = ₦34."
+    }
+  ]
+}

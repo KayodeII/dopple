@@ -1,0 +1,52 @@
+{
+  "slug": "jss-2-active-and-passive-voice",
+  "class": "jss-2",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "Active and passive voice",
+  "summary": "Turn a sentence around so the focus is on what was done, not who did it.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "p", "text": "In the active voice, the subject does the action: The farmer planted the maize. In the passive voice, the subject receives the action: The maize was planted by the farmer." },
+    { "type": "h", "text": "How to change active to passive" },
+    { "type": "list", "items": ["Move the object (the maize) to the front as the new subject.", "Use a form of \"be\" in the same tense as the active verb (is, are, was, were, will be, has been).", "Add the past participle of the main verb (planted, written, eaten).", "Add \"by\" + the doer, or leave it out if it doesn't matter."] },
+    { "type": "example", "title": "The cat chased the rat.", "steps": ["Object \"the rat\" moves to the front.", "\"Chased\" is past, so use was.", "The rat was chased by the cat."] },
+    { "type": "example", "title": "The prefect rings the bell every morning.", "steps": ["Present tense, singular object: is.", "The bell is rung by the prefect every morning."] },
+    { "type": "example", "title": "Somebody has stolen my phone.", "steps": ["Present perfect: has been.", "The doer (somebody) is unknown, so leave it out.", "My phone has been stolen."] },
+    { "type": "h", "text": "When to use the passive" },
+    { "type": "p", "text": "Use it when the doer is unknown or unimportant, or in reports and science: \"The water was boiled for five minutes.\" Otherwise the active voice is usually clearer." },
+    { "type": "tip", "text": "Only sentences with an object can become passive. \"The baby slept\" has no object, so it has no passive form." }
+  ],
+  "questions": [
+    {
+      "prompt": "Change to passive: \"Ada wrote the letter.\"",
+      "options": ["The letter is written by Ada.", "The letter was written by Ada.", "The letter was wrote by Ada.", "Ada was written the letter."],
+      "answer": 1,
+      "explanation": "Wrote is past, so use was + past participle written. \"Was wrote\" uses the past tense instead of the participle."
+    },
+    {
+      "prompt": "Which sentence is in the passive voice?",
+      "options": ["The teacher marked our scripts.", "We are marking the scripts.", "Our scripts were marked by the teacher.", "The teacher will mark our scripts."],
+      "answer": 2,
+      "explanation": "The subject (our scripts) receives the action, and the verb is were + marked."
+    },
+    {
+      "prompt": "Change to passive: \"They will build a new hospital.\"",
+      "options": ["A new hospital will be built.", "A new hospital will built.", "A new hospital is built.", "A new hospital will be build."],
+      "answer": 0,
+      "explanation": "Future tense: will be + past participle (built). The doer \"they\" is vague, so it can be left out."
+    },
+    {
+      "prompt": "Which sentence cannot be changed into the passive voice?",
+      "options": ["Musa kicked the ball.", "The girls cleaned the hall.", "Mother cooked egusi soup.", "The old man laughed."],
+      "answer": 3,
+      "explanation": "\"Laughed\" has no object here, so there is nothing to move to the front. The others all have an object."
+    },
+    {
+      "prompt": "Change to active: \"The windows are cleaned by the gateman.\"",
+      "options": ["The gateman cleaned the windows.", "The gateman cleans the windows.", "The windows clean the gateman.", "The gateman is cleaned the windows."],
+      "answer": 1,
+      "explanation": "\"Are cleaned\" is present, so the active verb is present too: cleans. \"Cleaned\" would change the tense."
+    }
+  ]
+}
