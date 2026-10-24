@@ -1,0 +1,52 @@
+{
+  "slug": "primary-1-capital-and-small-letters",
+  "class": "primary-1",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "Capital and small letters",
+  "summary": "The 26 letters of the alphabet, their capital and small forms, and when to use a capital.",
+  "minutes": 12,
+  "lesson": [
+    { "type": "p", "text": "English has 26 letters. Together they are called the alphabet. Every letter can be written two ways: as a capital letter (big) or a small letter." },
+    { "type": "h", "text": "The alphabet" },
+    { "type": "p", "text": "Capital letters: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z" },
+    { "type": "p", "text": "Small letters: a b c d e f g h i j k l m n o p q r s t u v w x y z" },
+    { "type": "p", "text": "Some pairs look alike, such as C and c, O and o, S and s. Others look very different, such as A and a, G and g, R and r. Learn those ones carefully." },
+    { "type": "h", "text": "When do we use a capital letter?" },
+    { "type": "list", "items": ["At the start of a sentence: The bus is late.", "For the name of a person: Musa, Ngozi, Mrs Okafor.", "For the name of a place: Abuja, Enugu, Nigeria.", "For the word I on its own: Today I went to the market."] },
+    { "type": "example", "title": "Fix the sentence: my friend bola lives in ibadan.", "steps": ["\"my\" starts the sentence, so write My.", "\"bola\" is a person's name, so write Bola.", "\"ibadan\" is a place, so write Ibadan.", "My friend Bola lives in Ibadan."] },
+    { "type": "tip", "text": "Sing the alphabet song while you point at each letter. Then try it again with the small letters." }
+  ],
+  "questions": [
+    {
+      "prompt": "How many letters are in the English alphabet?",
+      "options": ["24", "25", "26", "28"],
+      "answer": 2,
+      "explanation": "Count from A to Z: there are 26 letters."
+    },
+    {
+      "prompt": "What is the small letter for G?",
+      "options": ["g", "q", "j", "y"],
+      "answer": 0,
+      "explanation": "The small form of G is g. The letter q looks similar but is a different letter."
+    },
+    {
+      "prompt": "Which sentence is written correctly?",
+      "options": ["we live in kano.", "We live in kano.", "we live in Kano.", "We live in Kano."],
+      "answer": 3,
+      "explanation": "The sentence must start with a capital (We), and Kano is the name of a place, so it needs a capital too."
+    },
+    {
+      "prompt": "Which letter comes after M in the alphabet?",
+      "options": ["L", "N", "O", "P"],
+      "answer": 1,
+      "explanation": "The alphabet goes ... K, L, M, N, O ... so N comes after M. L comes before it."
+    },
+    {
+      "prompt": "Which word should always start with a capital letter?",
+      "options": ["chair", "dog", "Chidi", "school"],
+      "answer": 2,
+      "explanation": "Chidi is a person's name, so it always starts with a capital. Chair, dog and school are general names."
+    }
+  ]
+}

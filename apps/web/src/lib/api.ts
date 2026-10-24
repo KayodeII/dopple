@@ -111,19 +111,22 @@ export async function signOut(): Promise<void> {
   });
 }
 
-/** A school-scoped API call. Renews the access token once on 401. */
+/** A school-scoped API call. Renews the access token once on 401. A Blob body is sent as is (uploads). */
 export async function api<T>(
   path: string,
   { method = 'GET', body }: { method?: string; body?: unknown } = {},
 ): Promise<T> {
+  const raw = body instanceof Blob;
   const send = () =>
     fetch(`/api${path}`, {
       method,
       headers: {
-        ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+        ...(body === undefined
+          ? {}
+          : { 'content-type': raw ? body.type : 'application/json' }),
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : raw ? body : JSON.stringify(body),
     });
 
   let res = await send();

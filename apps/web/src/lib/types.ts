@@ -12,6 +12,14 @@ export interface User {
 export interface School {
   slug: string;
   name: string;
+  city: string | null;
+  /** "#rrggbb", or null for Dopple's default. */
+  brandColor: string | null;
+  /** "#rrggbb" for highlights, or null to reuse the brand colour. */
+  accentColor: string | null;
+  url: string;
+  /** Same-origin path to the logo, or null. */
+  logoUrl: string | null;
 }
 
 export interface Ref {
@@ -78,4 +86,24 @@ export interface Lesson {
   class: Ref;
   subject: { id: string; code: string; name: string };
   teacher: Ref | null;
+}
+
+export interface Fee {
+  id: string;
+  description: string;
+  /** Kobo. */
+  amountMinor: number;
+  paidMinor: number;
+  currency: string;
+  dueOn: string | null;
+  status: 'paid' | 'part-paid' | 'unpaid';
+  student: ClassStudent;
+}
+
+export interface PaymentAccount {
+  provider: string;
+  connected: boolean;
+  status?: 'pending' | 'active' | 'restricted';
+  /** What the provider still needs from the school. */
+  requirementsDue?: string[];
 }

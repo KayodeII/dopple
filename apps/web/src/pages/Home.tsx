@@ -54,19 +54,19 @@ export function Home() {
           <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
             <Link
               to="/students"
-              className="rounded-2xl bg-card p-5 hover:bg-graphite"
+              className="rounded-2xl bg-card p-5 hover:bg-raised"
             >
               <span className="font-semibold">Students</span>
-              <p className="mt-1 text-sm text-soft">
+              <p className="mt-1 text-sm text-fg-3">
                 Search, add and edit student records.
               </p>
             </Link>
             <Link
               to="/classes"
-              className="rounded-2xl bg-card p-5 hover:bg-graphite"
+              className="rounded-2xl bg-card p-5 hover:bg-raised"
             >
               <span className="font-semibold">Classes</span>
-              <p className="mt-1 text-sm text-soft">
+              <p className="mt-1 text-sm text-fg-3">
                 Class lists, subjects and timetables.
               </p>
             </Link>
@@ -97,7 +97,7 @@ function Today({
     <Section
       title="Today"
       action={
-        <Link to="/timetable" className="text-sm text-soft hover:text-paper">
+        <Link to="/timetable" className="text-sm text-fg-3 hover:text-fg">
           Full timetable
         </Link>
       }
@@ -127,13 +127,13 @@ function Today({
                 }`}
               >
                 <span
-                  className={`font-mono text-[12.5px] ${state === 'now' ? 'text-paper' : 'text-soft'}`}
+                  className={`font-mono text-[12.5px] ${state === 'now' ? 'text-fg' : 'text-fg-3'}`}
                 >
                   {lesson.startsAt}
                   {state === 'now' && ' · now'}
                 </span>
                 <span className="font-semibold">{lesson.subject.name}</span>
-                <span className="text-[13px] text-soft">
+                <span className="text-[13px] text-fg-3">
                   {user.role === 'student'
                     ? (lesson.teacher?.name ?? 'No teacher yet')
                     : lesson.class.name}

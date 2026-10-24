@@ -1,0 +1,64 @@
+{
+  "slug": "jss-1-hcf-and-lcm",
+  "class": "jss-1",
+  "subject": "mathematics",
+  "position": 1,
+  "title": "Factors, multiples, HCF and LCM",
+  "summary": "Find the highest common factor and lowest common multiple, and use them in word problems.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "h", "text": "Factors and multiples" },
+    { "type": "p", "text": "A factor of a number divides it exactly, with no remainder. The factors of 12 are 1, 2, 3, 4, 6 and 12." },
+    { "type": "p", "text": "A multiple of a number is that number times 1, 2, 3 and so on. The multiples of 4 are 4, 8, 12, 16, 20, …" },
+    { "type": "p", "text": "A prime number has exactly two factors, 1 and itself: 2, 3, 5, 7, 11, 13, … (1 is not prime)." },
+    { "type": "h", "text": "Highest common factor (HCF)" },
+    { "type": "p", "text": "The HCF of two numbers is the biggest number that is a factor of both." },
+    { "type": "example", "title": "HCF of 12 and 18", "steps": ["Factors of 12: 1, 2, 3, 4, 6, 12.", "Factors of 18: 1, 2, 3, 6, 9, 18.", "Common factors: 1, 2, 3, 6. The highest is 6.", "HCF = 6."] },
+    { "type": "h", "text": "Lowest common multiple (LCM)" },
+    { "type": "p", "text": "The LCM of two numbers is the smallest number that is a multiple of both." },
+    { "type": "example", "title": "LCM of 4 and 6", "steps": ["Multiples of 4: 4, 8, 12, 16, 20, 24, …", "Multiples of 6: 6, 12, 18, 24, …", "The first number in both lists is 12.", "LCM = 12."] },
+    { "type": "h", "text": "Using prime factors (faster for big numbers)" },
+    { "type": "example", "title": "HCF and LCM of 24 and 36", "steps": ["24 = 2 × 2 × 2 × 3 = 2³ × 3", "36 = 2 × 2 × 3 × 3 = 2² × 3²", "HCF: take each prime's lowest power in both: 2² × 3 = 12.", "LCM: take each prime's highest power: 2³ × 3² = 8 × 9 = 72."] },
+    { "type": "h", "text": "Which one does the question want?" },
+    { "type": "list", "items": ["\"Share or cut into the largest equal groups\" → HCF.", "\"When will they happen together again?\" → LCM."] },
+    { "type": "tip", "text": "Check your answer: the HCF must divide both numbers, and both numbers must divide the LCM." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which of these is NOT a factor of 18?",
+      "options": ["2", "3", "4", "6"],
+      "answer": 2,
+      "explanation": "18 ÷ 4 = 4 remainder 2, so 4 is not a factor. 18 ÷ 2 = 9, 18 ÷ 3 = 6 and 18 ÷ 6 = 3 all divide exactly."
+    },
+    {
+      "prompt": "Find the HCF of 12 and 18.",
+      "options": ["2", "3", "6", "36"],
+      "answer": 2,
+      "explanation": "Common factors of 12 and 18 are 1, 2, 3 and 6. The highest is 6."
+    },
+    {
+      "prompt": "Find the LCM of 4 and 6.",
+      "options": ["2", "10", "12", "24"],
+      "answer": 2,
+      "explanation": "Multiples of 4: 4, 8, 12, … Multiples of 6: 6, 12, … The first one in both lists is 12. (24 is a common multiple too, but not the lowest.)"
+    },
+    {
+      "prompt": "One bell rings every 6 minutes and another every 8 minutes. They ring together at 9:00. After how many minutes will they next ring together?",
+      "options": ["14", "24", "48", "2"],
+      "answer": 1,
+      "explanation": "\"Together again\" means LCM. Multiples of 6: 6, 12, 18, 24. Multiples of 8: 8, 16, 24. LCM = 24 minutes."
+    },
+    {
+      "prompt": "Find the HCF of 24 and 36.",
+      "options": ["4", "6", "12", "72"],
+      "answer": 2,
+      "explanation": "24 = 2³ × 3 and 36 = 2² × 3². Take the lowest powers: 2² × 3 = 12."
+    },
+    {
+      "prompt": "Write 60 as a product of prime factors.",
+      "options": ["2 × 3 × 10", "2² × 3 × 5", "2 × 3² × 5", "2² × 15"],
+      "answer": 1,
+      "explanation": "60 = 2 × 30 = 2 × 2 × 15 = 2 × 2 × 3 × 5 = 2² × 3 × 5. Options A and D contain 10 and 15, which are not prime, and C equals 90."
+    }
+  ]
+}

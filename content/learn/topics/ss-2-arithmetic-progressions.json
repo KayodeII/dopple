@@ -1,0 +1,54 @@
+{
+  "slug": "ss-2-arithmetic-progressions",
+  "class": "ss-2",
+  "subject": "general-mathematics",
+  "position": 1,
+  "title": "Arithmetic progressions",
+  "summary": "Sequences that go up or down by the same amount: the nth term and the sum.",
+  "minutes": 25,
+  "lesson": [
+    { "type": "p", "text": "An arithmetic progression (AP) is a sequence where you add the same number each time. In 3, 7, 11, 15, ... you add 4 each time." },
+    { "type": "list", "items": ["First term: a (here a = 3).", "Common difference: d = any term minus the one before (here d = 7 − 3 = 4). d can be negative."] },
+    { "type": "h", "text": "The nth term" },
+    { "type": "p", "text": "T_n = a + (n − 1)d. To reach the nth term, you add d one less time than n." },
+    { "type": "example", "title": "Find the 10th term of 3, 7, 11, ...", "steps": ["a = 3, d = 4, n = 10.", "T₁₀ = 3 + (10 − 1) × 4 = 3 + 36 = 39."] },
+    { "type": "example", "title": "The 1st term is 5 and the 6th term is 30. Find d.", "steps": ["T₆ = a + 5d, so 5 + 5d = 30.", "5d = 25, d = 5."] },
+    { "type": "h", "text": "The sum of the first n terms" },
+    { "type": "p", "text": "S_n = n/2 × [2a + (n − 1)d], or S_n = n/2 × (first term + last term)." },
+    { "type": "example", "title": "Sum the first 10 terms of 3, 7, 11, ...", "steps": ["S₁₀ = 10/2 × [2 × 3 + 9 × 4].", "= 5 × (6 + 36) = 5 × 42 = 210."] },
+    { "type": "example", "title": "Saving: ₦1,000 in week 1, ₦1,500 in week 2, ₦2,000 in week 3, ...", "steps": ["a = 1,000, d = 500.", "Total after 8 weeks: S₈ = 8/2 × [2,000 + 7 × 500] = 4 × 5,500 = ₦22,000."] },
+    { "type": "tip", "text": "The most common slip is using n instead of (n − 1). The 1st term has no d added at all." }
+  ],
+  "questions": [
+    {
+      "prompt": "Find the common difference of 20, 17, 14, 11, ...",
+      "options": ["3", "−3", "17", "−20"],
+      "answer": 1,
+      "explanation": "d = 17 − 20 = −3. The sequence goes down, so d is negative."
+    },
+    {
+      "prompt": "Find the 12th term of 2, 7, 12, ...",
+      "options": ["62", "60", "57", "67"],
+      "answer": 2,
+      "explanation": "a = 2, d = 5. T₁₂ = 2 + 11 × 5 = 2 + 55 = 57. 62 uses 12 × 5 instead of 11 × 5."
+    },
+    {
+      "prompt": "Find the sum of the first 20 terms of 1, 2, 3, 4, ...",
+      "options": ["210", "200", "400", "190"],
+      "answer": 0,
+      "explanation": "a = 1, d = 1, n = 20. S₂₀ = 20/2 × (1 + 20) = 10 × 21 = 210."
+    },
+    {
+      "prompt": "Which of these is an arithmetic progression?",
+      "options": ["2, 4, 8, 16", "1, 4, 9, 16", "3, 6, 12, 24", "2, 5, 8, 11"],
+      "answer": 3,
+      "explanation": "2, 5, 8, 11 adds 3 each time. 2, 4, 8, 16 and 3, 6, 12, 24 double (geometric); 1, 4, 9, 16 are squares."
+    },
+    {
+      "prompt": "The 3rd term of an AP is 11 and the 7th term is 23. What is the first term?",
+      "options": ["3", "5", "8", "2"],
+      "answer": 1,
+      "explanation": "T₇ − T₃ = 4d = 23 − 11 = 12, so d = 3. Then a + 2d = 11, a = 11 − 6 = 5."
+    }
+  ]
+}

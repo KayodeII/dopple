@@ -1,0 +1,53 @@
+{
+  "slug": "ss-3-probability",
+  "class": "ss-3",
+  "subject": "general-mathematics",
+  "position": 1,
+  "title": "Probability",
+  "summary": "How likely something is, from coins and dice to picking from a bag, and combined events.",
+  "minutes": 25,
+  "lesson": [
+    { "type": "p", "text": "Probability measures how likely an event is, from 0 (impossible) to 1 (certain). When all outcomes are equally likely: P(event) = number of favourable outcomes ÷ total number of outcomes." },
+    { "type": "example", "title": "A fair die is thrown. Find P(even number).", "steps": ["Outcomes: 1, 2, 3, 4, 5, 6 (6 in all).", "Even: 2, 4, 6 (3 outcomes).", "P(even) = 3/6 = 1/2."] },
+    { "type": "h", "text": "Not happening" },
+    { "type": "p", "text": "P(not A) = 1 − P(A). The chance of not throwing a 5 is 1 − 1/6 = 5/6." },
+    { "type": "h", "text": "Picking from a bag" },
+    { "type": "example", "title": "A bag has 3 red and 5 blue balls. One is picked.", "steps": ["Total: 3 + 5 = 8 balls.", "P(red) = 3/8, P(blue) = 5/8.", "Check: 3/8 + 5/8 = 1."] },
+    { "type": "h", "text": "Combined events" },
+    { "type": "list", "items": ["Independent events, \"A and B\": multiply. P(A and B) = P(A) × P(B).", "Events that can't both happen, \"A or B\": add. P(A or B) = P(A) + P(B)."] },
+    { "type": "example", "title": "Two fair coins are tossed. Find P(two heads).", "steps": ["P(head) = 1/2 for each coin, and the coins don't affect each other.", "P(H and H) = 1/2 × 1/2 = 1/4.", "Check by listing: HH, HT, TH, TT. One out of four is HH."] },
+    { "type": "tip", "text": "Remember: \"and\" usually means multiply, \"or\" usually means add. And no probability can be more than 1." }
+  ],
+  "questions": [
+    {
+      "prompt": "A fair die is thrown once. What is the probability of getting a number greater than 4?",
+      "options": ["1/6", "1/3", "1/2", "2/3"],
+      "answer": 1,
+      "explanation": "Greater than 4: 5 and 6, so 2 outcomes out of 6. 2/6 = 1/3."
+    },
+    {
+      "prompt": "A bag has 4 green and 6 yellow sweets. One is picked at random. What is P(green)?",
+      "options": ["4/6", "2/3", "3/5", "2/5"],
+      "answer": 3,
+      "explanation": "Total = 4 + 6 = 10. P(green) = 4/10 = 2/5. 4/6 divides by the yellow sweets instead of the total."
+    },
+    {
+      "prompt": "A card is drawn from a pack of 52 playing cards. What is the probability that it is a king?",
+      "options": ["1/13", "1/52", "1/4", "4/13"],
+      "answer": 0,
+      "explanation": "There are 4 kings in 52 cards: 4/52 = 1/13."
+    },
+    {
+      "prompt": "The probability that it rains tomorrow is 0.3. What is the probability that it does not rain?",
+      "options": ["0.3", "1.3", "0.7", "0.03"],
+      "answer": 2,
+      "explanation": "P(not rain) = 1 − 0.3 = 0.7."
+    },
+    {
+      "prompt": "A fair coin is tossed and a fair die is thrown. What is P(head and a 6)?",
+      "options": ["1/12", "2/3", "1/8", "7/12"],
+      "answer": 0,
+      "explanation": "The events are independent, so multiply: 1/2 × 1/6 = 1/12. Adding (1/2 + 1/6 = 2/3) is for \"or\", not \"and\"."
+    }
+  ]
+}

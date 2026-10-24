@@ -1,0 +1,46 @@
+{
+  "slug": "nursery-2-beginning-sounds",
+  "class": "nursery-2",
+  "subject": "early-literacy",
+  "position": 1,
+  "title": "Hearing the first sound in a word",
+  "summary": "Listen for the sound at the start of a word and match words that begin the same way.",
+  "minutes": 10,
+  "lesson": [
+    { "type": "tip", "text": "For a parent, older brother or sister, or anyone helping a young child: say every word out loud. This lesson is about listening." },
+    { "type": "h", "text": "Stretch the word" },
+    { "type": "p", "text": "Say a word slowly and stretch the first sound: mmm... ango. The sound you hear first is the beginning sound. For mango it is m." },
+    { "type": "example", "title": "Find the first sound", "steps": ["Say \"sun\" slowly: sss... un.", "The first sound is s.", "Now say \"sand\" and \"soap\". They start with s too."] },
+    { "type": "h", "text": "Words that start the same" },
+    { "type": "list", "items": ["m: mango, mat, mother, milk", "s: sun, soap, sand, sock", "t: table, tomato, tap, ten", "p: pen, pot, pap, plate"] },
+    { "type": "h", "text": "Play \"odd one out\"" },
+    { "type": "p", "text": "Say three words: \"pen, pot, cup\". Ask which one starts with a different sound. The answer is cup, because pen and pot start with p." },
+    { "type": "tip", "text": "Use the child's own name: \"Your name, Tobi, starts with t. What else starts with t?\"" }
+  ],
+  "questions": [
+    {
+      "prompt": "What is the first sound in \"mango\"?",
+      "options": ["n", "m", "g", "a"],
+      "answer": 1,
+      "explanation": "Stretch it: mmm... ango. The first sound is m."
+    },
+    {
+      "prompt": "Which word starts with the same sound as \"sun\"?",
+      "options": ["soap", "table", "milk", "pen"],
+      "answer": 0,
+      "explanation": "Sun and soap both start with s. Table starts with t, milk with m, pen with p."
+    },
+    {
+      "prompt": "Which is the odd one out: pen, pot, cup, plate?",
+      "options": ["pen", "pot", "plate", "cup"],
+      "answer": 3,
+      "explanation": "Pen, pot and plate all start with p. Cup starts with c, so it is the odd one out."
+    },
+    {
+      "prompt": "\"Tomato\" starts with which sound?",
+      "options": ["m", "o", "t", "p"],
+      "answer": 2,
+      "explanation": "Say it slowly: t... omato. The first sound is t, like table and tap."
+    }
+  ]
+}

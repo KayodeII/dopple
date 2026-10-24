@@ -1,0 +1,47 @@
+{
+  "slug": "jss-2-simple-interest",
+  "class": "jss-2",
+  "subject": "mathematics",
+  "position": 1,
+  "title": "Simple interest",
+  "summary": "Work out the interest on money saved or borrowed, and the total amount.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "p", "text": "When you save money in a bank or borrow it, extra money called interest is added. With simple interest, it is worked out on the original amount only." },
+    { "type": "h", "text": "The words" },
+    { "type": "list", "items": ["Principal (P): the money saved or borrowed.", "Rate (R): the percentage charged each year, \"per annum\".", "Time (T): the number of years.", "Interest (I): the extra money.", "Amount (A): principal + interest."] },
+    { "type": "h", "text": "The formula" },
+    { "type": "p", "text": "I = (P × R × T) ÷ 100, and A = P + I." },
+    { "type": "example", "title": "₦20,000 saved at 5% per annum for 3 years", "steps": ["I = (20,000 × 5 × 3) ÷ 100.", "= 300,000 ÷ 100 = ₦3,000.", "Amount = ₦20,000 + ₦3,000 = ₦23,000."] },
+    { "type": "h", "text": "Working backwards" },
+    { "type": "p", "text": "Rearrange the formula to find a missing value: R = (100 × I) ÷ (P × T), and T = (100 × I) ÷ (P × R)." },
+    { "type": "example", "title": "₦8,000 earns ₦1,200 in 3 years. What is the rate?", "steps": ["R = (100 × 1,200) ÷ (8,000 × 3).", "= 120,000 ÷ 24,000.", "= 5% per annum."] },
+    { "type": "tip", "text": "If time is in months, change it to years first: 6 months = 6/12 = 1/2 year." }
+  ],
+  "questions": [
+    {
+      "prompt": "Find the simple interest on ₦50,000 at 10% per annum for 2 years.",
+      "options": ["₦5,000", "₦10,000", "₦1,000", "₦60,000"],
+      "answer": 1,
+      "explanation": "I = (50,000 × 10 × 2) ÷ 100 = 1,000,000 ÷ 100 = ₦10,000. ₦60,000 is the amount, not the interest."
+    },
+    {
+      "prompt": "₦12,000 is borrowed at 5% per annum for 4 years. What is the total amount to pay back?",
+      "options": ["₦2,400", "₦12,600", "₦14,400", "₦16,800"],
+      "answer": 2,
+      "explanation": "I = (12,000 × 5 × 4) ÷ 100 = ₦2,400. Amount = ₦12,000 + ₦2,400 = ₦14,400."
+    },
+    {
+      "prompt": "How long will ₦10,000 take to earn ₦2,000 interest at 4% per annum?",
+      "options": ["5 years", "2 years", "4 years", "8 years"],
+      "answer": 0,
+      "explanation": "T = (100 × 2,000) ÷ (10,000 × 4) = 200,000 ÷ 40,000 = 5 years."
+    },
+    {
+      "prompt": "Find the simple interest on ₦6,000 at 8% per annum for 6 months.",
+      "options": ["₦2,880", "₦480", "₦4,800", "₦240"],
+      "answer": 3,
+      "explanation": "6 months = 1/2 year. I = (6,000 × 8 × 1/2) ÷ 100 = 24,000 ÷ 100 = ₦240. ₦2,880 uses 6 years by mistake."
+    }
+  ]
+}

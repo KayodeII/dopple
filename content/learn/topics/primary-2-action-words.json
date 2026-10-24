@@ -1,0 +1,46 @@
+{
+  "slug": "primary-2-action-words",
+  "class": "primary-2",
+  "subject": "english-studies",
+  "position": 2,
+  "title": "Action words (verbs)",
+  "summary": "Find the words that tell us what someone or something does.",
+  "minutes": 12,
+  "lesson": [
+    { "type": "p", "text": "Some words tell us what someone or something does. They are called action words, or verbs." },
+    { "type": "list", "items": ["Amaka runs to school.", "The baby cries.", "Dad cooks rice.", "The birds sing."] },
+    { "type": "p", "text": "In each sentence, the action word is: runs, cries, cooks, sing." },
+    { "type": "h", "text": "Finding the action word" },
+    { "type": "p", "text": "Ask: what is the person or thing doing? The word that answers is the action word." },
+    { "type": "example", "title": "The boy kicks the ball.", "steps": ["Who is in the sentence? The boy.", "What is the boy doing? He kicks.", "So the action word is \"kicks\".", "\"Boy\" and \"ball\" are naming words, not action words."] },
+    { "type": "h", "text": "Act it out" },
+    { "type": "p", "text": "You can act out most action words: jump, clap, sit, eat, write, dance, sweep. If you can do it, it is probably an action word." },
+    { "type": "tip", "text": "Play \"Simon says\" at home. Every instruction (\"Simon says jump\") uses an action word." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which word is an action word?",
+      "options": ["table", "jump", "red", "Lagos"],
+      "answer": 1,
+      "explanation": "You can jump, so jump is an action word. Table and Lagos are naming words; red describes a colour."
+    },
+    {
+      "prompt": "Find the action word: Mama sells tomatoes.",
+      "options": ["Mama", "tomatoes", "sells", "none"],
+      "answer": 2,
+      "explanation": "What does Mama do? She sells. Mama and tomatoes are naming words."
+    },
+    {
+      "prompt": "Find the action word: The dog barks at night.",
+      "options": ["barks", "dog", "night", "the"],
+      "answer": 0,
+      "explanation": "What does the dog do? It barks. Dog and night are naming words."
+    },
+    {
+      "prompt": "Choose the best action word: The girls ___ to the music.",
+      "options": ["chair", "happy", "school", "dance"],
+      "answer": 3,
+      "explanation": "The gap needs something the girls do. \"The girls dance to the music.\" Chair and school are things, and happy is not an action."
+    }
+  ]
+}

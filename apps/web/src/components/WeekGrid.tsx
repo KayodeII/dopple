@@ -23,11 +23,11 @@ export function WeekGrid({
           aria-label={DAY_NAMES[day.weekday]}
           className="flex flex-col gap-2"
         >
-          <h3 className="font-mono text-[12.5px] uppercase tracking-wider text-soft">
+          <h3 className="font-mono text-[12.5px] uppercase tracking-wider text-fg-3">
             {DAY_NAMES[day.weekday]}
           </h3>
           {day.lessons.length === 0 && (
-            <p className="rounded-2xl border border-dashed border-line p-4 text-sm text-soft">
+            <p className="rounded-2xl border border-dashed border-line p-4 text-sm text-fg-3">
               No lessons
             </p>
           )}
@@ -36,11 +36,11 @@ export function WeekGrid({
               key={lesson.id}
               className="flex flex-col gap-1 rounded-2xl bg-card p-4"
             >
-              <span className="font-mono text-[12.5px] text-soft">
+              <span className="font-mono text-[12.5px] text-fg-3">
                 {lesson.startsAt}–{lesson.endsAt}
               </span>
               <span className="font-semibold">{lesson.subject.name}</span>
-              <span className="text-[13px] text-soft">
+              <span className="text-[13px] text-fg-3">
                 {detail === 'class'
                   ? lesson.class.name
                   : (lesson.teacher?.name ?? 'No teacher yet')}

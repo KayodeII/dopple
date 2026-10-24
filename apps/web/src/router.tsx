@@ -9,9 +9,11 @@ import { Loading } from './components/ui';
 import { isStaff, useSession, useUser } from './lib/session';
 import { ClassPage } from './pages/ClassPage';
 import { Classes } from './pages/Classes';
+import { Fees } from './pages/Fees';
 import { Home } from './pages/Home';
 import { MyTimetable } from './pages/MyTimetable';
 import { NotFound, StaffOnly } from './pages/NotFound';
+import { Settings } from './pages/Settings';
 import { SignIn } from './pages/SignIn';
 import { Student } from './pages/Student';
 import { Students } from './pages/Students';
@@ -54,6 +56,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: Home },
       { path: 'timetable', Component: MyTimetable },
+      { path: 'fees', Component: Fees },
       {
         Component: RequireStaff,
         children: [
@@ -63,6 +66,7 @@ export const router = createBrowserRouter([
           { path: 'classes/:id', Component: ClassPage },
         ],
       },
+      { path: 'settings', Component: Settings },
       { path: '*', Component: NotFound },
     ],
   },

@@ -4,7 +4,9 @@ import type {
   AcademicSession,
   ClassStudent,
   ClassSubject,
+  Fee,
   Lesson,
+  PaymentAccount,
   School,
   SchoolClass,
   Student,
@@ -82,6 +84,18 @@ export const useClassTimetable = (
     queryFn: () =>
       api<Lesson[]>(`/classes/${classId}/timetable?termId=${termId}`),
     enabled: !!termId,
+  });
+
+export const useFees = () =>
+  useQuery({ queryKey: ['fees', 'all'], queryFn: () => api<Fee[]>('/fees') });
+
+export const useMyFees = () =>
+  useQuery({ queryKey: ['fees', 'me'], queryFn: () => api<Fee[]>('/fees/me') });
+
+export const usePaymentAccount = () =>
+  useQuery({
+    queryKey: ['fees', 'account'],
+    queryFn: () => api<PaymentAccount>('/fees/account'),
   });
 
 /** A write, then refresh every query whose key starts with one of `invalidates`. */

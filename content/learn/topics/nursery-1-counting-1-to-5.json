@@ -1,0 +1,47 @@
+{
+  "slug": "nursery-1-counting-1-to-5",
+  "class": "nursery-1",
+  "subject": "early-numeracy",
+  "position": 1,
+  "title": "Counting from 1 to 5",
+  "summary": "Say 1 to 5 in order and count small groups of real things.",
+  "minutes": 8,
+  "lesson": [
+    { "type": "tip", "text": "For a parent, older brother or sister, or anyone helping a young child: read this together and use things you already have at home." },
+    { "type": "h", "text": "Say the numbers" },
+    { "type": "p", "text": "Say the numbers slowly with the child: 1, 2, 3, 4, 5. Then let the child say them back to you." },
+    { "type": "p", "text": "Hold up one finger for 1, two fingers for 2, and keep going until all five fingers on one hand are up." },
+    { "type": "h", "text": "One number for each thing" },
+    { "type": "p", "text": "Put a few groundnuts, bottle tops or stones in a line. Touch each one as you say a number. Every thing gets one number only, and the last number you say tells you how many there are." },
+    { "type": "example", "title": "Counting cups", "steps": ["Put 3 cups on the floor.", "Touch the first cup and say \"one\", the next \"two\", the last \"three\".", "Ask: how many cups? The answer is the last number: three."] },
+    { "type": "h", "text": "Counting songs" },
+    { "type": "p", "text": "Children remember numbers better with songs. Count steps as you climb, count claps, and count the plates as you set them for dinner." },
+    { "type": "tip", "text": "If the child skips a thing or counts one twice, don't scold. Count together again, slowly, touching each one." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which number comes after 2?",
+      "options": ["1", "3", "5", "4"],
+      "answer": 1,
+      "explanation": "We count 1, 2, 3. So 3 comes after 2. 1 comes before 2, not after."
+    },
+    {
+      "prompt": "Count the balls: ● ● ● ●. How many balls are there?",
+      "options": ["3", "5", "4", "2"],
+      "answer": 2,
+      "explanation": "Touch each ball and count: one, two, three, four. The last number is 4, so there are 4 balls."
+    },
+    {
+      "prompt": "How many fingers are on one hand?",
+      "options": ["5", "4", "10", "3"],
+      "answer": 0,
+      "explanation": "Count them: thumb is one, then two, three, four, five. One hand has 5 fingers. 10 is the fingers on both hands."
+    },
+    {
+      "prompt": "Which number comes before 5?",
+      "options": ["3", "6", "2", "4"],
+      "answer": 3,
+      "explanation": "We count 1, 2, 3, 4, 5. The number just before 5 is 4."
+    }
+  ]
+}
