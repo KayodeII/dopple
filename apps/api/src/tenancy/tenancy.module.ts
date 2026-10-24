@@ -27,6 +27,8 @@ export class TenancyModule implements NestModule {
         // Free lessons for anyone, school or not (ADR 0011).
         { path: 'learn', method: RequestMethod.ALL },
         { path: 'learn/{*rest}', method: RequestMethod.ALL },
+        // Payment provider webhooks: signed by the provider, no school host (ADR 0013).
+        { path: 'payments/{*rest}', method: RequestMethod.ALL },
       )
       .forRoutes({ path: '{*rest}', method: RequestMethod.ALL });
   }

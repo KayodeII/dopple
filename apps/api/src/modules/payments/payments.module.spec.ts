@@ -52,6 +52,7 @@ describe('FakeProvider', () => {
       reference: 'fee_1',
       amountMinor: 100,
       currency: 'NGN',
+      metadata: { tenantId: 't1' },
     };
     expect(fake.parseWebhook(fake.signedDelivery(event))).toEqual(event);
     expect(() =>

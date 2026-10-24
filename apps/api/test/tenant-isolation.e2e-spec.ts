@@ -58,6 +58,7 @@ describe('Tenant isolation (e2e)', () => {
     await app?.close();
     // Children before parents: these tables reference each other.
     for (const table of [
+      'fees',
       'school_logos',
       'timetable_slots',
       'enrolments',
@@ -106,6 +107,34 @@ describe('Tenant isolation (e2e)', () => {
   it('returns only the requesting school’s students', async () => {
     expect((await studentsAt(schoolA)).sort()).toEqual(['A-1', 'A-2']);
     expect(await studentsAt(schoolB)).toEqual(['B-1']);
+  });
+
+  it('keeps each school’s fees to itself, even without a WHERE clause', async () => {
+    const { rows } = await owner.query<{ tenant_id: string; id: string }>(
+      `insert into fees (tenant_id, student_id, description, amount_minor)
+       select tenant_id, id, admission_no || ' fees', 100000 from students
+       where tenant_id in (select id from tenants where slug = any($1))
+       returning tenant_id, id`,
+      [[schoolA, schoolB]],
+    );
+    expect(rows).toHaveLength(3);
+    for (const [slug, count] of [
+      [schoolA, 2],
+      [schoolB, 1],
+    ] as const) {
+      const token = await tokenFor(slug);
+      const res = await request(app.getHttpServer())
+        .get('/fees')
+        .set('Host', host(slug))
+        .auth(token, { type: 'bearer' })
+        .expect(200);
+      expect(res.body).toHaveLength(count);
+      expect(
+        (res.body as { student: { admissionNo: string } }[]).every((fee) =>
+          fee.student.admissionNo.startsWith(slug === schoolA ? 'A-' : 'B-'),
+        ),
+      ).toBe(true);
+    }
   });
 
   it('names the school at each host, without signing in', async () => {

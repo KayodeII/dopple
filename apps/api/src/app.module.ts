@@ -5,7 +5,7 @@ import { DatabaseErrorFilter } from './common/database-error.filter.js';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
-import { PaymentsModule } from './modules/payments/payments.module.js';
+import { FeesModule } from './modules/fees/fees.module.js';
 import { LearnModule } from './modules/learn/learn.module.js';
 import { SchoolModule } from './modules/school/school.module.js';
 import { SchoolsModule } from './modules/schools/schools.module.js';
@@ -37,7 +37,7 @@ import { TenancyModule } from './tenancy/tenancy.module.js';
     ClassesModule,
     TimetableModule,
     SchoolModule,
-    PaymentsModule, // fee payments through one provider adapter (ADR 0013)
+    FeesModule, // fees and payment webhooks, through one provider adapter (ADR 0013)
     SchoolsModule, // platform-level: find and create schools
     ShowcaseModule, // platform-level: excluded from TenantMiddleware
     LearnModule, // platform-level: free lessons (ADR 0011), excluded from TenantMiddleware

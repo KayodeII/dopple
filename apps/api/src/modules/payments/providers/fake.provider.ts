@@ -13,13 +13,15 @@ import {
 const SIGNATURE_HEADER = 'x-fake-signature';
 
 /**
- * For local runs and tests: no network, no money. Accounts are active at once and
- * the "payment page" is the success URL. Tests pay by posting `signedDelivery(event)`
- * to the webhook endpoint, which goes through the same path a real provider does.
+ * For local runs and tests: no network, no money. Accounts are active at once. The
+ * "payment page" is `/api/payments/fake/pay` on the school's own address, which pays
+ * by sending this provider's signed webhook through the same path a real one takes.
+ * State is in memory, so checkouts are forgotten when the API restarts.
  */
 export class FakeProvider implements PaymentProvider {
   readonly name = 'fake';
   private readonly accounts = new Map<string, SchoolAccount>();
+  private readonly checkouts = new Map<string, NewCheckout>();
 
   constructor(private readonly webhookSecret = 'fake-webhook-secret') {}
 
@@ -34,17 +36,45 @@ export class FakeProvider implements PaymentProvider {
   }
 
   getSchoolAccount(accountId: string): Promise<SchoolAccount> {
-    const account = this.accounts.get(accountId);
-    return account
-      ? Promise.resolve(account)
-      : Promise.reject(new Error(`no fake account ${accountId}`));
+    // Accounts made before a restart are still "there", as they would be at a provider.
+    return Promise.resolve(
+      this.accounts.get(accountId) ?? {
+        accountId,
+        status: 'active',
+        requirementsDue: [],
+      },
+    );
   }
 
   createCheckout(input: NewCheckout): Promise<Checkout> {
     const checkoutId = `fake_chk_${input.reference}`;
-    const url = new URL(input.successUrl);
+    this.checkouts.set(checkoutId, input);
+    const url = new URL('/api/payments/fake/pay', input.successUrl);
     url.searchParams.set('checkout_id', checkoutId);
     return Promise.resolve({ checkoutId, url: url.toString() });
+  }
+
+  /** What the fake payment page does: the payment event for a checkout, and where to go next. */
+  pay(
+    checkoutId: string,
+  ): { delivery: WebhookDelivery; returnUrl: string } | null {
+    const checkout = this.checkouts.get(checkoutId);
+    if (!checkout) return null;
+    this.checkouts.delete(checkoutId);
+    const returnUrl = new URL(checkout.successUrl);
+    returnUrl.searchParams.set('checkout_id', checkoutId);
+    return {
+      delivery: this.signedDelivery({
+        type: 'payment.succeeded',
+        eventId: `fake_evt_${randomUUID()}`,
+        accountId: checkout.accountId,
+        reference: checkout.reference,
+        amountMinor: checkout.amountMinor,
+        currency: checkout.currency,
+        metadata: checkout.metadata,
+      }),
+      returnUrl: returnUrl.toString(),
+    };
   }
 
   parseWebhook({ headers, rawBody }: WebhookDelivery): PaymentEvent | null {

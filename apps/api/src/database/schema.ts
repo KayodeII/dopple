@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   check,
   customType,
@@ -393,6 +394,115 @@ export const schoolLogos = pgTable(
       to: appRole,
       using: sql`true`,
     }),
+  ],
+).enableRLS();
+
+/*
+ * Fees (ADR 0013). Money is bigint kobo. Payments go through the PaymentProvider adapter,
+ * so every provider-side id is stored with the provider's name: a school that changes
+ * provider keeps its history.
+ */
+
+/** A school's own account with a payment provider: fees settle to it, not to Dopple. */
+export const paymentAccounts = pgTable(
+  'payment_accounts',
+  {
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id),
+    provider: text('provider').notNull(),
+    accountId: text('account_id').notNull(),
+    status: text('status', {
+      enum: ['pending', 'active', 'restricted'],
+    }).notNull(),
+    requirementsDue: jsonb('requirements_due').$type<string[]>().notNull(),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.provider] }),
+    tenantIsolation('payment_accounts'),
+  ],
+).enableRLS();
+
+/** One amount a student owes, e.g. "First term tuition". */
+export const fees = pgTable(
+  'fees',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    studentId: uuid('student_id').notNull(),
+    description: text('description').notNull(),
+    amountMinor: bigint('amount_minor', { mode: 'number' }).notNull(),
+    currency: text('currency').notNull().default('NGN'),
+    dueOn: date('due_on'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    check('fees_amount_positive', sql`${t.amountMinor} > 0`),
+    tenantIsolation('fees'),
+  ],
+).enableRLS();
+
+/** One attempt to pay a fee. Its id is the reference the provider echoes back. */
+export const feePayments = pgTable(
+  'fee_payments',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    feeId: uuid('fee_id').notNull(),
+    provider: text('provider').notNull(),
+    checkoutId: text('checkout_id'),
+    amountMinor: bigint('amount_minor', { mode: 'number' }).notNull(),
+    status: text('status', {
+      enum: ['pending', 'succeeded', 'failed'],
+    })
+      .notNull()
+      .default('pending'),
+    /** Who started the payment. */
+    payerId: uuid('payer_id'),
+    paidAt: timestamp('paid_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.feeId],
+      foreignColumns: [fees.tenantId, fees.id],
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [t.tenantId, t.payerId],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    check('fee_payments_amount_positive', sql`${t.amountMinor} > 0`),
+    tenantIsolation('fee_payments'),
+  ],
+).enableRLS();
+
+/** Webhook events already handled. Providers deliver at least once; this makes it exactly once. */
+export const paymentEvents = pgTable(
+  'payment_events',
+  {
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id),
+    provider: text('provider').notNull(),
+    eventId: text('event_id').notNull(),
+    type: text('type').notNull(),
+    receivedAt: timestamp('received_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.provider, t.eventId] }),
+    tenantIsolation('payment_events'),
   ],
 ).enableRLS();
 

@@ -108,7 +108,7 @@ export class BachsProvider implements PaymentProvider {
         },
         customer: { email: input.payerEmail },
         reference: input.reference,
-        metadata: { reference: input.reference },
+        metadata: { ...input.metadata, reference: input.reference },
         success_url: input.successUrl,
         cancel_url: input.cancelUrl,
         ...(input.platformFeeMinor
@@ -137,6 +137,7 @@ export class BachsProvider implements PaymentProvider {
           reference: data.reference ?? data.metadata?.reference ?? null,
           amountMinor: data.amount ? decimalToMinor(data.amount) : 0,
           currency: data.currency ?? '',
+          metadata: data.metadata ?? {},
         };
       }
       case 'account.updated':

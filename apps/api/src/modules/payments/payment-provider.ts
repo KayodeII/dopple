@@ -53,6 +53,8 @@ export interface NewCheckout {
   cancelUrl: string;
   /** Dopple's cut, taken by the provider from the school's proceeds. */
   platformFeeMinor?: number;
+  /** Returned, signed, on the payment event. Dopple puts the school's id here. */
+  metadata: Record<string, string>;
 }
 
 export interface Checkout {
@@ -75,6 +77,7 @@ export type PaymentEvent =
       reference: string | null;
       amountMinor: number;
       currency: string;
+      metadata: Record<string, string>;
     }
   | {
       type: 'account.updated';

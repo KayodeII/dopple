@@ -40,6 +40,7 @@ const succeeded = JSON.stringify({
     amount: '75000.00',
     currency: 'NGN',
     status: 'SUCCEEDED',
+    metadata: { tenantId: 't1' },
   },
 });
 
@@ -77,6 +78,7 @@ describe('BachsProvider', () => {
       successUrl: 'https://greenfield.dopple.school/fees/paid',
       cancelUrl: 'https://greenfield.dopple.school/fees',
       platformFeeMinor: 10_000,
+      metadata: { tenantId: 't1' },
     });
 
     expect(checkout).toEqual({
@@ -91,6 +93,7 @@ describe('BachsProvider', () => {
       pricing: { currency: 'NGN', amount: '75000.00' },
       customer: { email: 'parent@example.com' },
       reference: 'fee_42',
+      metadata: { tenantId: 't1', reference: 'fee_42' },
       platform_fee: '100.00',
     });
   });
@@ -142,6 +145,7 @@ describe('BachsProvider', () => {
         reference: 'fee_42',
         amountMinor: 7_500_000,
         currency: 'NGN',
+        metadata: { tenantId: 't1' },
       });
     });
 
