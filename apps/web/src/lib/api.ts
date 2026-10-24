@@ -114,8 +114,26 @@ export async function signOut(): Promise<void> {
 /** A school-scoped API call. Renews the access token once on 401. A Blob body is sent as is (uploads). */
 export async function api<T>(
   path: string,
-  { method = 'GET', body }: { method?: string; body?: unknown } = {},
+  options: { method?: string; body?: unknown } = {},
 ): Promise<T> {
+  const res = await request(path, options);
+  const data = await readJson(res);
+  if (!res.ok) throw errorFrom(res.status, data);
+  return data as T;
+}
+
+/** An image or other file the API serves privately; null if there is none (404). */
+export async function apiBlob(path: string): Promise<Blob | null> {
+  const res = await request(path, {});
+  if (res.status === 404) return null;
+  if (!res.ok) throw errorFrom(res.status, await readJson(res));
+  return res.blob();
+}
+
+async function request(
+  path: string,
+  { method = 'GET', body }: { method?: string; body?: unknown },
+): Promise<Response> {
   const raw = body instanceof Blob;
   const send = () =>
     fetch(`/api${path}`, {
@@ -137,7 +155,5 @@ export async function api<T>(
       endedListeners.forEach((listener) => listener());
     }
   }
-  const data = await readJson(res);
-  if (!res.ok) throw errorFrom(res.status, data);
-  return data as T;
+  return res;
 }

@@ -35,7 +35,33 @@ export interface Student {
   userId: string | null;
 }
 
-export interface StudentDetail extends Student {
+export type Religion = 'christianity' | 'islam' | 'other';
+
+/** The admission record beyond name and number; every field is optional. */
+export interface StudentProfile {
+  middleName: string | null;
+  sex: 'female' | 'male' | null;
+  dateOfBirth: string | null;
+  admittedOn: string | null;
+  nationality: string | null;
+  stateOfOrigin: string | null;
+  lga: string | null;
+  homeAddress: string | null;
+  previousSchool: string | null;
+  religion: Religion | null;
+}
+
+export interface StudentHealth {
+  bloodGroup: string | null;
+  genotype: string | null;
+  allergies: string | null;
+  conditions: string | null;
+}
+
+export interface StudentDetail extends Student, StudentProfile {
+  /** When the passport photo last changed; null if there is none. */
+  photoUpdatedAt: string | null;
+  health: StudentHealth | null;
   enrolments: { session: Ref; class: Ref }[];
 }
 

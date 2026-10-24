@@ -107,9 +107,7 @@ test.describe('as the school admin', () => {
     await guardians.getByRole('button', { name: 'Add guardian' }).click();
     await guardians.getByLabel('Relationship to Ngozika').fill('Mother');
     await guardians.getByLabel('Full name').fill('Bisi Playwright');
-    await guardians
-      .getByLabel('Phone', { exact: true })
-      .fill('0803 000 1111');
+    await guardians.getByLabel('Phone', { exact: true }).fill('0803 000 1111');
     await guardians
       .getByRole('button', { name: 'Add guardian', exact: true })
       .last()
@@ -124,6 +122,49 @@ test.describe('as the school admin', () => {
       .getByRole('button', { name: 'Remove Emeka Obi from Ngozika' })
       .click();
     await expect(guardians.getByRole('listitem')).toHaveCount(1);
+  });
+
+  test('fills in the admission record, passport photo and health details', async () => {
+    // Still on Ngozika's page from the test above.
+    await page.getByRole('button', { name: 'Edit details' }).click();
+    await page.getByLabel('Middle name').fill('Adaeze');
+    await page.getByLabel('Sex').selectOption('Female');
+    await page.getByLabel('Date of birth').fill('2014-03-09');
+    await page.getByLabel('State of origin').selectOption('Enugu');
+    await page.getByLabel('LGA').fill('Nsukka');
+    await page.getByLabel('Previous school').fill('Sunrise Primary School');
+    await page.getByRole('button', { name: 'Save changes' }).click();
+
+    const details = page.getByRole('region', { name: 'Details' });
+    await expect(details).toContainText('Ngozika Adaeze Playwright');
+    await expect(details).toContainText('9 March 2014');
+    await expect(details).toContainText('Enugu');
+    await expect(details).toContainText('Sunrise Primary School');
+
+    // A 1×1 PNG.
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await details.locator('input[type=file]').setInputFiles({
+      name: 'passport.png',
+      mimeType: 'image/png',
+      buffer: png,
+    });
+    await expect(
+      details.getByRole('img', {
+        name: 'Passport photo of Ngozika Playwright',
+      }),
+    ).toBeVisible();
+    await expect(details.getByText('Replace photo')).toBeVisible();
+
+    const health = page.getByRole('region', { name: 'Health' });
+    await health.getByRole('button', { name: 'Add health details' }).click();
+    await health.getByLabel('Genotype').selectOption('AS');
+    await health.getByLabel('Allergies').fill('Groundnuts');
+    await health.getByRole('button', { name: 'Save health details' }).click();
+    await expect(health).toContainText('AS');
+    await expect(health).toContainText('Groundnuts');
   });
 
   test('builds a class timetable and refuses overlapping lessons', async () => {
