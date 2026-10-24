@@ -2,15 +2,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
 import type {
   AcademicSession,
+  Child,
   ClassStudent,
   ClassSubject,
   Fee,
+  GuardianMatch,
   Lesson,
   PaymentAccount,
   School,
   SchoolClass,
   Student,
   StudentDetail,
+  StudentGuardian,
 } from './types';
 
 /** Data hooks. Query keys start with the resource, so a write can refresh everything that shows it. */
@@ -29,10 +32,17 @@ export const useSessions = () =>
     staleTime: 5 * 60_000,
   });
 
-export const useMyTimetable = (termId: string | undefined) =>
+/** Parents pass which child; teachers and students leave it out. */
+export const useMyTimetable = (
+  termId: string | undefined,
+  studentId?: string,
+) =>
   useQuery({
-    queryKey: ['timetable', 'me', termId],
-    queryFn: () => api<Lesson[]>(`/timetable/me?termId=${termId}`),
+    queryKey: ['timetable', 'me', termId, studentId],
+    queryFn: () =>
+      api<Lesson[]>(
+        `/timetable/me?termId=${termId}${studentId ? `&studentId=${studentId}` : ''}`,
+      ),
     enabled: !!termId,
   });
 
@@ -48,6 +58,27 @@ export const useStudent = (id: string) =>
   useQuery({
     queryKey: ['students', 'one', id],
     queryFn: () => api<StudentDetail>(`/students/${id}`),
+  });
+
+export const useStudentGuardians = (studentId: string) =>
+  useQuery({
+    queryKey: ['guardians', 'student', studentId],
+    queryFn: () => api<StudentGuardian[]>(`/students/${studentId}/guardians`),
+  });
+
+export const useGuardianSearch = (q: string) =>
+  useQuery({
+    queryKey: ['guardians', 'search', q],
+    queryFn: () =>
+      api<GuardianMatch[]>(`/guardians?q=${encodeURIComponent(q)}`),
+    enabled: q.length >= 2,
+    placeholderData: (previous) => previous,
+  });
+
+export const useChildren = () =>
+  useQuery({
+    queryKey: ['children'],
+    queryFn: () => api<Child[]>('/children'),
   });
 
 export const useClasses = (sessionId: string | undefined) =>

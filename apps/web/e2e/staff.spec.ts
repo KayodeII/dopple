@@ -86,6 +86,46 @@ test.describe('as the school admin', () => {
     );
   });
 
+  test('records a student’s guardians, linking a parent already on record', async () => {
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('link', { name: 'Playwright, Ngozika' }).click();
+    const guardians = page.getByRole('region', {
+      name: 'Parents and guardians',
+    });
+    await expect(guardians).toContainText('No parent or guardian on record');
+
+    // Emeka Obi is a seeded father of another student.
+    await guardians.getByRole('button', { name: 'Add guardian' }).click();
+    await guardians.getByLabel('Relationship to Ngozika').fill('Uncle');
+    await guardians
+      .getByLabel('Already a parent here? Search by name or phone')
+      .fill('Emeka');
+    await guardians.getByRole('button', { name: 'Link Emeka Obi' }).click();
+    await expect(guardians.getByRole('listitem')).toHaveCount(1);
+    await expect(guardians).toContainText('Uncle');
+
+    await guardians.getByRole('button', { name: 'Add guardian' }).click();
+    await guardians.getByLabel('Relationship to Ngozika').fill('Mother');
+    await guardians.getByLabel('Full name').fill('Bisi Playwright');
+    await guardians
+      .getByLabel('Phone', { exact: true })
+      .fill('0803 000 1111');
+    await guardians
+      .getByRole('button', { name: 'Add guardian', exact: true })
+      .last()
+      .click();
+    const bisi = guardians.getByRole('listitem').filter({
+      hasText: 'Bisi Playwright',
+    });
+    await expect(bisi).toContainText('0803 000 1111');
+    await expect(bisi).toContainText('No parent account yet');
+
+    await guardians
+      .getByRole('button', { name: 'Remove Emeka Obi from Ngozika' })
+      .click();
+    await expect(guardians.getByRole('listitem')).toHaveCount(1);
+  });
+
   test('builds a class timetable and refuses overlapping lessons', async () => {
     await page
       .getByRole('link', { name: 'Classes', exact: true })

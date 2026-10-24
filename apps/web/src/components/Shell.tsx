@@ -20,12 +20,7 @@ export function Shell() {
 
   const links = [
     { to: '/', label: 'Home', icon: homeIcon, show: true },
-    {
-      to: '/timetable',
-      label: 'Timetable',
-      icon: clockIcon,
-      show: user.role !== 'parent',
-    },
+    { to: '/timetable', label: 'Timetable', icon: clockIcon, show: true },
     {
       to: '/students',
       label: 'Students',
@@ -37,8 +32,7 @@ export function Shell() {
       to: '/fees',
       label: 'Fees',
       icon: feesIcon,
-      // Parents too, once guardians exist.
-      show: user.role === 'admin' || user.role === 'student',
+      show: user.role !== 'teacher',
     },
     {
       to: '/settings',

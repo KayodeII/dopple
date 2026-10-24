@@ -26,11 +26,11 @@ import {
 import { useUser } from '../lib/session';
 import type { Fee } from '../lib/types';
 
-/** Admins bill students and see what is paid; students see and pay their own fees. */
+/** Admins bill students and see what is paid; students and parents see and pay their own. */
 export function Fees() {
   const user = useUser();
   if (user.role === 'admin') return <SchoolFees />;
-  if (user.role === 'student') return <MyFees />;
+  if (user.role === 'student' || user.role === 'parent') return <MyFees />;
   return (
     <>
       <PageHeader eyebrow="Money" title="Fees" />
@@ -344,7 +344,9 @@ function StatusPill({ status }: { status: Fee['status'] }) {
 }
 
 function MyFees() {
+  const user = useUser();
   const fees = useMyFees();
+  const parent = user.role === 'parent';
   const [params] = useSearchParams();
   const pay = useWrite(
     (id: string) => api<{ url: string }>(`/fees/${id}/pay`, { method: 'POST' }),
@@ -353,7 +355,10 @@ function MyFees() {
 
   return (
     <>
-      <PageHeader eyebrow="Money" title="My fees" />
+      <PageHeader
+        eyebrow="Money"
+        title={parent ? 'Your children’s fees' : 'My fees'}
+      />
       {params.has('paid') && (
         <p role="status" className="rounded-xl bg-card px-4 py-3 text-[15px]">
           Thank you. Your payment was received; it shows as paid here once the
@@ -364,7 +369,11 @@ function MyFees() {
       {fees.isPending ? (
         <Loading />
       ) : fees.data?.length === 0 ? (
-        <Empty>You have no fees to pay.</Empty>
+        <Empty>
+          {parent
+            ? 'Nothing to pay for your children.'
+            : 'You have no fees to pay.'}
+        </Empty>
       ) : (
         <ul className="flex flex-col gap-3">
           {fees.data?.map((fee) => {
@@ -373,6 +382,11 @@ function MyFees() {
               <li key={fee.id}>
                 <Card className="flex flex-wrap items-center justify-between gap-4 p-5">
                   <div className="flex flex-col gap-1">
+                    {parent && (
+                      <span className="font-mono text-[12.5px] text-fg-3">
+                        {fee.student.firstName} {fee.student.lastName}
+                      </span>
+                    )}
                     <span className="font-semibold">{fee.description}</span>
                     <span className="text-[14px] text-fg-3">
                       {formatNaira(fee.amountMinor)}
