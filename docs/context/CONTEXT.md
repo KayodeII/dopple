@@ -1,6 +1,6 @@
 # Project context — handover note
 
-Last updated: 2026-10-24
+Last updated: 2026-10-26
 
 Read `AGENTS.md` first. This file says where the work stands. Update it at the end of every session.
 
@@ -36,6 +36,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - Fees v1 (migration 0010): `payment_accounts`, `fees`, `fee_payments`, `payment_events` (all RLS). `/fees` (admin: list, bill students or a whole class, delete unpaid), `/fees/account` (admin: set up the school's provider account), `/fees/me` + `/fees/:id/pay` (student). Public `POST /payments/webhooks/:provider` (raw body; tenant from our signed metadata, event must come from the school's own account, once per event id). Fake provider's page `/payments/fake/pay` pays at once. Web app **Fees** page for admins and students. Seed bills ₦85,000 first-term tuition per student.
 - Guardians and parent view (ADR 0015, migration 0011): `guardians` (name, E.164 phone, optional email, optional parent account) and `student_guardians` (relationship), both RLS. `/students/:id/guardians` (staff read, admin add/link/unlink), `/guardians?q=` and `PATCH /guardians/:id` (admin), `/children` (parent). `myStudentIds()` in `modules/guardians` decides which students a user acts for; `/timetable/me?studentId=` and `/fees/me` + pay now work for parents. Web app: guardians on the student page (find a sibling's parent by name or phone), parent home with their children, child's timetable, children's fees. Seed adds `parent@<slug>.test` as the first student's mother and a phone-only father for the second.
 - Student admission record (ADR 0016, migration 0012): `students` gains middle name, sex, date of birth, date admitted, nationality, state of origin, LGA, home address, previous school, religion (all optional); `student_health` (blood group, genotype, allergies, conditions) and private `student_photos` (passport photo), both RLS. Image helpers moved to `src/common`. Web app: one grouped form registers and edits a student; the student page shows details with the photo, and a health section.
+- Parents' consent and corrections (ADR 0017, migration 0013): insert-only `consents` log (record, health, photo; paper or online; exact wording kept) and `record_corrections`. Health and photo need a current yes and are erased on a no. `GET /children/:id` (a parent's view of the whole record), `PUT /students/:id/consents/:purpose` (admin, paper form), `PUT /children/:id/consents/:purpose` (parent), `/children/:id/corrections`, `/corrections` + apply/decline (admin). Web app: Consent section and corrections on the student page, "Corrections to check" on the admin home, parent page `/children/:id`.
 - Local infra: `infra/docker-compose.yml` (Postgres 17, Redis 7, NATS JetStream, Grafana LGTM).
 - Repo rules: PR template with Before/After from the running UI (`apps/site` included), CI (checks, UI evidence, no co-author trailers), commit-msg hook.
 
@@ -43,7 +44,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 0. **Dopple Learn, next:** a school admin's review of the 27 lessons added on 2026-10-18 (ADR 0014; written by an agent, answers checked, not yet reviewed), then more lessons per class following the NERDC scheme of work and other subjects, offline (service worker), CBT-style timed mock exams, exam guides for private candidates, placement ("where do I start?"), optional accounts with parent consent. **Proctored exams are a requirement** for exams that count (school CBT, scored mocks); see `docs/roadmap.md`, needs its own ADR first.
 1. Auth follow-ups: move rate-limit counters to Redis before scaling out, invites + password reset (Resend, ADR 0012), Google/Microsoft sign-in, expired refresh-token cleanup.
-2. Core school records, continued: parents' consent and a parent's view of the record they can correct (NDPA), LGA list per state, auto-numbered admission numbers, inviting parents by email (accounts are seed-only until the Mailer exists; ADR 0015), students leaving (status instead of deleting) and list paging when schools get large.
+2. Core school records, continued: LGA list per state, auto-numbered admission numbers, inviting parents by email (accounts are seed-only until the Mailer exists; ADR 0015), students leaving (status instead of deleting) and list paging when schools get large.
 3. `apps/web` next: assign subject teachers (needs a staff list endpoint), create sessions/classes/subjects from the UI, school colour per tenant, a shared `packages/ui` for tokens. `scripts/start-dopple.command` should also start `dev:web`.
    - Site follow-ups: real pricing, demo-booking form backend (currently `action="#demo"`), legal pages, analytics.
 4. `services/realtime`: Go WebSocket gateway skeleton with NATS.
@@ -54,6 +55,8 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 - **Pay small small:** parents spread a term's fees into smaller instalments. Not built yet; see `docs/roadmap.md` for scope and open questions (plan vs. financed credit).
 
 ## Open questions
+
+- Students who turn 18 should give their own consent (ADR 0017); how should the school switch them over?
 
 - Learn content: school admins review it (ADR 0014). Still open: hide or label unreviewed lessons? Licence past questions from WAEC/NECO/JAMB, or only write our own?
 - Zero-rated data for `/learn` with a mobile network (as Airtel does for the Nigeria Learning Passport)?
@@ -75,6 +78,7 @@ The monorepo is scaffolded. The API boots, resolves schools by host, enforces te
 
 Newest first. One or two lines each.
 
+- 2026-10-26 — Parents' consent and corrections (branch `parent-consent`, on `student-profile`/#24). `assertConsent()` in `modules/consents/current-consents.ts` guards health and photo writes: new sensitive data should get its own purpose. `consents` is insert-only for the app role (REVOKE in 0013). Seed records paper consent for record and health; the photo is left for the demo parent.
 - 2026-10-24 — Student admission record (branch `student-profile`, on `guardians`/#23), modelled on Nigerian admission forms. The demo seed fills the records but adds no photos: never put made-up photos of children in seed data or screenshots (the PR uses a grey silhouette).
 - 2026-10-24 — Guardians and parent view (branch `guardians`, on `payments-adapter`/#22). Parents act only for linked children through `myStudentIds()`; use it for any new "mine" endpoint. Web e2e signs in ~8 times per run now (parent added). Also: Next.js 16.4.2 security upgrade (#20, off `main`), and CI's API now sets `SCHOOL_URL_FORMAT` so payment redirects reach :3200. Merging PRs was blocked for the agent; the user merges.
 - 2026-10-24 — Fees v1 on the same branch. The API now starts with `rawBody: true` (webhook signatures); e2e apps that test webhooks need `createNestApplication({ rawBody: true })`. Web e2e now signs in ~7 times per run, close to the 10/min limit: wait a minute between runs. Local Postgres here is Homebrew: I created the `dopple` owner role and database and ran `infra/postgres/init.sql` by hand.

@@ -7,6 +7,7 @@ import {
 import { Shell } from './components/Shell';
 import { Loading } from './components/ui';
 import { isStaff, useSession, useUser } from './lib/session';
+import { ChildRecord } from './pages/ChildRecord';
 import { ClassPage } from './pages/ClassPage';
 import { Classes } from './pages/Classes';
 import { Fees } from './pages/Fees';
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
       { index: true, Component: Home },
       { path: 'timetable', Component: MyTimetable },
       { path: 'fees', Component: Fees },
+      { path: 'children/:id', Component: ChildRecord },
       {
         Component: RequireStaff,
         children: [

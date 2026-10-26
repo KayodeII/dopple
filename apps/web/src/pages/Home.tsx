@@ -15,7 +15,13 @@ import {
   isoDate,
   isoWeekday,
 } from '../lib/dates';
-import { useChildren, useMyTimetable, useSessions } from '../lib/queries';
+import { CorrectionCard } from '../components/CorrectionCard';
+import {
+  useChildren,
+  useMyTimetable,
+  usePendingCorrections,
+  useSessions,
+} from '../lib/queries';
 import { isStaff, useUser } from '../lib/session';
 import { lessonState } from '../lib/timetable';
 
@@ -46,6 +52,7 @@ export function Home() {
           error={sessions.error}
         />
       )}
+      {user.role === 'admin' && <CorrectionsToCheck />}
       {isStaff(user) && (
         <Section title="Records">
           <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
@@ -74,7 +81,24 @@ export function Home() {
   );
 }
 
-/** A parent's children, each a way into their timetable and fees. */
+/** Parents' requests to correct their children's records, oldest first. Hidden when there are none. */
+function CorrectionsToCheck() {
+  const pending = usePendingCorrections();
+  if (!pending.data?.length) return <ErrorNote error={pending.error} />;
+  return (
+    <Section title="Corrections to check">
+      <ul className="flex flex-col gap-3">
+        {pending.data.map((c) => (
+          <li key={c.id}>
+            <CorrectionCard correction={c} showStudent />
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+/** A parent's children, each a way into their record, timetable and fees. */
 function Children() {
   const children = useChildren();
   return (
@@ -99,6 +123,12 @@ function Children() {
                   {child.firstName} {child.lastName}
                 </span>
                 <span className="flex flex-wrap gap-x-4 text-sm">
+                  <Link
+                    to={`/children/${child.id}`}
+                    className="text-fg-2 underline-offset-4 hover:underline"
+                  >
+                    Record
+                  </Link>
                   <Link
                     to={`/timetable?child=${child.id}`}
                     className="text-fg-2 underline-offset-4 hover:underline"

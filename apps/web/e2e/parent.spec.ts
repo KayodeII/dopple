@@ -55,6 +55,50 @@ test.describe('as a parent', () => {
     ).toContainText('Tolu Adebayo');
   });
 
+  test('reads their child’s record and answers for consent', async () => {
+    await page.getByRole('link', { name: 'Home' }).click();
+    await page
+      .getByRole('region', { name: 'Your children' })
+      .getByRole('link', { name: 'Record' })
+      .click();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Tolu Adebayo' }),
+    ).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Details' })).toContainText(
+      'Ogun',
+    );
+    const consent = page.getByRole('region', { name: 'Your consent' });
+    await expect(
+      consent.getByRole('listitem').filter({ hasText: 'Health details' }),
+    ).toContainText('Agreed · Demo Parent (Mother), on paper');
+
+    const photo = consent
+      .getByRole('listitem')
+      .filter({ hasText: 'Passport photo' });
+    await photo.getByRole('button', { name: 'I agree' }).click();
+    await expect(photo).toContainText('Agreed · Demo Parent (Mother), online');
+    await photo.getByRole('button', { name: 'Withdraw consent' }).click();
+    await expect(photo).toContainText('erase the passport photo');
+    await photo.getByRole('button', { name: 'Yes, withdraw' }).click();
+    await expect(photo).toContainText('Said no · Demo Parent (Mother), online');
+  });
+
+  test('is told when a correction changes nothing', async () => {
+    const correction = page.getByRole('region', {
+      name: 'Ask for a correction',
+    });
+    await correction
+      .getByRole('button', { name: 'Something is wrong' })
+      .click();
+    await correction
+      .getByRole('button', { name: 'Send to the school' })
+      .click();
+    await expect(correction.getByRole('alert')).toHaveText(
+      'Nothing has changed yet. Edit what is wrong first.',
+    );
+    await correction.getByRole('button', { name: 'Cancel' }).click();
+  });
+
   test('gets "Staff only" for staff pages', async () => {
     await page.goto('/students');
     await expect(

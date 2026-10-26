@@ -140,6 +140,20 @@ test.describe('as the school admin', () => {
     await expect(details).toContainText('9 March 2014');
     await expect(details).toContainText('Enugu');
     await expect(details).toContainText('Sunrise Primary School');
+    await expect(details.getByText('Add photo')).toHaveCount(0);
+
+    // Nothing sensitive is kept until a parent agrees: record Bisi's signed form.
+    const consent = page.getByRole('region', { name: 'Consent' });
+    for (const purpose of ['Health details', 'Passport photo']) {
+      await consent
+        .getByRole('button', { name: 'Record a paper form' })
+        .click();
+      await consent.getByLabel('For').selectOption(purpose);
+      await consent.getByRole('button', { name: 'Save answer' }).click();
+      await expect(
+        consent.getByRole('listitem').filter({ hasText: purpose }),
+      ).toContainText('Agreed · Bisi Playwright (Mother), on paper');
+    }
 
     // A 1×1 PNG.
     const png = Buffer.from(

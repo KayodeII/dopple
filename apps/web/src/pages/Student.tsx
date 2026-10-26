@@ -1,5 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import {
   Button,
@@ -13,21 +12,27 @@ import {
   Select,
 } from '../components/ui';
 import {
+  HealthFields,
+  readHealthForm,
   readStudentForm,
   StudentFields,
   type StudentInput,
 } from '../components/StudentForm';
-import { api, apiBlob } from '../lib/api';
-import { BLOOD_GROUPS, GENOTYPES, RELIGIONS } from '../lib/nigeria';
+import { CorrectionCard } from '../components/CorrectionCard';
+import { Details, HealthList } from '../components/StudentRecord';
+import { api } from '../lib/api';
 import { formatPhone } from '../lib/phone';
+import { answerText, PURPOSE_LABELS } from '../lib/record';
 import {
   useGuardianSearch,
+  usePendingCorrections,
   useStudent,
   useStudentGuardians,
   useWrite,
 } from '../lib/queries';
 import { useUser } from '../lib/session';
 import type {
+  ConsentPurpose,
   StudentDetail,
   StudentGuardian,
   StudentHealth,
@@ -42,6 +47,7 @@ export function Student() {
   if (student.isPending) return <Loading />;
   if (!student.data) return <ErrorNote error={student.error} />;
   const s = student.data;
+  const isAdmin = user.role === 'admin';
 
   return (
     <>
@@ -52,16 +58,20 @@ export function Student() {
         eyebrow={`Admission no. ${s.admissionNo}`}
         title={`${s.firstName} ${s.lastName}`}
       >
-        {user.role === 'admin' && !editing && (
+        {isAdmin && !editing && (
           <Button variant="quiet" onClick={() => setEditing(true)}>
             Edit details
           </Button>
         )}
       </PageHeader>
+      {isAdmin && <Corrections studentId={s.id} />}
       {editing ? (
         <EditStudent student={s} onDone={() => setEditing(false)} />
       ) : (
-        <Details student={s} />
+        <Details
+          student={s}
+          canChangePhoto={isAdmin && !!s.consents.photo?.given}
+        />
       )}
       <Section title="Classes">
         {s.enrolments.length === 0 ? (
@@ -87,6 +97,7 @@ export function Student() {
         )}
       </Section>
       <Guardians student={s} />
+      <Consent student={s} />
       <Health student={s} />
       <Section title="Sign-in account">
         <p className="text-fg-3">
@@ -136,180 +147,161 @@ function EditStudent({
   );
 }
 
-/** "9 March 2014", without the time zone moving the day. */
-function longDate(iso: string | null) {
-  if (!iso) return null;
-  return new Date(`${iso}T12:00:00`).toLocaleDateString('en-NG', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-}
-
-function ageOn(iso: string, today = new Date()) {
-  const born = new Date(`${iso}T12:00:00`);
-  let age = today.getFullYear() - born.getFullYear();
-  const birthday = new Date(born);
-  birthday.setFullYear(today.getFullYear());
-  if (birthday > today) age--;
-  return age;
-}
-
-/** The admission record at a glance, with the passport photo. */
-function Details({ student: s }: { student: StudentDetail }) {
-  const rows: [string, string | null][] = [
-    [
-      'Full name',
-      [s.firstName, s.middleName, s.lastName].filter(Boolean).join(' '),
-    ],
-    ['Sex', s.sex === 'female' ? 'Female' : s.sex === 'male' ? 'Male' : null],
-    [
-      'Date of birth',
-      s.dateOfBirth
-        ? `${longDate(s.dateOfBirth)} (age ${ageOn(s.dateOfBirth)})`
-        : null,
-    ],
-    ['Date admitted', longDate(s.admittedOn)],
-    ['Nationality', s.nationality],
-    ['State of origin', s.stateOfOrigin],
-    ['LGA', s.lga],
-    ['Home address', s.homeAddress],
-    ['Previous school', s.previousSchool],
-    ['Religion', s.religion ? RELIGIONS[s.religion] : null],
-  ];
+/**
+ * Where the parents' consent stands (ADR 0017). Admins record answers from the
+ * signed admission form; parents with an account can answer online.
+ */
+function Consent({ student }: { student: StudentDetail }) {
+  const user = useUser();
+  const [recording, setRecording] = useState(false);
   return (
-    <Section title="Details">
-      <div className="flex flex-wrap items-start gap-5 rounded-2xl bg-card p-5">
-        <Photo student={s} />
-        <dl className="grid min-w-0 flex-[1_1_320px] grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-x-6 gap-y-4">
-          {rows.map(([label, value]) => (
-            <div key={label} className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-[13px] text-fg-3">{label}</dt>
-              <dd className={value ? 'break-words' : 'text-fg-3'}>
-                {value ?? 'Not given'}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+    <Section
+      title="Consent"
+      action={
+        user.role === 'admin' &&
+        !recording && (
+          <Button variant="quiet" onClick={() => setRecording(true)}>
+            Record a paper form
+          </Button>
+        )
+      }
+    >
+      {recording && (
+        <RecordConsent student={student} onDone={() => setRecording(false)} />
+      )}
+      <ul className="flex flex-col divide-y divide-edge rounded-2xl bg-card">
+        {(Object.keys(PURPOSE_LABELS) as ConsentPurpose[]).map((purpose) => {
+          const answer = student.consents[purpose];
+          return (
+            <li
+              key={purpose}
+              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 py-3"
+            >
+              <span className="font-semibold">{PURPOSE_LABELS[purpose]}</span>
+              <span
+                className={`text-[14px] ${
+                  answer?.given
+                    ? 'text-fg-2'
+                    : answer
+                      ? 'text-coral'
+                      : 'text-fg-3'
+                }`}
+              >
+                {answerText(answer)}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </Section>
   );
 }
 
-const PHOTO_MAX_BYTES = 200 * 1024;
-const PHOTO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
-
-/**
- * The passport photo. It is private, so it is fetched with the session and shown
- * from an object URL rather than linked directly.
- */
-function Photo({ student }: { student: StudentDetail }) {
-  const user = useUser();
-  const [problem, setProblem] = useState<string>();
-  const blob = useQuery({
-    queryKey: ['students', 'photo', student.id, student.photoUpdatedAt],
-    queryFn: () => apiBlob(`/students/${student.id}/photo`),
-    enabled: !!student.photoUpdatedAt,
-  });
-  const [url, setUrl] = useState<string>();
-  useEffect(() => {
-    if (!blob.data) return setUrl(undefined);
-    const objectUrl = URL.createObjectURL(blob.data);
-    setUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [blob.data]);
-
-  const upload = useWrite(
-    (file: File) =>
-      api(`/students/${student.id}/photo`, { method: 'PUT', body: file }),
-    [['students', 'one', student.id]],
-  );
-  const remove = useWrite(
-    () => api(`/students/${student.id}/photo`, { method: 'DELETE' }),
+function RecordConsent({
+  student,
+  onDone,
+}: {
+  student: StudentDetail;
+  onDone: () => void;
+}) {
+  const guardians = useStudentGuardians(student.id);
+  const save = useWrite(
+    (input: { purpose: string; guardianId: string; given: boolean }) =>
+      api(`/students/${student.id}/consents/${input.purpose}`, {
+        method: 'PUT',
+        body: { guardianId: input.guardianId, given: input.given },
+      }),
     [['students', 'one', student.id]],
   );
 
-  function choose(file: File | undefined) {
-    setProblem(undefined);
-    if (!file) return;
-    if (!PHOTO_TYPES.includes(file.type))
-      return setProblem('Use a PNG, JPEG or WebP photo.');
-    if (file.size > PHOTO_MAX_BYTES)
-      return setProblem('The photo must be 200 KB or smaller.');
-    upload.mutate(file);
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    save.mutate(
+      {
+        purpose: String(form.get('purpose')),
+        guardianId: String(form.get('guardianId')),
+        given: form.get('given') === 'yes',
+      },
+      { onSuccess: onDone },
+    );
   }
 
+  if (guardians.data?.length === 0) {
+    return (
+      <Empty>Add a parent or guardian first: consent is theirs to give.</Empty>
+    );
+  }
   return (
-    <div className="flex w-[132px] flex-col gap-2">
-      <div className="flex aspect-[7/9] w-full items-center justify-center overflow-hidden rounded-xl border border-edge bg-raised">
-        {url ? (
-          <img
-            src={url}
-            alt={`Passport photo of ${student.firstName} ${student.lastName}`}
-            className="size-full object-cover"
-          />
-        ) : (
-          <span className="px-3 text-center text-[13px] text-fg-3">
-            {student.photoUpdatedAt ? 'Loading…' : 'No passport photo'}
-          </span>
-        )}
+    <form
+      onSubmit={submit}
+      className="flex flex-col gap-4 rounded-2xl bg-card p-5"
+    >
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+        <Select label="Signed by" name="guardianId" required>
+          {guardians.data?.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name} ({g.relationship})
+            </option>
+          ))}
+        </Select>
+        <Select label="For" name="purpose" required>
+          {(Object.keys(PURPOSE_LABELS) as ConsentPurpose[]).map((p) => (
+            <option key={p} value={p}>
+              {PURPOSE_LABELS[p]}
+            </option>
+          ))}
+        </Select>
+        <Select label="Their answer" name="given" required>
+          <option value="yes">Agreed</option>
+          <option value="no">Said no</option>
+        </Select>
       </div>
-      {user.role === 'admin' && (
-        <>
-          <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border border-edge-2 px-3 text-[14px] font-semibold hover:bg-raised has-[:focus-visible]:outline-2">
-            {upload.isPending
-              ? 'Uploading…'
-              : student.photoUpdatedAt
-                ? 'Replace photo'
-                : 'Add photo'}
-            <input
-              type="file"
-              accept={PHOTO_TYPES.join(',')}
-              className="sr-only"
-              onChange={(e) => {
-                choose(e.target.files?.[0]);
-                e.target.value = '';
-              }}
-            />
-          </label>
-          {student.photoUpdatedAt && (
-            <button
-              type="button"
-              onClick={() => remove.mutate(undefined)}
-              disabled={remove.isPending}
-              className="min-h-11 rounded-lg text-[13px] text-fg-2 hover:bg-raised"
-            >
-              Remove photo
-            </button>
-          )}
-        </>
-      )}
-      {problem && (
-        <p role="alert" className="text-[13px] text-coral">
-          {problem}
-        </p>
-      )}
-      <ErrorNote error={upload.error ?? remove.error ?? blob.error} />
-    </div>
+      <p className="text-[14px] text-fg-3">
+        A no to health details or the photo erases them from the record.
+      </p>
+      <ErrorNote error={save.error ?? guardians.error} />
+      <div className="flex flex-wrap gap-3">
+        <Button type="submit" disabled={save.isPending || guardians.isPending}>
+          Save answer
+        </Button>
+        <Button type="button" variant="quiet" onClick={onDone}>
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 }
 
-/** Health details for emergencies. Sensitive data: staff only, and optional. */
+/** A parent's open requests to correct this record, for the admin to apply or decline. */
+function Corrections({ studentId }: { studentId: string }) {
+  const pending = usePendingCorrections(studentId);
+  if (!pending.data?.length) return <ErrorNote error={pending.error} />;
+  return (
+    <Section title="Corrections to check">
+      <ul className="flex flex-col gap-3">
+        {pending.data.map((c) => (
+          <li key={c.id}>
+            <CorrectionCard correction={c} />
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+/** Health details for emergencies. Sensitive data: staff only, kept only with consent. */
 function Health({ student }: { student: StudentDetail }) {
   const user = useUser();
   const [editing, setEditing] = useState(false);
   const h = student.health;
-  const rows: [string, string | null | undefined][] = [
-    ['Blood group', h?.bloodGroup],
-    ['Genotype', h?.genotype],
-    ['Allergies', h?.allergies],
-    ['Conditions and medicines', h?.conditions],
-  ];
+  const agreed = !!student.consents.health?.given;
   return (
     <Section
       title="Health"
       action={
         user.role === 'admin' &&
+        agreed &&
         !editing && (
           <Button variant="quiet" onClick={() => setEditing(true)}>
             {h ? 'Edit health' : 'Add health details'}
@@ -319,19 +311,14 @@ function Health({ student }: { student: StudentDetail }) {
     >
       {editing ? (
         <EditHealth student={student} onDone={() => setEditing(false)} />
-      ) : !h ? (
-        <Empty>No health details on record.</Empty>
+      ) : h ? (
+        <HealthList health={h} />
       ) : (
-        <dl className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-x-6 gap-y-4 rounded-2xl bg-card p-5">
-          {rows.map(([label, value]) => (
-            <div key={label} className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-[13px] text-fg-3">{label}</dt>
-              <dd className={value ? 'break-words' : 'text-fg-3'}>
-                {value ?? 'Not given'}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <Empty>
+          {agreed
+            ? 'No health details on record.'
+            : 'No health details. A parent must agree before the school keeps them.'}
+        </Empty>
       )}
     </Section>
   );
@@ -344,7 +331,6 @@ function EditHealth({
   student: StudentDetail;
   onDone: () => void;
 }) {
-  const h = student.health;
   const save = useWrite(
     (health: StudentHealth) =>
       api(`/students/${student.id}/health`, { method: 'PUT', body: health }),
@@ -353,17 +339,9 @@ function EditHealth({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const value = (name: string) => String(form.get(name) ?? '').trim() || null;
-    save.mutate(
-      {
-        bloodGroup: value('bloodGroup'),
-        genotype: value('genotype'),
-        allergies: value('allergies'),
-        conditions: value('conditions'),
-      },
-      { onSuccess: onDone },
-    );
+    save.mutate(readHealthForm(new FormData(event.currentTarget)), {
+      onSuccess: onDone,
+    });
   }
 
   return (
@@ -371,42 +349,7 @@ function EditHealth({
       onSubmit={submit}
       className="flex flex-col gap-4 rounded-2xl bg-card p-5"
     >
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-        <Select
-          label="Blood group"
-          name="bloodGroup"
-          defaultValue={h?.bloodGroup ?? ''}
-        >
-          <option value="">Not given</option>
-          {BLOOD_GROUPS.map((g) => (
-            <option key={g}>{g}</option>
-          ))}
-        </Select>
-        <Select
-          label="Genotype"
-          name="genotype"
-          defaultValue={h?.genotype ?? ''}
-        >
-          <option value="">Not given</option>
-          {GENOTYPES.map((g) => (
-            <option key={g}>{g}</option>
-          ))}
-        </Select>
-        <Field
-          label="Allergies"
-          name="allergies"
-          placeholder="Groundnuts, penicillin"
-          defaultValue={h?.allergies ?? ''}
-          maxLength={300}
-        />
-        <Field
-          label="Conditions and medicines"
-          name="conditions"
-          placeholder="Asthma: inhaler in bag"
-          defaultValue={h?.conditions ?? ''}
-          maxLength={500}
-        />
-      </div>
+      <HealthFields health={student.health} />
       <p className="text-[14px] text-fg-3">
         Only staff at this school can see health details.
       </p>

@@ -20,7 +20,7 @@ Architecture: `docs/architecture.md`. Decisions and their reasons: `docs/decisio
 | --- | --- | --- |
 | `apps/api` | NestJS 12 API (TypeScript, ESM): tenancy, school records, exams, fees | Scaffolded |
 | `apps/site` | Marketing website (Next.js 16, Tailwind 4). Copy lives in `src/lib/content.ts` | Built (v1) |
-| `apps/web` | School web app (Vite, React, React Router) for staff, students and parents | Built (v1: sign-in, students and guardians, classes, timetables, fees, parent view) |
+| `apps/web` | School web app (Vite, React, React Router) for staff, students and parents | Built (v1: sign-in, students and guardians, classes, timetables, fees, parent view with consent and corrections) |
 | `services/realtime` | Go WebSocket gateway: whiteboard sync, chat, presence | Planned |
 | `content/learn` | Dopple Learn lessons and practice questions (JSON), loaded with `pnpm learn:load` | Started (32 lessons: English and maths in every class) |
 | `infra` | Local dependencies (Postgres, Redis, NATS, Grafana LGTM) | Ready |

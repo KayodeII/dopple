@@ -1,7 +1,12 @@
 import type { ReactNode } from 'react';
 import { isoDate } from '../lib/dates';
-import { NIGERIAN_STATES, RELIGIONS } from '../lib/nigeria';
-import type { Student, StudentProfile } from '../lib/types';
+import {
+  BLOOD_GROUPS,
+  GENOTYPES,
+  NIGERIAN_STATES,
+  RELIGIONS,
+} from '../lib/nigeria';
+import type { Student, StudentHealth, StudentProfile } from '../lib/types';
 import { Field, Select } from './ui';
 
 export type StudentInput = Pick<
@@ -33,26 +38,37 @@ export function readStudentForm(form: FormData): StudentInput {
 /**
  * The admission form, grouped as Nigerian schools' paper forms are. Only the
  * admission number and names are required; the rest can be filled in later.
+ * Parents asking for a correction get it without the school's own fields.
  */
-export function StudentFields({ student }: { student?: StudentInput }) {
+export function StudentFields({
+  student,
+  schoolFields = true,
+}: {
+  student?: Omit<StudentInput, 'admissionNo'> & { admissionNo?: string };
+  schoolFields?: boolean;
+}) {
   const today = isoDate(new Date());
   return (
     <div className="flex flex-col gap-6">
-      <Group title="Name and admission">
-        <Field
-          label="Admission number"
-          name="admissionNo"
-          defaultValue={student?.admissionNo}
-          required
-          maxLength={30}
-        />
-        <Field
-          label="Date admitted"
-          name="admittedOn"
-          type="date"
-          max={today}
-          defaultValue={student?.admittedOn ?? ''}
-        />
+      <Group title={schoolFields ? 'Name and admission' : 'Name'}>
+        {schoolFields && (
+          <>
+            <Field
+              label="Admission number"
+              name="admissionNo"
+              defaultValue={student?.admissionNo}
+              required
+              maxLength={30}
+            />
+            <Field
+              label="Date admitted"
+              name="admittedOn"
+              type="date"
+              max={today}
+              defaultValue={student?.admittedOn ?? ''}
+            />
+          </>
+        )}
         <Field
           label="First name"
           name="firstName"
@@ -149,7 +165,64 @@ export function StudentFields({ student }: { student?: StudentInput }) {
   );
 }
 
-function Group({ title, children }: { title: string; children: ReactNode }) {
+export function readHealthForm(form: FormData): StudentHealth {
+  const value = (name: string) => String(form.get(name) ?? '').trim() || null;
+  return {
+    bloodGroup: value('bloodGroup'),
+    genotype: value('genotype'),
+    allergies: value('allergies'),
+    conditions: value('conditions'),
+  };
+}
+
+export function HealthFields({ health }: { health: StudentHealth | null }) {
+  return (
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+      <Select
+        label="Blood group"
+        name="bloodGroup"
+        defaultValue={health?.bloodGroup ?? ''}
+      >
+        <option value="">Not given</option>
+        {BLOOD_GROUPS.map((g) => (
+          <option key={g}>{g}</option>
+        ))}
+      </Select>
+      <Select
+        label="Genotype"
+        name="genotype"
+        defaultValue={health?.genotype ?? ''}
+      >
+        <option value="">Not given</option>
+        {GENOTYPES.map((g) => (
+          <option key={g}>{g}</option>
+        ))}
+      </Select>
+      <Field
+        label="Allergies"
+        name="allergies"
+        placeholder="Groundnuts, penicillin"
+        defaultValue={health?.allergies ?? ''}
+        maxLength={300}
+      />
+      <Field
+        label="Conditions and medicines"
+        name="conditions"
+        placeholder="Asthma: inhaler in bag"
+        defaultValue={health?.conditions ?? ''}
+        maxLength={500}
+      />
+    </div>
+  );
+}
+
+export function Group({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   return (
     <fieldset className="flex flex-col gap-3">
       <legend className="mb-3 text-[13px] font-semibold tracking-wide text-fg-3 uppercase">

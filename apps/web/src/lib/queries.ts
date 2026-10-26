@@ -3,12 +3,15 @@ import { api } from './api';
 import type {
   AcademicSession,
   Child,
+  ChildRecord,
+  Correction,
   ClassStudent,
   ClassSubject,
   Fee,
   GuardianMatch,
   Lesson,
   PaymentAccount,
+  PendingCorrection,
   School,
   SchoolClass,
   Student,
@@ -79,6 +82,29 @@ export const useChildren = () =>
   useQuery({
     queryKey: ['children'],
     queryFn: () => api<Child[]>('/children'),
+  });
+
+/** A parent's view of one child's record. */
+export const useChild = (id: string) =>
+  useQuery({
+    queryKey: ['children', 'one', id],
+    queryFn: () => api<ChildRecord>(`/children/${id}`),
+  });
+
+export const useMyCorrections = (studentId: string) =>
+  useQuery({
+    queryKey: ['corrections', 'mine', studentId],
+    queryFn: () => api<Correction[]>(`/children/${studentId}/corrections`),
+  });
+
+/** Open correction requests, for one student or the whole school. */
+export const usePendingCorrections = (studentId?: string) =>
+  useQuery({
+    queryKey: ['corrections', 'pending', studentId],
+    queryFn: () =>
+      api<PendingCorrection[]>(
+        `/corrections${studentId ? `?studentId=${studentId}` : ''}`,
+      ),
   });
 
 export const useClasses = (sessionId: string | undefined) =>

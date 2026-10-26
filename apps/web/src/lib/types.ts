@@ -58,11 +58,64 @@ export interface StudentHealth {
   conditions: string | null;
 }
 
+export type ConsentPurpose = 'record' | 'health' | 'photo';
+
+/** A guardian's newest answer for one purpose (ADR 0017). */
+export interface ConsentAnswer {
+  given: boolean;
+  method: 'paper' | 'online';
+  /** The sentence they agreed or refused, word for word. */
+  wording: string;
+  at: string;
+  guardian: Ref;
+  relationship: string;
+}
+
+/** Null where nobody has answered yet. */
+export type Consents = Record<ConsentPurpose, ConsentAnswer | null>;
+
 export interface StudentDetail extends Student, StudentProfile {
   /** When the passport photo last changed; null if there is none. */
   photoUpdatedAt: string | null;
   health: StudentHealth | null;
+  consents: Consents;
   enrolments: { session: Ref; class: Ref }[];
+}
+
+/** A child's record as their parent sees it. */
+export interface ChildRecord extends Omit<StudentDetail, 'userId'> {
+  /** Other guardians come with name and relationship only. */
+  guardians: (Omit<StudentGuardian, 'userId' | 'phone'> & {
+    phone: string | null;
+    you: boolean;
+  })[];
+  consentWording: Record<ConsentPurpose, string>;
+}
+
+/** Field name to new value, as the parent asked. */
+export type CorrectionChanges = Partial<
+  Record<keyof StudentProfile | keyof StudentHealth, string | null>
+>;
+
+export interface Correction {
+  id: string;
+  changes: CorrectionChanges;
+  note: string | null;
+  status: 'pending' | 'applied' | 'declined';
+  reply: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+}
+
+/** An open request, for the admin: with what the record holds now. */
+export interface PendingCorrection {
+  id: string;
+  changes: CorrectionChanges;
+  current: CorrectionChanges;
+  note: string | null;
+  createdAt: string;
+  requestedBy: Ref;
+  student: { id: string; firstName: string; lastName: string };
 }
 
 export interface Term {
