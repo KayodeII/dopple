@@ -29,6 +29,11 @@ export class TenantRegistry {
     this.ttlMs = env.TENANT_CACHE_TTL_SECONDS * 1000;
   }
 
+  /** Drops a cached lookup, e.g. a "no such school" remembered before the school signed up. */
+  forget(slug: string) {
+    this.cache.delete(`s:${slug}`);
+  }
+
   async resolve(match: HostMatch): Promise<Tenant | null> {
     if (match.kind === 'platform') return null;
 

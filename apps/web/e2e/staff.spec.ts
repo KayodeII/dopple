@@ -86,6 +86,101 @@ test.describe('as the school admin', () => {
     );
   });
 
+  test('records a student’s guardians, linking a parent already on record', async () => {
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('link', { name: 'Playwright, Ngozika' }).click();
+    const guardians = page.getByRole('region', {
+      name: 'Parents and guardians',
+    });
+    await expect(guardians).toContainText('No parent or guardian on record');
+
+    // Emeka Obi is a seeded father of another student.
+    await guardians.getByRole('button', { name: 'Add guardian' }).click();
+    await guardians.getByLabel('Relationship to Ngozika').fill('Uncle');
+    await guardians
+      .getByLabel('Already a parent here? Search by name or phone')
+      .fill('Emeka');
+    await guardians.getByRole('button', { name: 'Link Emeka Obi' }).click();
+    await expect(guardians.getByRole('listitem')).toHaveCount(1);
+    await expect(guardians).toContainText('Uncle');
+
+    await guardians.getByRole('button', { name: 'Add guardian' }).click();
+    await guardians.getByLabel('Relationship to Ngozika').fill('Mother');
+    await guardians.getByLabel('Full name').fill('Bisi Playwright');
+    await guardians.getByLabel('Phone', { exact: true }).fill('0803 000 1111');
+    await guardians
+      .getByRole('button', { name: 'Add guardian', exact: true })
+      .last()
+      .click();
+    const bisi = guardians.getByRole('listitem').filter({
+      hasText: 'Bisi Playwright',
+    });
+    await expect(bisi).toContainText('0803 000 1111');
+    await expect(bisi).toContainText('No parent account yet');
+
+    await guardians
+      .getByRole('button', { name: 'Remove Emeka Obi from Ngozika' })
+      .click();
+    await expect(guardians.getByRole('listitem')).toHaveCount(1);
+  });
+
+  test('fills in the admission record, passport photo and health details', async () => {
+    // Still on Ngozika's page from the test above.
+    await page.getByRole('button', { name: 'Edit details' }).click();
+    await page.getByLabel('Middle name').fill('Adaeze');
+    await page.getByLabel('Sex').selectOption('Female');
+    await page.getByLabel('Date of birth').fill('2014-03-09');
+    await page.getByLabel('State of origin').selectOption('Enugu');
+    await page.getByLabel('LGA').fill('Nsukka');
+    await page.getByLabel('Previous school').fill('Sunrise Primary School');
+    await page.getByRole('button', { name: 'Save changes' }).click();
+
+    const details = page.getByRole('region', { name: 'Details' });
+    await expect(details).toContainText('Ngozika Adaeze Playwright');
+    await expect(details).toContainText('9 March 2014');
+    await expect(details).toContainText('Enugu');
+    await expect(details).toContainText('Sunrise Primary School');
+    await expect(details.getByText('Add photo')).toHaveCount(0);
+
+    // Nothing sensitive is kept until a parent agrees: record Bisi's signed form.
+    const consent = page.getByRole('region', { name: 'Consent' });
+    for (const purpose of ['Health details', 'Passport photo']) {
+      await consent
+        .getByRole('button', { name: 'Record a paper form' })
+        .click();
+      await consent.getByLabel('For').selectOption(purpose);
+      await consent.getByRole('button', { name: 'Save answer' }).click();
+      await expect(
+        consent.getByRole('listitem').filter({ hasText: purpose }),
+      ).toContainText('Agreed · Bisi Playwright (Mother), on paper');
+    }
+
+    // A 1×1 PNG.
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await details.locator('input[type=file]').setInputFiles({
+      name: 'passport.png',
+      mimeType: 'image/png',
+      buffer: png,
+    });
+    await expect(
+      details.getByRole('img', {
+        name: 'Passport photo of Ngozika Playwright',
+      }),
+    ).toBeVisible();
+    await expect(details.getByText('Replace photo')).toBeVisible();
+
+    const health = page.getByRole('region', { name: 'Health' });
+    await health.getByRole('button', { name: 'Add health details' }).click();
+    await health.getByLabel('Genotype').selectOption('AS');
+    await health.getByLabel('Allergies').fill('Groundnuts');
+    await health.getByRole('button', { name: 'Save health details' }).click();
+    await expect(health).toContainText('AS');
+    await expect(health).toContainText('Groundnuts');
+  });
+
   test('builds a class timetable and refuses overlapping lessons', async () => {
     await page
       .getByRole('link', { name: 'Classes', exact: true })
@@ -124,6 +219,73 @@ test.describe('as the school admin', () => {
     await expect(saturday).toHaveCount(0);
   });
 
+  test('brands the app in the school’s colours and logo, then goes back to the default', async () => {
+    await page.getByRole('link', { name: 'Settings' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Settings', level: 1 }),
+    ).toBeVisible();
+    const cssColor = (name: string) => () =>
+      page.evaluate(
+        (name) =>
+          getComputedStyle(document.documentElement)
+            .getPropertyValue(name)
+            .trim(),
+        name,
+      );
+    const schoolColor = cssColor('--color-school');
+    const accentColor = cssColor('--color-accent');
+
+    // Without an accent, the main colour does both jobs.
+    await page.getByLabel('Main colour hex').fill('#f5b400');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByText('Saved.')).toBeVisible();
+    expect(await schoolColor()).toBe('#f5b400');
+    // Light colour: buttons switch to dark text so they stay readable.
+    const onSchool = await page.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-on-school')
+        .trim(),
+    );
+    expect(onSchool).toBe('#0b0b0a');
+    expect(await accentColor()).toBe('#f5b400');
+
+    await page.getByLabel('Accent colour hex').fill('#2b5fd9');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(accentColor).toBe('#2b5fd9');
+    expect(await schoolColor()).toBe('#f5b400');
+
+    // A 1x1 PNG is enough to prove the upload, storage and display path.
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await page
+      .locator('input[type=file]')
+      .setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: png });
+    await expect(
+      page.getByRole('img', { name: 'Greenfield College logo' }).first(),
+    ).toBeVisible();
+    await page.locator('input[type=file]').setInputFiles({
+      name: 'logo.svg',
+      mimeType: 'image/svg+xml',
+      buffer: Buffer.from('<svg/>'),
+    });
+    await expect(page.getByRole('alert')).toHaveText(
+      'Choose a PNG, JPEG or WebP image.',
+    );
+
+    // Put the demo school back as it was.
+    await page.getByRole('button', { name: 'Remove logo' }).click();
+    await expect(
+      page.getByRole('img', { name: 'Greenfield College logo' }),
+    ).toHaveCount(0);
+    await page.getByRole('button', { name: 'Use Dopple’s colour' }).click();
+    await page.getByRole('button', { name: 'Same as main colour' }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(schoolColor).toBe('#2f7a55');
+    expect(await accentColor()).toBe('#2f7a55');
+  });
+
   test('signs out, and a reload stays signed out', async () => {
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page).toHaveURL(/\/sign-in/);
@@ -150,4 +312,12 @@ test('shows the API’s message for a wrong password', async ({ page }) => {
   await expect(page.getByRole('alert')).toHaveText(
     'Email or password is incorrect',
   );
+});
+
+test('welcomes a new school’s admin with their email filled in', async ({
+  page,
+}) => {
+  await page.goto('/sign-in?email=ada%40example.test&welcome=1');
+  await expect(page.getByText('Your school is ready.')).toBeVisible();
+  await expect(page.getByLabel('Email')).toHaveValue('ada@example.test');
 });

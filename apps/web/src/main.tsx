@@ -6,8 +6,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
+import {
+  applyRememberedSchoolColors,
+  SchoolTheme,
+} from './components/SchoolTheme';
 import { ApiError } from './lib/api';
 import { SessionProvider } from './lib/session';
+import { watchTheme } from './lib/theme';
 import { router } from './router';
 
 const queryClient = new QueryClient({
@@ -20,9 +25,13 @@ const queryClient = new QueryClient({
   },
 });
 
+applyRememberedSchoolColors();
+watchTheme();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      <SchoolTheme />
       <SessionProvider>
         <RouterProvider router={router} />
       </SessionProvider>

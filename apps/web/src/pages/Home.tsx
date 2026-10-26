@@ -15,7 +15,13 @@ import {
   isoDate,
   isoWeekday,
 } from '../lib/dates';
-import { useMyTimetable, useSessions } from '../lib/queries';
+import { CorrectionCard } from '../components/CorrectionCard';
+import {
+  useChildren,
+  useMyTimetable,
+  usePendingCorrections,
+  useSessions,
+} from '../lib/queries';
 import { isStaff, useUser } from '../lib/session';
 import { lessonState } from '../lib/timetable';
 
@@ -38,10 +44,7 @@ export function Home() {
         title={`${greeting(now)}, ${firstName}.`}
       />
       {user.role === 'parent' ? (
-        <Empty>
-          Parent accounts are coming soon. Once your school links your account
-          to your children, their timetable will show here.
-        </Empty>
+        <Children />
       ) : (
         <Today
           termId={current?.term.id}
@@ -49,24 +52,25 @@ export function Home() {
           error={sessions.error}
         />
       )}
+      {user.role === 'admin' && <CorrectionsToCheck />}
       {isStaff(user) && (
         <Section title="Records">
           <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
             <Link
               to="/students"
-              className="rounded-2xl bg-card p-5 hover:bg-graphite"
+              className="rounded-2xl bg-card p-5 hover:bg-raised"
             >
               <span className="font-semibold">Students</span>
-              <p className="mt-1 text-sm text-soft">
+              <p className="mt-1 text-sm text-fg-3">
                 Search, add and edit student records.
               </p>
             </Link>
             <Link
               to="/classes"
-              className="rounded-2xl bg-card p-5 hover:bg-graphite"
+              className="rounded-2xl bg-card p-5 hover:bg-raised"
             >
               <span className="font-semibold">Classes</span>
-              <p className="mt-1 text-sm text-soft">
+              <p className="mt-1 text-sm text-fg-3">
                 Class lists, subjects and timetables.
               </p>
             </Link>
@@ -74,6 +78,76 @@ export function Home() {
         </Section>
       )}
     </>
+  );
+}
+
+/** Parents' requests to correct their children's records, oldest first. Hidden when there are none. */
+function CorrectionsToCheck() {
+  const pending = usePendingCorrections();
+  if (!pending.data?.length) return <ErrorNote error={pending.error} />;
+  return (
+    <Section title="Corrections to check">
+      <ul className="flex flex-col gap-3">
+        {pending.data.map((c) => (
+          <li key={c.id}>
+            <CorrectionCard correction={c} showStudent />
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+/** A parent's children, each a way into their record, timetable and fees. */
+function Children() {
+  const children = useChildren();
+  return (
+    <Section title="Your children">
+      <ErrorNote error={children.error} />
+      {children.isPending ? (
+        <Loading />
+      ) : children.data?.length === 0 ? (
+        <Empty>
+          No children are linked to your account yet. Ask the school office to
+          add you as their parent or guardian.
+        </Empty>
+      ) : (
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">
+          {children.data?.map((child) => (
+            <li key={child.id}>
+              <Card className="flex h-full flex-col gap-1.5">
+                <span className="font-mono text-[12.5px] text-fg-3">
+                  {child.class?.name ?? 'Not in a class yet'}
+                </span>
+                <span className="font-semibold">
+                  {child.firstName} {child.lastName}
+                </span>
+                <span className="flex flex-wrap gap-x-4 text-sm">
+                  <Link
+                    to={`/children/${child.id}`}
+                    className="text-fg-2 underline-offset-4 hover:underline"
+                  >
+                    Record
+                  </Link>
+                  <Link
+                    to={`/timetable?child=${child.id}`}
+                    className="text-fg-2 underline-offset-4 hover:underline"
+                  >
+                    Timetable
+                  </Link>
+                  <Link
+                    to="/fees"
+                    className="text-fg-2 underline-offset-4 hover:underline"
+                  >
+                    Fees
+                  </Link>
+                </span>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Section>
   );
 }
 
@@ -97,7 +171,7 @@ function Today({
     <Section
       title="Today"
       action={
-        <Link to="/timetable" className="text-sm text-soft hover:text-paper">
+        <Link to="/timetable" className="text-sm text-fg-3 hover:text-fg">
           Full timetable
         </Link>
       }
@@ -127,13 +201,13 @@ function Today({
                 }`}
               >
                 <span
-                  className={`font-mono text-[12.5px] ${state === 'now' ? 'text-paper' : 'text-soft'}`}
+                  className={`font-mono text-[12.5px] ${state === 'now' ? 'text-fg' : 'text-fg-3'}`}
                 >
                   {lesson.startsAt}
                   {state === 'now' && ' · now'}
                 </span>
                 <span className="font-semibold">{lesson.subject.name}</span>
-                <span className="text-[13px] text-soft">
+                <span className="text-[13px] text-fg-3">
                   {user.role === 'student'
                     ? (lesson.teacher?.name ?? 'No teacher yet')
                     : lesson.class.name}

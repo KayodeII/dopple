@@ -2,13 +2,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
 import type {
   AcademicSession,
+  Child,
+  ChildRecord,
+  Correction,
   ClassStudent,
   ClassSubject,
+  Fee,
+  GuardianMatch,
   Lesson,
+  PaymentAccount,
+  PendingCorrection,
   School,
   SchoolClass,
   Student,
   StudentDetail,
+  StudentGuardian,
 } from './types';
 
 /** Data hooks. Query keys start with the resource, so a write can refresh everything that shows it. */
@@ -27,10 +35,17 @@ export const useSessions = () =>
     staleTime: 5 * 60_000,
   });
 
-export const useMyTimetable = (termId: string | undefined) =>
+/** Parents pass which child; teachers and students leave it out. */
+export const useMyTimetable = (
+  termId: string | undefined,
+  studentId?: string,
+) =>
   useQuery({
-    queryKey: ['timetable', 'me', termId],
-    queryFn: () => api<Lesson[]>(`/timetable/me?termId=${termId}`),
+    queryKey: ['timetable', 'me', termId, studentId],
+    queryFn: () =>
+      api<Lesson[]>(
+        `/timetable/me?termId=${termId}${studentId ? `&studentId=${studentId}` : ''}`,
+      ),
     enabled: !!termId,
   });
 
@@ -46,6 +61,50 @@ export const useStudent = (id: string) =>
   useQuery({
     queryKey: ['students', 'one', id],
     queryFn: () => api<StudentDetail>(`/students/${id}`),
+  });
+
+export const useStudentGuardians = (studentId: string) =>
+  useQuery({
+    queryKey: ['guardians', 'student', studentId],
+    queryFn: () => api<StudentGuardian[]>(`/students/${studentId}/guardians`),
+  });
+
+export const useGuardianSearch = (q: string) =>
+  useQuery({
+    queryKey: ['guardians', 'search', q],
+    queryFn: () =>
+      api<GuardianMatch[]>(`/guardians?q=${encodeURIComponent(q)}`),
+    enabled: q.length >= 2,
+    placeholderData: (previous) => previous,
+  });
+
+export const useChildren = () =>
+  useQuery({
+    queryKey: ['children'],
+    queryFn: () => api<Child[]>('/children'),
+  });
+
+/** A parent's view of one child's record. */
+export const useChild = (id: string) =>
+  useQuery({
+    queryKey: ['children', 'one', id],
+    queryFn: () => api<ChildRecord>(`/children/${id}`),
+  });
+
+export const useMyCorrections = (studentId: string) =>
+  useQuery({
+    queryKey: ['corrections', 'mine', studentId],
+    queryFn: () => api<Correction[]>(`/children/${studentId}/corrections`),
+  });
+
+/** Open correction requests, for one student or the whole school. */
+export const usePendingCorrections = (studentId?: string) =>
+  useQuery({
+    queryKey: ['corrections', 'pending', studentId],
+    queryFn: () =>
+      api<PendingCorrection[]>(
+        `/corrections${studentId ? `?studentId=${studentId}` : ''}`,
+      ),
   });
 
 export const useClasses = (sessionId: string | undefined) =>
@@ -82,6 +141,18 @@ export const useClassTimetable = (
     queryFn: () =>
       api<Lesson[]>(`/classes/${classId}/timetable?termId=${termId}`),
     enabled: !!termId,
+  });
+
+export const useFees = () =>
+  useQuery({ queryKey: ['fees', 'all'], queryFn: () => api<Fee[]>('/fees') });
+
+export const useMyFees = () =>
+  useQuery({ queryKey: ['fees', 'me'], queryFn: () => api<Fee[]>('/fees/me') });
+
+export const usePaymentAccount = () =>
+  useQuery({
+    queryKey: ['fees', 'account'],
+    queryFn: () => api<PaymentAccount>('/fees/account'),
   });
 
 /** A write, then refresh every query whose key starts with one of `invalidates`. */

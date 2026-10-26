@@ -1,7 +1,10 @@
 import { expect, type Page } from '@playwright/test';
 
 /** Signs in as a seeded Greenfield demo account (scripts/seed.mjs). */
-export async function signIn(page: Page, who: 'admin' | 'teacher' | 'student') {
+export async function signIn(
+  page: Page,
+  who: 'admin' | 'teacher' | 'student' | 'parent',
+) {
   if (!page.url().includes('/sign-in')) await page.goto('/');
   await page.getByLabel('Email').fill(`${who}@greenfield.test`);
   await page.getByLabel('Password').fill('dopple-demo');

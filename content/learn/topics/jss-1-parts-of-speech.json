@@ -1,0 +1,49 @@
+{
+  "slug": "jss-1-parts-of-speech",
+  "class": "jss-1",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "The eight parts of speech",
+  "summary": "Name the job each word does in a sentence.",
+  "minutes": 20,
+  "lesson": [
+    { "type": "p", "text": "Every word in a sentence does a job. Grammar books group words by their job into eight parts of speech." },
+    { "type": "list", "items": ["Noun: names a person, place, thing or idea (Aisha, Jos, table, honesty).", "Pronoun: stands in place of a noun (he, she, it, they, we, them).", "Verb: shows action or being (run, write, is, seem).", "Adjective: describes a noun (tall, red, three, clever).", "Adverb: describes a verb, adjective or another adverb, often how, when or where (quickly, very, yesterday, here).", "Preposition: shows the position or link of a noun to the rest (on, under, in, beside, with).", "Conjunction: joins words or clauses (and, but, or, because, although).", "Interjection: shows sudden feeling (Oh! Wow! Ah! Ouch!)."] },
+    { "type": "h", "text": "A word's job can change" },
+    { "type": "p", "text": "Decide by what the word does in that sentence, not by the word alone. \"Fast\" is an adjective in \"a fast car\" (describes car), but an adverb in \"she runs fast\" (describes how she runs)." },
+    { "type": "example", "title": "Label: Wow! The tall boy quickly ran under the bridge.", "steps": ["Wow: interjection (sudden feeling).", "tall: adjective (describes boy). boy, bridge: nouns.", "quickly: adverb (how he ran). ran: verb.", "under: preposition (links ran to the bridge)."] },
+    { "type": "tip", "text": "Many adverbs end in -ly (slowly, loudly), but not all: very, often, soon and here are adverbs too. And some -ly words are adjectives: friendly, lovely." }
+  ],
+  "questions": [
+    {
+      "prompt": "In \"She sang beautifully\", what part of speech is \"beautifully\"?",
+      "options": ["adjective", "adverb", "verb", "noun"],
+      "answer": 1,
+      "explanation": "It tells us how she sang, so it describes the verb: an adverb. \"Beautiful\" (without -ly) would be the adjective."
+    },
+    {
+      "prompt": "Which word is a conjunction? \"I was tired but I finished my work.\"",
+      "options": ["tired", "finished", "but", "my"],
+      "answer": 2,
+      "explanation": "\"But\" joins the two clauses \"I was tired\" and \"I finished my work\"."
+    },
+    {
+      "prompt": "In \"The book is on the table\", what is \"on\"?",
+      "options": ["preposition", "adverb", "pronoun", "conjunction"],
+      "answer": 0,
+      "explanation": "\"On\" shows where the book is in relation to the table: a preposition."
+    },
+    {
+      "prompt": "Which word is a pronoun? \"Chinedu called them yesterday.\"",
+      "options": ["Chinedu", "called", "yesterday", "them"],
+      "answer": 3,
+      "explanation": "\"Them\" stands in place of the names of some people. Chinedu is a noun and yesterday is an adverb."
+    },
+    {
+      "prompt": "In \"Honesty is the best policy\", what part of speech is \"honesty\"?",
+      "options": ["adjective", "verb", "noun", "adverb"],
+      "answer": 2,
+      "explanation": "Honesty names an idea, so it is a noun (an abstract noun). \"Honest\" would be the adjective."
+    }
+  ]
+}

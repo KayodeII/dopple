@@ -1,0 +1,50 @@
+{
+  "slug": "primary-4-punctuation",
+  "class": "primary-4",
+  "subject": "english-studies",
+  "position": 1,
+  "title": "Full stop, question mark and comma",
+  "summary": "Use the three most common punctuation marks so your writing is easy to read.",
+  "minutes": 15,
+  "lesson": [
+    { "type": "p", "text": "Punctuation marks are signs that help the reader. They show where a sentence ends, when a question is asked, and where to pause." },
+    { "type": "h", "text": "Full stop ( . )" },
+    { "type": "p", "text": "A full stop ends a sentence that tells us something." },
+    { "type": "list", "items": ["The market opens at seven.", "Bisi is my cousin."] },
+    { "type": "h", "text": "Question mark ( ? )" },
+    { "type": "p", "text": "A question mark ends a sentence that asks something. Questions often start with who, what, where, when, why, how, is, are, can or do." },
+    { "type": "list", "items": ["Where is your school?", "Can you help me?"] },
+    { "type": "h", "text": "Comma ( , )" },
+    { "type": "p", "text": "A comma shows a short pause. Use it to separate things in a list, and after yes or no at the start of an answer." },
+    { "type": "list", "items": ["I bought rice, beans, oil and pepper.", "Yes, I have finished my homework."] },
+    { "type": "p", "text": "In a list, there is usually no comma before the last \"and\" in Nigerian school English." },
+    { "type": "example", "title": "Punctuate: did you see uche ada and kemi", "steps": ["It asks something, so it ends with a question mark.", "Uche, Ada and Kemi are a list of names, so put a comma after Uche.", "Add capitals to the first word and the names.", "Did you see Uche, Ada and Kemi?"] },
+    { "type": "tip", "text": "Read your sentence aloud. Where your voice stops, you need a full stop. Where it rises to ask, you need a question mark." }
+  ],
+  "questions": [
+    {
+      "prompt": "Which mark should end this sentence: What time is it",
+      "options": ["full stop", "comma", "question mark", "no mark"],
+      "answer": 2,
+      "explanation": "\"What time is it\" asks something, so it ends with a question mark."
+    },
+    {
+      "prompt": "Which sentence is punctuated correctly?",
+      "options": ["I like mangoes, oranges and pawpaw.", "I like, mangoes oranges and pawpaw.", "I like mangoes oranges, and pawpaw?", "I like mangoes oranges and pawpaw"],
+      "answer": 0,
+      "explanation": "The comma separates the fruits in the list, and the sentence tells us something, so it ends with a full stop."
+    },
+    {
+      "prompt": "Which sentence needs a full stop, not a question mark?",
+      "options": ["Are you hungry", "Where do you live", "My brother is a nurse", "How old are you"],
+      "answer": 2,
+      "explanation": "\"My brother is a nurse\" tells us something, so it ends with a full stop. The others ask questions."
+    },
+    {
+      "prompt": "Where does the comma go? \"No I have not seen it.\"",
+      "options": ["after have", "after No", "after seen", "after it"],
+      "answer": 1,
+      "explanation": "Put a comma after yes or no at the start of an answer: \"No, I have not seen it.\""
+    }
+  ]
+}

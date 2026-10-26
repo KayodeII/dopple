@@ -1,9 +1,13 @@
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   check,
+  customType,
   date,
   foreignKey,
+  integer,
+  jsonb,
   pgPolicy,
   pgRole,
   pgTable,
@@ -15,6 +19,7 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { CLASS_SLUGS, type LessonBlock } from '../modules/learn/content.js';
 
 /**
  * Database schema. Rules (see docs/decisions/0002-tenant-isolation.md):
@@ -39,22 +44,37 @@ const tenantIsolation = (table: string) =>
 const createdAt = () =>
   timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 
-/** Tenant registry: one row per school. Not tenant-scoped; read-only for the app role. */
-export const tenants = pgTable('tenants', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  slug: text('slug').notNull().unique(),
-  name: text('name').notNull(),
-  customDomain: text('custom_domain').unique(),
-  status: text('status', { enum: ['active', 'suspended'] })
-    .notNull()
-    .default('active'),
-  /** Public logo for the marketing site's partner wall. */
-  logoUrl: text('logo_url'),
-  city: text('city'),
-  /** The school has agreed to appear on the public partner wall. Off by default. */
-  showcase: boolean('showcase').notNull().default(false),
-  createdAt: createdAt(),
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => 'bytea',
 });
+
+/** Tenant registry: one row per school. Not tenant-scoped; read-only for the app role. */
+export const tenants = pgTable(
+  'tenants',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    name: text('name').notNull(),
+    customDomain: text('custom_domain').unique(),
+    status: text('status', { enum: ['active', 'suspended'] })
+      .notNull()
+      .default('active'),
+    /** Public logo for the marketing site's partner wall. */
+    logoUrl: text('logo_url'),
+    city: text('city'),
+    /** The school has agreed to appear on the public partner wall. Off by default. */
+    showcase: boolean('showcase').notNull().default(false),
+    /** The school's colour for its web app, "#rrggbb". Null: Dopple's default. */
+    brandColor: text('brand_color'),
+    /** A second school colour for highlights, "#rrggbb". Null: the brand colour again. */
+    accentColor: text('accent_color'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check('tenants_brand_color', sql`${t.brandColor} ~ '^#[0-9a-f]{6}$'`),
+    check('tenants_accent_color', sql`${t.accentColor} ~ '^#[0-9a-f]{6}$'`),
+  ],
+);
 
 export const students = pgTable(
   'students',
@@ -65,13 +85,31 @@ export const students = pgTable(
     id: uuid('id').notNull().defaultRandom(),
     admissionNo: text('admission_no').notNull(),
     firstName: text('first_name').notNull(),
+    middleName: text('middle_name'),
     lastName: text('last_name').notNull(),
+    sex: text('sex', { enum: ['female', 'male'] }),
+    dateOfBirth: date('date_of_birth'),
+    /** When the student joined the school. */
+    admittedOn: date('admitted_on'),
+    nationality: text('nationality'),
+    /** One of the 36 states or the FCT (students.dto.ts). */
+    stateOfOrigin: text('state_of_origin'),
+    lga: text('lga'),
+    homeAddress: text('home_address'),
+    previousSchool: text('previous_school'),
+    /** Sensitive under the NDPA; optional. Schools use it to place students in CRS or IRS. */
+    religion: text('religion', { enum: ['christianity', 'islam', 'other'] }),
     /** The student's own sign-in account, if they have one. */
     userId: uuid('user_id'),
     createdAt: createdAt(),
   },
   (t) => [
     primaryKey({ columns: [t.tenantId, t.id] }),
+    check('students_sex', sql`${t.sex} in ('female', 'male')`),
+    check(
+      'students_religion',
+      sql`${t.religion} in ('christianity', 'islam', 'other')`,
+    ),
     unique('students_admission_no_per_tenant').on(t.tenantId, t.admissionNo),
     unique('students_user_per_tenant').on(t.tenantId, t.userId),
     foreignKey({
@@ -79,6 +117,75 @@ export const students = pgTable(
       foreignColumns: [users.tenantId, users.id],
     }),
     tenantIsolation('students'),
+  ],
+).enableRLS();
+
+/**
+ * Health details staff need in an emergency (ADR 0016). Health data is sensitive under
+ * the NDPA, so it is kept apart from the main record and every field is optional.
+ */
+export const studentHealth = pgTable(
+  'student_health',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    studentId: uuid('student_id').notNull(),
+    bloodGroup: text('blood_group', {
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    }),
+    genotype: text('genotype', {
+      enum: ['AA', 'AS', 'AC', 'SS', 'SC', 'CC'],
+    }),
+    allergies: text('allergies'),
+    /** Conditions and medicines the school should know about, e.g. asthma, inhaler. */
+    conditions: text('conditions'),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.studentId] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    check(
+      'student_health_blood_group',
+      sql`${t.bloodGroup} in ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')`,
+    ),
+    check(
+      'student_health_genotype',
+      sql`${t.genotype} in ('AA', 'AS', 'AC', 'SS', 'SC', 'CC')`,
+    ),
+    tenantIsolation('student_health'),
+  ],
+).enableRLS();
+
+/** The student's passport photograph. Private, unlike school logos. */
+export const studentPhotos = pgTable(
+  'student_photos',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    studentId: uuid('student_id').notNull(),
+    contentType: text('content_type', {
+      enum: ['image/png', 'image/jpeg', 'image/webp'],
+    }).notNull(),
+    content: bytea('content').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.studentId] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    check('student_photos_size', sql`octet_length(${t.content}) <= 204800`),
+    check(
+      'student_photos_type',
+      sql`${t.contentType} in ('image/png', 'image/jpeg', 'image/webp')`,
+    ),
+    tenantIsolation('student_photos'),
   ],
 ).enableRLS();
 
@@ -107,6 +214,154 @@ export const users = pgTable(
     primaryKey({ columns: [t.tenantId, t.id] }),
     unique('users_email_per_tenant').on(t.tenantId, t.email),
     tenantIsolation('users'),
+  ],
+).enableRLS();
+
+/**
+ * A student's parents or guardians: who the school calls, and, once they have an
+ * account, who signs in for the child (ADR 0015). Contact details do not need an
+ * account: many parents have a phone but no email.
+ */
+export const guardians = pgTable(
+  'guardians',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    name: text('name').notNull(),
+    /** E.164, e.g. +2348031234567 (see guardians.dto.ts). */
+    phone: text('phone').notNull(),
+    email: text('email'),
+    /** The guardian's parent account, if they have one. */
+    userId: uuid('user_id'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    unique('guardians_user_per_tenant').on(t.tenantId, t.userId),
+    foreignKey({
+      columns: [t.tenantId, t.userId],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    tenantIsolation('guardians'),
+  ],
+).enableRLS();
+
+/** Which guardians look after which students. A guardian can have several children. */
+export const studentGuardians = pgTable(
+  'student_guardians',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    studentId: uuid('student_id').notNull(),
+    guardianId: uuid('guardian_id').notNull(),
+    /** "Mother", "Uncle", ... as the school records it. */
+    relationship: text('relationship').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.studentId, t.guardianId] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.guardianId],
+      foreignColumns: [guardians.tenantId, guardians.id],
+    }).onDelete('cascade'),
+    tenantIsolation('student_guardians'),
+  ],
+).enableRLS();
+
+/** What a parent can agree to the school keeping about their child (ADR 0017). */
+export const CONSENT_PURPOSES = ['record', 'health', 'photo'] as const;
+export type ConsentPurpose = (typeof CONSENT_PURPOSES)[number];
+
+/**
+ * Every answer a guardian gives, kept with the exact wording they saw: the school
+ * must be able to show consent was given (NDPA s. 26). Never updated; the newest
+ * answer per purpose from a guardian still linked to the child is the one that counts.
+ */
+export const consents = pgTable(
+  'consents',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    studentId: uuid('student_id').notNull(),
+    guardianId: uuid('guardian_id').notNull(),
+    purpose: text('purpose', { enum: CONSENT_PURPOSES }).notNull(),
+    given: boolean('given').notNull(),
+    /** "paper": an admin recorded a signed form. "online": the parent answered themselves. */
+    method: text('method', { enum: ['paper', 'online'] }).notNull(),
+    wording: text('wording').notNull(),
+    recordedBy: uuid('recorded_by').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.guardianId],
+      foreignColumns: [guardians.tenantId, guardians.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.recordedBy],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    check(
+      'consents_purpose',
+      sql`${t.purpose} in ('record', 'health', 'photo')`,
+    ),
+    check('consents_method', sql`${t.method} in ('paper', 'online')`),
+    tenantIsolation('consents'),
+  ],
+).enableRLS();
+
+/** Field name to proposed value; blank values are null. See corrections.dto.ts. */
+export type CorrectionChanges = Record<string, string | null>;
+
+/**
+ * A parent asks for their child's record to be corrected (NDPA s. 34); an admin
+ * applies or declines it. The school keeps the final say on its own record.
+ */
+export const recordCorrections = pgTable(
+  'record_corrections',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    studentId: uuid('student_id').notNull(),
+    requestedBy: uuid('requested_by').notNull(),
+    changes: jsonb('changes').$type<CorrectionChanges>().notNull(),
+    note: text('note'),
+    status: text('status', { enum: ['pending', 'applied', 'declined'] })
+      .notNull()
+      .default('pending'),
+    decidedBy: uuid('decided_by'),
+    /** Why it was declined, for the parent. */
+    reply: text('reply'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.requestedBy],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    foreignKey({
+      columns: [t.tenantId, t.decidedBy],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    check(
+      'record_corrections_status',
+      sql`${t.status} in ('pending', 'applied', 'declined')`,
+    ),
+    tenantIsolation('record_corrections'),
   ],
 ).enableRLS();
 
@@ -338,6 +593,213 @@ export const timetableSlots = pgTable(
     tenantIsolation('timetable_slots'),
   ],
 ).enableRLS();
+
+/**
+ * A school's uploaded logo (ADR 0010). Kept in Postgres while files are small;
+ * served at GET /school/logo on the school's own address. Unlike other tenant
+ * tables, every school's row is READABLE (logos are public), so reads must filter
+ * by tenant_id themselves; writes are still limited to the school's own row.
+ */
+export const schoolLogos = pgTable(
+  'school_logos',
+  {
+    tenantId: uuid('tenant_id')
+      .primaryKey()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    contentType: text('content_type', {
+      enum: ['image/png', 'image/jpeg', 'image/webp'],
+    }).notNull(),
+    content: bytea('content').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check('school_logos_size', sql`octet_length(${t.content}) <= 204800`),
+    check(
+      'school_logos_type',
+      sql`${t.contentType} in ('image/png', 'image/jpeg', 'image/webp')`,
+    ),
+    tenantIsolation('school_logos'),
+    // Logos are public (sign-in pages, the website's school search): anyone may read,
+    // but the isolation policy above still limits writes to the school itself.
+    pgPolicy('school_logos_public_read', {
+      as: 'permissive',
+      for: 'select',
+      to: appRole,
+      using: sql`true`,
+    }),
+  ],
+).enableRLS();
+
+/*
+ * Fees (ADR 0013). Money is bigint kobo. Payments go through the PaymentProvider adapter,
+ * so every provider-side id is stored with the provider's name: a school that changes
+ * provider keeps its history.
+ */
+
+/** A school's own account with a payment provider: fees settle to it, not to Dopple. */
+export const paymentAccounts = pgTable(
+  'payment_accounts',
+  {
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id),
+    provider: text('provider').notNull(),
+    accountId: text('account_id').notNull(),
+    status: text('status', {
+      enum: ['pending', 'active', 'restricted'],
+    }).notNull(),
+    requirementsDue: jsonb('requirements_due').$type<string[]>().notNull(),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.provider] }),
+    tenantIsolation('payment_accounts'),
+  ],
+).enableRLS();
+
+/** One amount a student owes, e.g. "First term tuition". */
+export const fees = pgTable(
+  'fees',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    studentId: uuid('student_id').notNull(),
+    description: text('description').notNull(),
+    amountMinor: bigint('amount_minor', { mode: 'number' }).notNull(),
+    currency: text('currency').notNull().default('NGN'),
+    dueOn: date('due_on'),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    check('fees_amount_positive', sql`${t.amountMinor} > 0`),
+    tenantIsolation('fees'),
+  ],
+).enableRLS();
+
+/** One attempt to pay a fee. Its id is the reference the provider echoes back. */
+export const feePayments = pgTable(
+  'fee_payments',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    feeId: uuid('fee_id').notNull(),
+    provider: text('provider').notNull(),
+    checkoutId: text('checkout_id'),
+    amountMinor: bigint('amount_minor', { mode: 'number' }).notNull(),
+    status: text('status', {
+      enum: ['pending', 'succeeded', 'failed'],
+    })
+      .notNull()
+      .default('pending'),
+    /** Who started the payment. */
+    payerId: uuid('payer_id'),
+    paidAt: timestamp('paid_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.feeId],
+      foreignColumns: [fees.tenantId, fees.id],
+    }).onDelete('restrict'),
+    foreignKey({
+      columns: [t.tenantId, t.payerId],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    check('fee_payments_amount_positive', sql`${t.amountMinor} > 0`),
+    tenantIsolation('fee_payments'),
+  ],
+).enableRLS();
+
+/** Webhook events already handled. Providers deliver at least once; this makes it exactly once. */
+export const paymentEvents = pgTable(
+  'payment_events',
+  {
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id),
+    provider: text('provider').notNull(),
+    eventId: text('event_id').notNull(),
+    type: text('type').notNull(),
+    receivedAt: timestamp('received_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.provider, t.eventId] }),
+    tenantIsolation('payment_events'),
+  ],
+).enableRLS();
+
+/*
+ * Dopple Learn (ADR 0011): free lessons for anyone, outside any school. Platform-wide,
+ * not tenant-owned. Loaded from content/learn/ by scripts/learn-load.mjs as the owner;
+ * the app role may only read them (revoked in migration 0009).
+ */
+export const learnSubjects = pgTable('learn_subjects', {
+  slug: text('slug').primaryKey(),
+  name: text('name').notNull(),
+  /** The classes that take this subject, e.g. ['primary-1', 'primary-2']. */
+  classes: text('classes').array().notNull(),
+});
+
+export const learnTopics = pgTable(
+  'learn_topics',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    classLevel: text('class_level').notNull(),
+    subjectSlug: text('subject_slug')
+      .notNull()
+      .references(() => learnSubjects.slug),
+    position: integer('position').notNull(),
+    title: text('title').notNull(),
+    summary: text('summary').notNull(),
+    minutes: smallint('minutes').notNull(),
+    lesson: jsonb('lesson').$type<LessonBlock[]>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  () => [
+    check(
+      'learn_topics_class_level',
+      sql.raw(
+        `class_level in (${CLASS_SLUGS.map((c) => `'${c}'`).join(', ')})`,
+      ),
+    ),
+  ],
+);
+
+export const learnQuestions = pgTable(
+  'learn_questions',
+  {
+    topicId: uuid('topic_id')
+      .notNull()
+      .references(() => learnTopics.id, { onDelete: 'cascade' }),
+    position: smallint('position').notNull(),
+    prompt: text('prompt').notNull(),
+    options: text('options').array().notNull(),
+    /** Index into options, 0 to 3. */
+    answer: smallint('answer').notNull(),
+    explanation: text('explanation').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.topicId, t.position] }),
+    check('learn_questions_four_options', sql`cardinality(${t.options}) = 4`),
+    check('learn_questions_answer', sql`${t.answer} between 0 and 3`),
+  ],
+);
 
 export type TenantRow = typeof tenants.$inferSelect;
 export type Student = typeof students.$inferSelect;
