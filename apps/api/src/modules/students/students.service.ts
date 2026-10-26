@@ -21,6 +21,10 @@ import {
   students,
 } from '../../database/schema.js';
 import { PRINCIPAL_KEY, type Principal } from '../auth/principal.js';
+import {
+  assertConsent,
+  currentConsents,
+} from '../consents/current-consents.js';
 import { myStudentIds } from '../guardians/my-students.js';
 import type {
   CreateStudentBody,
@@ -93,7 +97,10 @@ export class StudentsService {
     );
   }
 
-  /** One student's whole record, with their class for each session (newest first) and health. */
+  /**
+   * One student's whole record, with their class for each session (newest first),
+   * health, and where their parents' consent stands.
+   */
   async get(id: string) {
     return this.tenantDb.run(async (tx) => {
       const [student] = await tx
@@ -142,6 +149,7 @@ export class StudentsService {
       return {
         ...student,
         health: health ?? null,
+        consents: await currentConsents(tx, id),
         enrolments: placements.map((p) => ({
           session: { id: p.sessionId, name: p.sessionName },
           class: { id: p.classId, name: p.className },
@@ -175,7 +183,10 @@ export class StudentsService {
     return updated;
   }
 
-  /** Replaces the health record; an empty one is removed rather than kept as blanks. */
+  /**
+   * Replaces the health record; an empty one is removed rather than kept as blanks.
+   * Keeping one needs a parent's consent.
+   */
   setHealth(id: string, health: HealthBody) {
     return this.tenantDb.run(async (tx, tenant) => {
       await findStudent(tx, id);
@@ -183,6 +194,7 @@ export class StudentsService {
         await tx.delete(studentHealth).where(eq(studentHealth.studentId, id));
         return null;
       }
+      await assertConsent(tx, id, 'health');
       const [saved] = await tx
         .insert(studentHealth)
         .values({ tenantId: tenant.id, studentId: id, ...health })
@@ -226,6 +238,7 @@ export class StudentsService {
     }
     return this.tenantDb.run(async (tx, tenant) => {
       await findStudent(tx, id);
+      await assertConsent(tx, id, 'photo');
       const [saved] = await tx
         .insert(studentPhotos)
         .values({ tenantId: tenant.id, studentId: id, contentType, content })

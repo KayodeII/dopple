@@ -7,6 +7,7 @@
 // Runs as the database owner (MIGRATION_DATABASE_URL) because the app role cannot write tenants.
 import { randomBytes, scryptSync } from 'node:crypto';
 import pg from 'pg';
+import { CONSENT_WORDING } from '../src/modules/consents/wording.ts';
 
 const DEMO_PASSWORD = 'dopple-demo';
 
@@ -152,6 +153,20 @@ async function seedGuardians(tenantId, slug, admissionNos) {
   }
 }
 
+// The record and health consent, as a school collects them on the paper admission
+// form. The photo is left for the demo parent to answer online.
+async function seedConsents(tenantId, slug) {
+  await client.query(
+    `insert into consents (tenant_id, student_id, guardian_id, purpose, given, method, wording, recorded_by)
+     select sg.tenant_id, sg.student_id, sg.guardian_id, p.purpose, true, 'paper', p.wording, u.id
+     from student_guardians sg
+     cross join (values ('record', $3), ('health', $4)) as p(purpose, wording)
+     join users u on u.tenant_id = sg.tenant_id and u.email = $2
+     where sg.tenant_id = $1 and not exists (select 1 from consents where tenant_id = $1)`,
+    [tenantId, `admin@${slug}.test`, CONSENT_WORDING.record, CONSENT_WORDING.health],
+  );
+}
+
 try {
   await client.query('begin');
   for (const school of schools) {
@@ -196,6 +211,7 @@ try {
     }
     await seedStructure(tenantId, school.slug);
     await seedGuardians(tenantId, school.slug, school.students.map(([admissionNo]) => admissionNo));
+    await seedConsents(tenantId, school.slug);
     // First-term tuition for every student, once. No payment account: the admin sets that up.
     await client.query(
       `insert into fees (tenant_id, student_id, description, amount_minor, due_on)

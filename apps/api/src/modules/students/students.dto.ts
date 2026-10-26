@@ -43,7 +43,7 @@ export const NIGERIAN_STATES = [
 
 const name = z.string().trim().min(1).max(80);
 /** Optional text: blank means "not given", stored as null. */
-const optionalText = (max: number) =>
+export const optionalText = (max: number) =>
   z
     .string()
     .trim()
@@ -58,7 +58,7 @@ const pastDate = z.iso
   )
   .nullable();
 
-const studentFields = {
+export const studentFields = {
   admissionNo: z.string().trim().min(1).max(30),
   firstName: name,
   middleName: optionalText(80),
@@ -93,17 +93,20 @@ export const listStudentsQuery = z.object({
   q: z.string().trim().max(80).optional(),
 });
 
-/** The whole health record at once: what is left out is cleared. */
-export const healthBody = z.object({
+export const healthFields = {
   bloodGroup: z
     .enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
-    .nullable()
-    .default(null),
-  genotype: z
-    .enum(['AA', 'AS', 'AC', 'SS', 'SC', 'CC'])
-    .nullable()
-    .default(null),
-  allergies: optionalText(300).default(null),
-  conditions: optionalText(500).default(null),
+    .nullable(),
+  genotype: z.enum(['AA', 'AS', 'AC', 'SS', 'SC', 'CC']).nullable(),
+  allergies: optionalText(300),
+  conditions: optionalText(500),
+};
+
+/** The whole health record at once: what is left out is cleared. */
+export const healthBody = z.object({
+  bloodGroup: healthFields.bloodGroup.default(null),
+  genotype: healthFields.genotype.default(null),
+  allergies: healthFields.allergies.default(null),
+  conditions: healthFields.conditions.default(null),
 });
 export type HealthBody = z.infer<typeof healthBody>;

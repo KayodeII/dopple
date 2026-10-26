@@ -254,6 +254,12 @@ The school is always taken from the `Host` header. Platform routes are served wi
 | `GET` | `/guardians?q=` | admin | Guardians by name or phone, with their children (for linking siblings) |
 | `PATCH` | `/guardians/:id` | admin | Edit `name`, `phone`, `email`, or `userId` (a parent account) |
 | `GET` | `/children` | parent | My children, with their class in the latest session |
+| `GET` | `/children/:id` | parent | My child's whole record as the school holds it, with consents and the consent wording (ADR 0017) |
+| `PUT` | `/students/:id/consents/:purpose` | admin | Record a signed paper answer `{ guardianId, given }` for `record`, `health` or `photo`; a no to health or photo erases it |
+| `PUT` | `/children/:id/consents/:purpose` | parent | Answer for my child online `{ given }` |
+| `GET` / `POST` | `/children/:id/corrections` | parent | My correction requests; ask for one `{ changes: { field: value }, note? }` |
+| `GET` | `/corrections?studentId=` | admin | Open correction requests, with what the record holds now |
+| `POST` | `/corrections/:id/apply` · `/corrections/:id/decline` | admin | Apply the changes, or decline with `{ reply }` |
 | `GET` / `POST` | `/sessions` | read: signed in · write: admin | School years with their terms |
 | `GET` / `POST` | `/subjects` | read: signed in · write: admin | Subjects and their codes |
 | `GET` / `POST` | `/classes` | read: signed in · write: admin | Class groups; filter with `?sessionId=` |

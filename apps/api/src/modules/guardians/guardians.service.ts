@@ -19,6 +19,8 @@ import {
   type Transaction,
 } from '../../database/tenant-db.service.js';
 import { PRINCIPAL_KEY, type Principal } from '../auth/principal.js';
+import { CONSENT_WORDING } from '../consents/wording.js';
+import { StudentsService } from '../students/students.service.js';
 import type { AddGuardianBody, UpdateGuardianBody } from './guardians.dto.js';
 import { myStudentIds } from './my-students.js';
 
@@ -43,6 +45,7 @@ export class GuardiansService {
   constructor(
     private readonly tenantDb: TenantDb,
     private readonly cls: ClsService,
+    private readonly students: StudentsService,
   ) {}
 
   forStudent(studentId: string) {
@@ -224,6 +227,29 @@ export class GuardiansService {
           class: classId ? { id: classId, name: className } : null,
         }));
     });
+  }
+
+  /**
+   * A child's whole record as the school holds it, for their parent to check (NDPA
+   * s. 34). Other guardians show by name only: separated parents need not see each
+   * other's numbers.
+   */
+  async child(studentId: string) {
+    const { userId } = this.cls.get<Principal>(PRINCIPAL_KEY);
+    const family = await this.tenantDb.run(async (tx) => {
+      const mine = await myStudentIds(tx, userId);
+      if (!mine.some((s) => s.id === studentId)) {
+        throw new NotFoundException('Student not found');
+      }
+      return (await this.listFor(tx, studentId)).map(
+        ({ userId: guardianUser, ...guardian }) =>
+          guardianUser === userId
+            ? { ...guardian, you: true }
+            : { ...guardian, phone: null, email: null, you: false },
+      );
+    });
+    const { userId: _account, ...record } = await this.students.get(studentId);
+    return { ...record, guardians: family, consentWording: CONSENT_WORDING };
   }
 
   private listFor(tx: Transaction, studentId: string) {

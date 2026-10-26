@@ -71,6 +71,7 @@ describe('Students (e2e)', () => {
     for (const table of [
       'student_photos',
       'student_health',
+      'consents',
       'student_guardians',
       'guardians',
       'enrolments',
@@ -231,6 +232,7 @@ describe('Students (e2e)', () => {
       religion: null,
       photoUpdatedAt: null,
       health: null,
+      consents: { record: null, health: null, photo: null },
       enrolments: [
         {
           session: { id: ids.newer, name: '2026/2027' },
@@ -305,6 +307,28 @@ describe('Students (e2e)', () => {
   });
 
   it('keeps health details apart, for staff to read and admins to change', async () => {
+    const health = {
+      bloodGroup: 'O+',
+      genotype: 'AS',
+      allergies: 'Groundnuts',
+    };
+    await admin.put(`/students/${ids.ada}/health`, health).expect(422);
+    const father = await admin
+      .post(`/students/${ids.ada}/guardians`, {
+        name: 'Father',
+        phone: '08031111111',
+        relationship: 'Father',
+      })
+      .expect(201);
+    ids.father = father.body.id;
+    for (const purpose of ['health', 'photo']) {
+      await admin
+        .put(`/students/${ids.ada}/consents/${purpose}`, {
+          guardianId: ids.father,
+          given: true,
+        })
+        .expect(200);
+    }
     await admin
       .put(`/students/${ids.ada}/health`, {
         bloodGroup: 'O+',

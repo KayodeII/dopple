@@ -58,6 +58,8 @@ describe('Tenant isolation (e2e)', () => {
     await app?.close();
     // Children before parents: these tables reference each other.
     for (const table of [
+      'record_corrections',
+      'consents',
       'student_photos',
       'student_health',
       'student_guardians',
@@ -220,6 +222,68 @@ describe('Tenant isolation (e2e)', () => {
       [studentA.id],
     );
     expect(still[0]).toEqual({ genotype: 'SS', photos: 1 });
+  });
+
+  it('keeps consents and correction requests to their own school', async () => {
+    const { rows } = await owner.query<{
+      tenant_id: string;
+      student_id: string;
+      user_id: string;
+    }>(
+      `select s.tenant_id, s.id as student_id, u.id as user_id
+       from students s join tenants t on t.id = s.tenant_id
+       join users u on u.tenant_id = s.tenant_id
+       where t.slug = $1 and s.admission_no = 'A-2'`,
+      [schoolA],
+    );
+    const a = rows[0];
+    const guardian = (
+      await owner.query<{ id: string }>(
+        `insert into guardians (tenant_id, name, phone) values ($1, 'A guardian', '+2348030000001') returning id`,
+        [a.tenant_id],
+      )
+    ).rows[0].id;
+    await owner.query(
+      `insert into student_guardians (tenant_id, student_id, guardian_id, relationship) values ($1, $2, $3, 'Mother')`,
+      [a.tenant_id, a.student_id, guardian],
+    );
+    await owner.query(
+      `insert into consents (tenant_id, student_id, guardian_id, purpose, given, method, wording, recorded_by)
+       values ($1, $2, $3, 'health', true, 'paper', 'test', $4)`,
+      [a.tenant_id, a.student_id, guardian, a.user_id],
+    );
+    const correction = (
+      await owner.query<{ id: string }>(
+        `insert into record_corrections (tenant_id, student_id, requested_by, changes)
+         values ($1, $2, $3, '{"lga":"Changed"}') returning id`,
+        [a.tenant_id, a.student_id, a.user_id],
+      )
+    ).rows[0].id;
+
+    const tokenB = await tokenFor(schoolB);
+    const asB = (req: request.Test) =>
+      req.set('Host', host(schoolB)).auth(tokenB, { type: 'bearer' });
+    await asB(
+      request(app.getHttpServer())
+        .put(`/students/${a.student_id}/consents/health`)
+        .send({ guardianId: guardian, given: false }),
+    ).expect(404);
+    await asB(request(app.getHttpServer()).get('/corrections')).expect(200, []);
+    await asB(
+      request(app.getHttpServer()).post(`/corrections/${correction}/apply`),
+    ).expect(404);
+    await asB(
+      request(app.getHttpServer())
+        .post(`/corrections/${correction}/decline`)
+        .send({ reply: 'No' }),
+    ).expect(404);
+
+    const { rows: still } = await owner.query(
+      `select (select status from record_corrections where id = $1) as status,
+              (select count(*)::int from consents where student_id = $2) as answers`,
+      [correction, a.student_id],
+    );
+    expect(still[0]).toEqual({ status: 'pending', answers: 1 });
   });
 
   it('names the school at each host, without signing in', async () => {

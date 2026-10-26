@@ -271,6 +271,100 @@ export const studentGuardians = pgTable(
   ],
 ).enableRLS();
 
+/** What a parent can agree to the school keeping about their child (ADR 0017). */
+export const CONSENT_PURPOSES = ['record', 'health', 'photo'] as const;
+export type ConsentPurpose = (typeof CONSENT_PURPOSES)[number];
+
+/**
+ * Every answer a guardian gives, kept with the exact wording they saw: the school
+ * must be able to show consent was given (NDPA s. 26). Never updated; the newest
+ * answer per purpose from a guardian still linked to the child is the one that counts.
+ */
+export const consents = pgTable(
+  'consents',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    studentId: uuid('student_id').notNull(),
+    guardianId: uuid('guardian_id').notNull(),
+    purpose: text('purpose', { enum: CONSENT_PURPOSES }).notNull(),
+    given: boolean('given').notNull(),
+    /** "paper": an admin recorded a signed form. "online": the parent answered themselves. */
+    method: text('method', { enum: ['paper', 'online'] }).notNull(),
+    wording: text('wording').notNull(),
+    recordedBy: uuid('recorded_by').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.guardianId],
+      foreignColumns: [guardians.tenantId, guardians.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.recordedBy],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    check(
+      'consents_purpose',
+      sql`${t.purpose} in ('record', 'health', 'photo')`,
+    ),
+    check('consents_method', sql`${t.method} in ('paper', 'online')`),
+    tenantIsolation('consents'),
+  ],
+).enableRLS();
+
+/** Field name to proposed value; blank values are null. See corrections.dto.ts. */
+export type CorrectionChanges = Record<string, string | null>;
+
+/**
+ * A parent asks for their child's record to be corrected (NDPA s. 34); an admin
+ * applies or declines it. The school keeps the final say on its own record.
+ */
+export const recordCorrections = pgTable(
+  'record_corrections',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    id: uuid('id').notNull().defaultRandom(),
+    studentId: uuid('student_id').notNull(),
+    requestedBy: uuid('requested_by').notNull(),
+    changes: jsonb('changes').$type<CorrectionChanges>().notNull(),
+    note: text('note'),
+    status: text('status', { enum: ['pending', 'applied', 'declined'] })
+      .notNull()
+      .default('pending'),
+    decidedBy: uuid('decided_by'),
+    /** Why it was declined, for the parent. */
+    reply: text('reply'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.tenantId, t.id] }),
+    foreignKey({
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.id],
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [t.tenantId, t.requestedBy],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    foreignKey({
+      columns: [t.tenantId, t.decidedBy],
+      foreignColumns: [users.tenantId, users.id],
+    }),
+    check(
+      'record_corrections_status',
+      sql`${t.status} in ('pending', 'applied', 'declined')`,
+    ),
+    tenantIsolation('record_corrections'),
+  ],
+).enableRLS();
+
 /**
  * Long-lived sign-in sessions. Only a SHA-256 of the token is stored, so a
  * database leak does not hand out sessions. Rotated on every refresh.

@@ -77,4 +77,10 @@ export class GuardiansController {
   children() {
     return this.guardians.children();
   }
+
+  @Roles('parent')
+  @Get('children/:studentId')
+  child(@Param('studentId', ParseUUIDPipe) studentId: string) {
+    return this.guardians.child(studentId);
+  }
 }

@@ -5,6 +5,8 @@ import { DatabaseErrorFilter } from './common/database-error.filter.js';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { HealthModule } from './health/health.module.js';
+import { ConsentsModule } from './modules/consents/consents.module.js';
+import { CorrectionsModule } from './modules/corrections/corrections.module.js';
 import { FeesModule } from './modules/fees/fees.module.js';
 import { GuardiansModule } from './modules/guardians/guardians.module.js';
 import { LearnModule } from './modules/learn/learn.module.js';
@@ -34,6 +36,8 @@ import { TenancyModule } from './tenancy/tenancy.module.js';
     AuthModule, // global guard: every route needs a token unless @Public()
     StudentsModule,
     GuardiansModule, // parents and guardians, and the children a parent signs in for
+    ConsentsModule, // parents' consent to what is kept about their child (ADR 0017)
+    CorrectionsModule, // parents ask for their child's record to be corrected
     AcademicSessionsModule,
     SubjectsModule,
     ClassesModule,
